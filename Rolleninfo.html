@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Das ultimative Werwolf Kompendium</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+/* ============================================================
+   ROOT & RESET
+============================================================ */
+:root {
+  --gold:        #d4a843;
+  --gold-light:  #f0c96a;
+  --gold-dim:    rgba(212,168,67,0.15);
+  --red:         #dc2626;
+  --green:       #16a34a;
+  --glass:       rgba(255,255,255,0.055);
+  --glass-hover: rgba(255,255,255,0.10);
+  --border:      rgba(255,255,255,0.10);
+  --border-gold: rgba(212,168,67,0.35);
+  --text:        #f1f5f9;
+  --text-muted:  rgba(255,255,255,0.45);
+  --shadow:      0 30px 80px rgba(0,0,0,0.7);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Crimson Pro', Georgia, serif;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 120% 80% at 15% -10%, #1a0a2e 0%, transparent 60%),
+    radial-gradient(ellipse 80% 60% at 90% 110%, #0d1f0a 0%, transparent 55%),
+    radial-gradient(ellipse 100% 100% at 50% 50%, #0a0a18 0%, #020208 100%);
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.6;
+  padding: 0 0 60px;
+}
+
+/* Animated star particles */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 8%  12%, rgba(255,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 22% 38%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 38% 6%, rgba(255,255,255,0.8) 0%, transparent 100%),
+    radial-gradient(1px 1px at 52% 28%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 68% 16%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 83% 4%, rgba(255,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 91% 44%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 14% 62%, rgba(255,255,255,0.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 58% 53%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 76% 68%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 78%, rgba(255,255,255,0.45) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 48% 88%, rgba(255,255,255,0.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 3%  45%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 95% 22%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 62% 92%, rgba(255,255,255,0.25) 0%, transparent 100%),
+    radial-gradient(1px 1px at 17% 25%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 44% 72%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 70% 35%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 5%  90%, rgba(255,255,255,0.35) 0%, transparent 100%);
+}
+
+/* Decorative moon */
+body::after {
+  content: '';
+  position: fixed;
+  top: -60px; right: -60px;
+  width: 280px; height: 280px;
+  background: radial-gradient(circle at 38% 38%, #fffde0 0%, #ffd700 30%, transparent 70%);
+  border-radius: 50%;
+  opacity: 0.06;
+  z-index: 0;
+  pointer-events: none;
+  filter: blur(2px);
+}
+
+/* ============================================================
+   HEADER / HERO
+============================================================ */
+header {
+  position: relative; z-index: 1;
+  text-align: center;
+  padding: 60px 20px 50px;
+  border-bottom: 1px solid var(--border-gold);
+  margin-bottom: 50px;
+  animation: fadeDown 0.8s ease-out;
+}
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero-moon {
+  font-size: 4.5rem;
+  line-height: 1;
+  margin-bottom: 20px;
+  display: block;
+  filter: drop-shadow(0 0 30px rgba(255,220,100,0.4));
+  animation: moonFloat 6s ease-in-out infinite;
+}
+@keyframes moonFloat {
+  0%,100% { transform: translateY(0) rotate(-3deg); }
+  50%      { transform: translateY(-10px) rotate(3deg); }
+}
+
+h1 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(2rem, 7vw, 3.4rem);
+  font-weight: 900;
+  color: var(--gold-light);
+  text-shadow: 0 0 40px rgba(212,168,67,0.5), 0 0 80px rgba(212,168,67,0.2);
+  letter-spacing: 4px;
+  line-height: 1.1;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+  letter-spacing: 1px;
+  margin-top: 8px;
+}
+.subtitle:first-of-type {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.55);
+}
+
+.hero-divider {
+  width: 180px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 24px auto 0;
+}
+
+/* Back link */
+.back-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  padding: 10px 20px;
+  background: rgba(212,168,67,0.07);
+  border: 1px solid var(--border-gold);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+.back-bar:hover {
+  background: rgba(212,168,67,0.14);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+/* ============================================================
+   SEARCH / FILTER BAR
+============================================================ */
+.filter-bar {
+  position: relative; z-index: 1;
+  max-width: 1440px;
+  margin: 0 auto 36px;
+  padding: 0 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-wrap {
+  position: relative;
+  flex: 1 1 260px;
+  max-width: 380px;
+}
+.search-icon {
+  position: absolute;
+  left: 14px; top: 50%; transform: translateY(-50%);
+  font-size: 1rem;
+  pointer-events: none;
+  opacity: 0.5;
+}
+#searchInput {
+  width: 100%;
+  padding: 12px 14px 12px 40px;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text);
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.2s;
+}
+#searchInput::placeholder { color: var(--text-muted); font-style: italic; }
+#searchInput:focus {
+  border-color: var(--gold);
+  background: rgba(212,168,67,0.05);
+  box-shadow: 0 0 0 3px rgba(212,168,67,0.1);
+}
+
+.filter-btn {
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: var(--glass);
+  color: var(--text-muted);
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.filter-btn:hover { background: var(--glass-hover); color: var(--text); }
+.filter-btn.active {
+  border-color: var(--border-gold);
+  background: var(--gold-dim);
+  color: var(--gold-light);
+  box-shadow: 0 0 12px rgba(212,168,67,0.15);
+}
+.filter-btn.wolf-btn.active  { border-color: rgba(239,68,68,0.5); background: rgba(239,68,68,0.12); color: #fca5a5; }
+.filter-btn.village-btn.active { border-color: rgba(74,222,128,0.4); background: rgba(74,222,128,0.1); color: #86efac; }
+.filter-btn.neutral-btn.active { border-color: rgba(216,180,254,0.4); background: rgba(216,180,254,0.1); color: #d8b4fe; }
+
+/* ============================================================
+   ROLE GRID
+============================================================ */
+.role-grid {
+  position: relative; z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 22px;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ============================================================
+   ROLE CARDS
+============================================================ */
+.role-card {
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275),
+              border-color 0.3s, box-shadow 0.3s;
+  animation: cardAppear 0.5s cubic-bezier(0.175,0.885,0.32,1.275) both;
+}
+
+@keyframes cardAppear {
+  from { opacity: 0; transform: scale(0.94) translateY(20px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+/* Gold shimmer line at top */
+.role-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.5;
+  transition: opacity 0.3s;
+}
+
+.role-card:hover {
+  border-color: var(--border-gold);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 20px rgba(212,168,67,0.08);
+}
+.role-card:hover::before { opacity: 1; }
+
+/* Wolf card accent */
+.role-card.wolf-card { border-color: rgba(239,68,68,0.2); }
+.role-card.wolf-card:hover { border-color: rgba(239,68,68,0.5); box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 20px rgba(239,68,68,0.1); }
+.role-card.wolf-card::before { background: linear-gradient(90deg, transparent, #ef4444, transparent); }
+
+/* Neutral card accent */
+.role-card.neutral-card { border-color: rgba(216,180,254,0.15); }
+.role-card.neutral-card:hover { border-color: rgba(216,180,254,0.4); box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 20px rgba(216,180,254,0.08); }
+.role-card.neutral-card::before { background: linear-gradient(90deg, transparent, #d8b4fe, transparent); }
+
+/* ============================================================
+   ROLE HEADER
+============================================================ */
+.role-header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.role-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.short-desc {
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin: 0 0 14px 0;
+  min-height: 44px;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   BADGES
+============================================================ */
+.wolf-badge {
+  background: rgba(220,38,38,0.2);
+  border: 1px solid rgba(220,38,38,0.4);
+  border-radius: 8px;
+  padding: 3px 10px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #fca5a5;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.village-badge {
+  background: rgba(34,197,94,0.15);
+  border: 1px solid rgba(34,197,94,0.35);
+  border-radius: 8px;
+  padding: 3px 10px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #86efac;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.neutral-badge {
+  background: rgba(168,85,247,0.15);
+  border: 1px solid rgba(168,85,247,0.35);
+  border-radius: 8px;
+  padding: 3px 10px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #d8b4fe;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   DETAILS / SUMMARY (Mehr anzeigen)
+============================================================ */
+details {
+  margin-top: auto;
+  cursor: pointer;
+}
+
+summary {
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  padding: 10px 0;
+  outline: none;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 1.5px;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s;
+}
+summary::-webkit-details-marker { display: none; }
+summary::before {
+  content: '▶';
+  font-size: 0.6rem;
+  transition: transform 0.25s;
+  opacity: 0.7;
+}
+details[open] summary::before { transform: rotate(90deg); }
+summary:hover { color: var(--gold-light); }
+
+.full-content {
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--border);
+  padding: 18px;
+  border-radius: 14px;
+  font-size: 0.92rem;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.65;
+  animation: expandIn 0.25s ease-out;
+}
+@keyframes expandIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Section headings inside cards */
+h4 {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin: 14px 0 6px 0;
+}
+h4:first-child { margin-top: 0; }
+
+ul {
+  padding-left: 18px;
+  margin: 5px 0;
+}
+li {
+  margin-bottom: 5px;
+  color: rgba(255,255,255,0.7);
+}
+
+.example {
+  border-left: 2px solid var(--gold);
+  padding: 10px 14px;
+  margin-top: 12px;
+  font-style: italic;
+  color: rgba(255,255,255,0.65);
+  background: rgba(212,168,67,0.05);
+  border-radius: 0 10px 10px 0;
+  font-size: 0.9rem;
+}
+
+/* ============================================================
+   HIDDEN STATE (search filter)
+============================================================ */
+.role-card.hidden { display: none; }
+
+/* ============================================================
+   FOOTER
+============================================================ */
+footer {
+  position: relative; z-index: 1;
+  text-align: center;
+  padding: 40px 20px 30px;
+  border-top: 1px solid var(--border);
+  margin-top: 50px;
+}
+footer p {
+  font-family: 'Cinzel', serif;
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.22);
+  letter-spacing: 1px;
+}
+footer p span { color: var(--gold); opacity: 0.6; }
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media (max-width: 600px) {
+  .role-grid { grid-template-columns: 1fr; padding: 0 16px; }
+  h1 { font-size: 1.9rem; letter-spacing: 2px; }
+  .filter-bar { padding: 0 16px; }
+  .role-card { padding: 20px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="hero-moon">🌕</span>
+  <h1>Werwolf Kompendium</h1>
+  <div class="subtitle">67 Rollen &amp; Strategien aus dem Dorf Düsterwald</div>
+  <div class="subtitle">Zitat Sandro: Des wui I so ned!</div>
+  <div class="subtitle">Created by 2025/26 AHITS: Tobias Strobl, Felix Resch, Alessandro Strasser, Maxi Joszt</div>
+  <div class="hero-divider"></div>
+  <a class="back-bar" href="index.html">← Zurück zur Spielvorbereitung</a>
+</header>
+
+<!-- SEARCH & FILTER -->
+<div class="filter-bar">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Rolle suchen…" oninput="filterCards()">
+  </div>
+  <button class="filter-btn active" id="filterAll"     onclick="setFilter('all')">Alle</button>
+  <button class="filter-btn village-btn" id="filterVillage" onclick="setFilter('village')">🌿 Dorf</button>
+  <button class="filter-btn wolf-btn"    id="filterWolf"    onclick="setFilter('wolf')">🐺 Wölfe</button>
+  <button class="filter-btn neutral-btn" id="filterNeutral" onclick="setFilter('neutral')">🔮 Neutral</button>
+</div>
+
+<div class="role-grid" id="roleGrid">
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Apprentice Exposer</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Dorfrolle, die einmalig eine Person für alle sichtbar enttarnt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ziel der Rolle</h4>
+      Wie alle Dorfbewohner:innen: Werwölfe finden und eliminieren.
+      <h4>Fähigkeit (einmalig)</h4>
+      Darf in einer Nacht eine Person wählen. Der Moderator zeigt allen Spielern offen die Rollenkarte dieser Person.
+      <h4>Besonderheiten</h4>
+      <ul>
+        <li>Die Enthüllung passiert immer, auch wenn der Exposer oder das Ziel in der Nacht stirbt.</li>
+        <li><b>Lycan-Ausnahme:</b> Ein Lycan wird als Dorfbewohner angezeigt.</li>
+      </ul>
+      <div class="example"><b>Beispiel:</b> Tag 3: Alle verdächtigen Max. In der Nacht wählst du ihn. Am nächsten Tag zeigt der Moderator: „Max ist ein Werwolf."</div>
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Apprentice Illusionist</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Dorfrolle, die einmalig das Ergebnis der Seherin verfälscht.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit (passiv)</h4>
+      Der Moderator zeigt dir, wer die Seherin ist. Wenn sie jemanden überprüft, erhält sie einmalig ein falsches Ergebnis (Wolf → Dorf, Dorf → Wolf).
+      <h4>Wichtig</h4>
+      Die Seherin weiß nicht, dass sie getäuscht wurde. Danach arbeitet sie wieder normal.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card neutral-card" data-team="neutral">
+  <div class="role-header">
+    <div class="role-title">Assassin</div>
+    <span class="neutral-badge">Neutral</span>
+  </div>
+  <div class="short-desc">Neutrale Rolle, die eine bestimmte Person eliminieren muss, um zu gewinnen.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ziel &amp; Gewinnbedingung</h4>
+      Wählt zu Beginn ein Ziel. Gewinnt sofort, wenn das Ziel stirbt, solange er selbst noch lebt.
+      <h4>Ablauf</h4>
+      Der Spielleiter weckt den Assassin nachts auf, dieser zeigt lautlos auf sein Ziel.
+      <h4>Strategie</h4>
+      Darf nicht auffallen. Manipuliert das Dorf oder die Wölfe so, dass sie das Ziel ausschalten.
+      <div class="example"><b>Beispiel:</b> Ziel = Anna. Anna wird an Tag 3 gehängt → Assassin gewinnt sofort.</div>
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Assassin Wolf</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Werwolf, der bei seiner Hinrichtung eine Person mit in den Tod reißt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Wird er vom Dorf gehängt, darf er sofort eine Person wählen, die direkt nach ihm stirbt.
+      <h4>Nachtphase</h4>
+      Wacht mit den anderen Werwölfen auf und hilft bei der Opferwahl.
+      <div class="example"><b>Beispiel:</b> Das Dorf hängt den Assassin Wolf. Er wählt im Sterben den Seher aus. Beide sterben.</div>
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card neutral-card" data-team="neutral">
+  <div class="role-header">
+    <div class="role-title">Auracabra</div>
+    <span class="neutral-badge">Neutral</span>
+  </div>
+  <div class="short-desc">Neutraler Jäger, der gezielt alle Sonderrollen eliminieren will.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Gewinnbedingung</h4>
+      Alle Rollen mit Spezialfähigkeiten (Seher, Hexe etc.) sind tot und der Auracabra lebt noch.
+      <h4>Fähigkeit</h4>
+      Wählt jede Nacht eine Person. Nur Personen mit Spezialrollen werden eliminiert. Einfache Bewohner oder Wölfe bleiben unversehrt.
+      <h4>Einschränkung</h4>
+      Darf nicht den letzten Werwolf eliminieren.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card neutral-card" data-team="neutral">
+  <div class="role-header">
+    <div class="role-title">Black Cat</div>
+    <span class="neutral-badge">Neutral</span>
+  </div>
+  <div class="short-desc">Neutrale Rache-Rolle, die bei ihrem Tod ein Mitglied des „Killer-Teams" tötet.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ablauf bei Tod</h4>
+      Wenn sie stirbt, zeigt der Moderator ihr die Rollen des Teams, das sie getötet hat. Sie wählt eine Person aus diesem Team, die sofort mit stirbt.
+      <h4>Beispiel</h4>
+      Werden die Werwölfe durch sie getötet, zeigt der Moderator ihr alle Wölfe, und sie nimmt einen mit.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Blighted</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Wird erst aktiv, wenn er von Wölfen angegriffen wurde, ohne dabei zu sterben.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Besonderheit</h4>
+      Wird er von Werwölfen gewählt, stirbt er nicht sofort, sondern wird in der Folgenacht aktiv.
+      <h4>Fähigkeit</h4>
+      Darf dann jede Nacht eine Person eliminieren. Er kennt die Wölfe nicht und kann auch diese töten.
+      <h4>Regel</h4>
+      Zählt nicht für die Paritätsregel (Siegbedingung der Wölfe).
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card neutral-card" data-team="neutral">
+  <div class="role-header">
+    <div class="role-title">Blind Mary</div>
+    <span class="neutral-badge">Neutral</span>
+  </div>
+  <div class="short-desc">Darf nicht sprechen und gewinnt, wenn das Dorf oder die Wölfe keine Eliminierung schaffen.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Strenge Regeln</h4>
+      Darf weder sprechen noch gestikulieren (Tag &amp; Nacht).
+      <h4>Gewinnbedingung</h4>
+      Gewinnt sofort, wenn eine Phase (Tag oder Nacht) endet, ohne dass jemand eliminiert wurde.
+      <h4>Nach dem Tod</h4>
+      Wird sie getötet, darf sie ab dann jede Nacht eine Person eliminieren.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Bodyguard</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Beschützer des Dorfes, der jede Nacht eine Person vor dem Tod bewahrt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ziel der Rolle</h4>
+      Das Dorf schützen und Werwölfe eliminieren.
+      <h4>Fähigkeit</h4>
+      Wählt jede Nacht eine Person (außer sich selbst), die in dieser Nacht vor Wolfsangriffen oder anderen nächtlichen Eliminierungen geschützt ist.
+      <h4>Regeln</h4>
+      <ul>
+        <li>Darf nicht zweimal hintereinander dieselbe Person wählen.</li>
+        <li>Kann sich nicht selbst schützen.</li>
+        <li>Schützt nicht vor der Hinrichtung am Tag.</li>
+      </ul>
+      <div class="example"><b>Beispiel:</b> Du schützt den Seher in Nacht 2. Die Wölfe greifen ihn an, aber er überlebt dank dir.</div>
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card neutral-card" data-team="neutral">
+  <div class="role-header">
+    <div class="role-title">Chupacabra</div>
+    <span class="neutral-badge">Neutral</span>
+  </div>
+  <div class="short-desc">Ein einsamer Jäger, der erst Werwölfe und dann alle anderen jagt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Gewinnbedingung</h4>
+      Der Chupacabra gewinnt, wenn er als letzter Spieler überlebt.
+      <h4>Fähigkeit</h4>
+      Wählt jede Nacht eine Person. Ist es ein Werwolf, stirbt dieser sofort. Sind bereits alle Werwölfe tot, darf er jede Nacht irgendeinen Spieler eliminieren.
+      <h4>Besonderheit</h4>
+      Solange er lebt, kann kein anderes Team (Dorf oder Wölfe) gewinnen.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Copycat</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein Nachahmer, der die Identität eines anderen Spielers übernimmt, sobald dieser stirbt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ablauf</h4>
+      Wählt in der allerersten Nacht eine Person. Sobald diese Person im Laufe des Spiels eliminiert wird, übernimmt der Copycat sofort deren Rolle und Teamzugehörigkeit.
+      <h4>Wichtig</h4>
+      <ul>
+        <li>Bis zur Übernahme zählt er als normaler Dorfbewohner ohne Fähigkeit.</li>
+        <li>Erhält nur Fähigkeiten, die noch nicht verbraucht wurden.</li>
+      </ul>
+      <div class="example"><b>Beispiel:</b> Du wählst in Nacht 1 „Max". Max ist die Hexe. Wenn Max an Tag 3 stirbt, wirst du zur neuen Hexe.</div>
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Count Lycanthrope</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein Informations-Spezialist, der die Verteilung der Wölfe im Dorf kennt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Wissen zu Spielbeginn</h4>
+      Erfährt in der ersten Nacht:
+      <ul>
+        <li>Wo die Grenze der zwei Dorfhälften verläuft.</li>
+        <li>Wie viele Werwölfe (inklusive Lycans) sich in jeder Hälfte befinden.</li>
+        <li>In welcher Hälfte die Seherin sitzt.</li>
+      </ul>
+      <h4>Einschränkung</h4>
+      Er kennt keine konkreten Namen, nur die Anzahl pro Seite. Er ist ein normaler Dorfbewohner.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Cutthroat</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein radikaler Dorfbewohner, der am hellichten Tag jemanden hinrichten kann.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit (einmal pro Spiel)</h4>
+      Darf einmal am Tag während der Diskussion eine Person sofort eliminieren. Der Moderator deckt die Rolle der Person sofort auf.
+      <h4>Besonderheit</h4>
+      Der Tag endet danach nicht! Die Diskussion geht weiter, und das Dorf kann am selben Tag noch eine zweite Person ganz normal per Abstimmung hängen.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Den Mother</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Die „Wolfsmutter", die heimlich überwacht, ob die Seherin Erfolg hat.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Wird jede Nacht nach der Seherin aufgerufen. Der Moderator gibt ihr ein Handzeichen:
+      <ul>
+        <li><b>Daumen hoch:</b> Die Seherin hat einen Werwolf gefunden.</li>
+        <li><b>Daumen runter:</b> Die Seherin hat keinen Werwolf gefunden.</li>
+        <li><b>Hals-Geste:</b> Die Seherin ist tot oder hat nicht geprüft.</li>
+      </ul>
+      <h4>Wichtig</h4>
+      Sie erfährt NICHT, wen die Seherin geprüft hat, nur ob es ein Erfolg für das Dorf war.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Devotee</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Eine Informationsrolle des Dorfes, die schrittweise Werwölfe identifiziert.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ziel der Rolle</h4>
+      Gehört zum Dorfteam. Ziel ist es, alle Werwölfe nach und nach zu finden.
+      <h4>Fähigkeit</h4>
+      In der ersten Nacht zeigt der Moderator dem Devotee den Werwolf, der ihm am nächsten sitzt. In den folgenden Nächten erfährt er schrittweise weitere Wölfe (z.B. den zweitnächsten).
+      <h4>Besonderheit</h4>
+      Erhält Informationen nicht alle auf einmal, sondern über mehrere Nächte verteilt.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Empath</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Spürt, ob die Seherin in Gefahr ist, indem er ihre Nachbarschaft überwacht.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Der Empath erfährt jede Nacht, ob der/die Seher:in neben einem Werwolf (oder Lycan) sitzt.
+      <h4>Ablauf</h4>
+      Der Moderator gibt ein Zeichen: „Ja" (mindestens ein Nachbar ist ein Wolf) oder „Nein".
+      <h4>Einschränkung</h4>
+      Der Empath erfährt weder, wer der Seher ist, noch welcher der Nachbarn der Wolf ist.
+      <div class="example"><b>Beispiel:</b> Wenn der Seher später stirbt oder sich outet, weiß der Empath durch seine vorigen Signale sofort, ob die Leute links oder rechts vom Seher Wölfe sind.</div>
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Eye of the Seer</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Eine Störrolle, die die Vorhersagen der Seherin nach ihrem Tod korrumpiert.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Wirkung</h4>
+      Solange das Eye of the Seer lebt, arbeitet die Seherin normal. Sobald diese Rolle jedoch eliminiert wird, erhält die Seherin ab der nächsten Nacht nur noch falsche Informationen.
+      <h4>Besonderheit</h4>
+      Die Seherin erfährt nicht, dass ihre Visionen nun verfälscht sind. Dies führt oft zu katastrophalen Fehlentscheidungen im Dorf.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Gemini</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Zwei Dorfbewohner, die durch ein unzertrennliches Band verbunden sind.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ablauf</h4>
+      Es gibt immer zwei Gemini. Sie wachen in der ersten Nacht gemeinsam auf und kennen sich gegenseitig als sicher unschuldig (Dorfteam).
+      <h4>Die Verbindung</h4>
+      Stirbt einer der beiden Gemini, stirbt der andere sofort vor Kummer mit.
+      <h4>Strategie</h4>
+      Sie müssen sich gegenseitig schützen, da der Verlust eines Geminis automatisch zwei Dorfbewohner aus dem Spiel nimmt.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Gladys</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Die neugierige Nachbarin, die nachts Aktivitäten in ihrer direkten Nähe spürt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Wird jede Nacht geweckt, nachdem eine Nachbarperson eliminiert wurde oder sich die Sitzordnung geändert hat. Sie erfährt, ob mindestens eine ihrer neuen Nachbarpersonen eine Nachtaktion durchgeführt hat.
+      <h4>Einschränkung</h4>
+      Sie erfährt weder Namen noch die Art der Aktion, nur dass „etwas" passiert ist.
+      <h4>Strategie</h4>
+      Durch das Beobachten von Veränderungen der Sitznachbarn kann sie eingrenzen, wer eine aktive Rolle besitzt.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card neutral-card" data-team="neutral">
+  <div class="role-header">
+    <div class="role-title">Grave Robber</div>
+    <span class="neutral-badge">Neutral</span>
+  </div>
+  <div class="short-desc">Ein neutraler Grabräuber, der beim Sterben die Identität eines anderen stiehlt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ablauf</h4>
+      Startet ohne Team und ohne Fähigkeit. Wenn der Grave Robber eliminiert wird, wird seine Rolle aufgedeckt.
+      <h4>Der Raub</h4>
+      Er wählt sofort eine andere lebende Person. Diese Person wird eliminiert (Todesfähigkeiten des Opfers werden unterdrückt). Der Grave Robber übernimmt deren komplette Rolle und kehrt als diese Person ins Spiel zurück.
+      <h4>Strategie</h4>
+      Er versucht so lange wie möglich zu überleben, um am Ende eine mächtige Rolle (wie einen Werwolf oder die Hexe) zu übernehmen.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Hunter</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein wehrhafter Dorfbewohner, der im Sterben einen letzten Schuss abgibt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ziel der Rolle</h4>
+      Gehört zum Dorfteam. Ziel ist es, Werwölfe zu eliminieren.
+      <h4>Fähigkeit (passiv)</h4>
+      Wenn der Hunter eliminiert wird (egal ob durch die Abstimmung am Tag oder einen Angriff in der Nacht), darf er sofort eine andere Person bestimmen, die mit ihm stirbt.
+      <h4>Besonderheit</h4>
+      Der Hunter muss seine Entscheidung sofort treffen, sobald sein Tod verkündet wird. Sein „Schuss" kann nicht rückgängig gemacht werden.
+      <div class="example"><b>Beispiel:</b> Das Dorf hängt dich am Tag. Bevor du gehst, reißt du den Spieler mit, den du am meisten für einen Wolf hältst.</div>
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Illusionist</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Sabotiert die Wahrnehmung der Seherin dauerhaft.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Der Illusionist hat keine aktive Nachtaktion. Seine Wirkung wird aktiviert, sobald die Seherin ihn zum ersten Mal überprüft.
+      <h4>Der Effekt</h4>
+      Ab dem Moment, in dem die Seherin den Illusionisten scannt, erhält sie für den Rest des Spiels nur noch falsche (invertierte) Informationen.
+      <ul>
+        <li>Werwolf wird als Dorfbewohner angezeigt.</li>
+        <li>Dorfbewohner wird als Werwolf angezeigt.</li>
+      </ul>
+      <h4>Wichtig</h4>
+      Die Seherin merkt nicht, dass ihre Visionen ab jetzt verfälscht sind. Informationen von vor der Entdeckung bleiben korrekt.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card neutral-card" data-team="neutral">
+  <div class="role-header">
+    <div class="role-title">Infected</div>
+    <span class="neutral-badge">Neutral</span>
+  </div>
+  <div class="short-desc">Eine neutrale Bedrohung, die vor dem Ende eliminiert werden muss.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Gewinnbedingung</h4>
+      Der Infected gewinnt indirekt, wenn er bis zum Ende des Spiels überlebt. In diesem Fall verliert das Dorfteam automatisch.
+      <h4>Regeln für Wölfe</h4>
+      Wenn die Werwölfe den Infected nachts töten, dürfen sie in der darauffolgenden Nacht niemanden eliminieren (Strafnacht).
+      <h4>Regeln für das Dorf</h4>
+      Das Dorf muss den Infected finden und hängen, bevor alle Werwölfe tot sind. Sind alle Wölfe weg und der Infected lebt noch, hat das Dorf verloren.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Influencer</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Verstärkt die Stimme des Volkes bei Abstimmungen.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ziel der Rolle</h4>
+      Unterstützt das Dorfteam.
+      <h4>Fähigkeit</h4>
+      Solange der Influencer lebt, gibt es bei jeder Tag-Abstimmung eine zusätzliche „virtuelle" Stimme für die Person, die ohnehin die meisten Stimmen erhalten hat.
+      <h4>Wirkung</h4>
+      Dies macht es einfacher, Mehrheiten zu erzielen und sorgt dafür, dass Unentschieden seltener vorkommen. Stirbt der Influencer, erlischt dieser Effekt.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Innocent</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein Dorfbewohner, dessen Unschuld für die Seherin absolut offensichtlich ist.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Besonderheit</h4>
+      Wenn die Seherin den Innocent überprüft, erhält sie nicht nur „Kein Werwolf", sondern der Moderator gibt ihr ein spezielles Zeichen, das bestätigt: „Dies ist der Innocent".
+      <h4>Strategie</h4>
+      Der Innocent ist für die Seherin die sicherste Vertrauensperson im Spiel, da er niemals durch Effekte wie den Illusionisten oder Lycanthropie verfälscht werden kann.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Insomniac</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein schlafloser Beobachter, der nachts die Augen einen Spalt offen hält.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Der Insomniac darf in jeder Nacht die Augen ganz leicht öffnen (Schlitze), während die Werwölfe oder andere Rollen aktiv sind.
+      <h4>Einschränkung</h4>
+      Er darf den Kopf nicht bewegen und nicht auffallen. Er muss versuchen, Bewegungen oder Lichtveränderungen im Raum wahrzunehmen.
+      <h4>Risiko</h4>
+      Wird er dabei von den aktiven Rollen oder dem Moderator bemerkt, kann dies Konsequenzen haben (je nach Hausregel oft der sofortige Tod).
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Investigator</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein Ermittler, der in der ersten Nacht sein Team durch Beobachtung wählt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ablauf</h4>
+      Wählt in der ersten Nacht drei nebeneinander sitzende Spieler aus.
+      <h4>Team-Zugehörigkeit</h4>
+      <ul>
+        <li><b>Dorfteam:</b> Wenn sich unter den drei gewählten Personen mindestens ein Werwolf befindet.</li>
+        <li><b>Wolfsteam:</b> Wenn keiner der drei ein Werwolf ist. In diesem Fall ist er ein geheimer Unterstützer (wacht nicht mit den Wölfen auf).</li>
+      </ul>
+      <h4>Wichtig</h4>
+      Niemand erfährt, welchem Team der Investigator beigetreten ist, was ihn sehr schwer einschätzbar macht.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Kamikaze Wolf</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Ein gefährlicher Werwolf, der den Seher bei Entdeckung mit in den Tod reißt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Wenn der Seher den Kamikaze Wolf in der Nacht überprüft, stirbt der Kamikaze Wolf sofort – aber er reißt den Seher automatisch mit in den Tod.
+      <h4>Besonderheit</h4>
+      Beide werden am nächsten Morgen als Opfer verkündet. Die Wölfe verlieren ein Mitglied, schalten aber gleichzeitig die wichtigste Informationsquelle des Dorfes aus.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card neutral-card" data-team="neutral">
+  <div class="role-header">
+    <div class="role-title">Mad Destroyer</div>
+    <span class="neutral-badge">Neutral</span>
+  </div>
+  <div class="short-desc">Eine explosive neutrale Rolle, die bei ihrem Tod die Nachbarschaft auslöscht.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Sobald der Mad Destroyer eliminiert wird (Tag oder Nacht), wählt er eine Richtung (links oder rechts).
+      <h4>Wirkung</h4>
+      Es sterben so viele Personen in dieser Richtung, wie zum Zeitpunkt seines Todes noch Werwölfe im Spiel sind, minus eins.
+      <div class="example"><b>Beispiel:</b> Es leben noch 3 Werwölfe. Du stirbst und wählst „rechts". Die nächsten 2 lebenden Spieler rechts von dir sterben sofort mit.</div>
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Magistrate</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein einflussreicher Dorfbewohner, der eine Hinrichtung stoppen kann.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit (einmal pro Spiel)</h4>
+      Darf einmal die Abstimmung am Tag komplett umkehren. Wenn das Dorf jemanden hängen will, kann der Magistrate direkt nach der Stimmenauszählung eingreifen.
+      <h4>Wirkung</h4>
+      Die gewählte Person bleibt am Leben und der Tag endet sofort ohne Hinrichtung. Das ist besonders wertvoll, um geoutete wichtige Rollen wie den Seher zu retten.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Mama Wolf</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Erzeugt einen „falschen" Wolf, um die Seherin zu täuschen.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Wählt in der ersten Nacht eine Person aus, die zum „Lycan" wird.
+      <h4>Wirkung</h4>
+      Diese Person bleibt ein normaler Dorfbewohner, wird aber für alle Rollen, die Wölfe erkennen können (z.B. Seher), als Werwolf angezeigt. Die Mama Wolf erfährt als Einzige, wer dieser Lycan ist.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Masons</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Eine geheime Bruderschaft von Dorfbewohnern, die sich gegenseitig vertrauen.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ablauf</h4>
+      Es gibt immer mindestens zwei Masons. In der ersten Nacht werden sie gemeinsam geweckt und erkennen sich gegenseitig.
+      <h4>Vorteil</h4>
+      Sie bilden eine Gruppe von Spielern, die sicher wissen, dass die anderen Mitglieder keine Werwölfe sind. Das erlaubt ihnen, im Dorf eine vertrauenswürdige Allianz zu bilden und Informationen sicher auszutauschen.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card neutral-card" data-team="neutral">
+  <div class="role-header">
+    <div class="role-title">Master Tanner</div>
+    <span class="neutral-badge">Neutral</span>
+  </div>
+  <div class="short-desc">Ein zweistufiger Außenseiter, der erst überleben und dann sterben muss.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Phase 1: Überleben</h4>
+      Der Master Tanner muss eine bestimmte Anzahl an Tagen (z. B. bis Tag 4) überleben, um zum „Master" zu werden. In dieser Zeit spielt er unauffällig wie ein Dorfbewohner.
+      <h4>Phase 2: Gewinnbedingung</h4>
+      Sobald er die Zeit überlebt hat, gewinnt er nur dann, wenn er ab diesem Moment vom Dorf hingerichtet wird.
+      <h4>Besonderheit (Apprentice)</h4>
+      Stirbt er zu früh, darf er einen Dorfbewohner zum „Apprentice Tanner" (Lehrling) ernennen. Wenn dieser später im Spiel (nach der Frist) stirbt, gewinnen beide gemeinsam.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card neutral-card" data-team="neutral">
+  <div class="role-header">
+    <div class="role-title">Matchmaker</div>
+    <span class="neutral-badge">Neutral</span>
+  </div>
+  <div class="short-desc">Verknüpft Schicksale und verhindert das Spielende, solange er lebt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Wählt jede Nacht eine festgelegte Anzahl an Spielern aus, die miteinander verbunden werden.
+      <h4>Wirkung der Verbindung</h4>
+      Stirbt eine der verbundenen Personen am nächsten Tag oder in der folgenden Nacht, sterben alle anderen verknüpften Spieler sofort mit.
+      <h4>Gewinnbedingung</h4>
+      Er gewinnt, wenn er unter den letzten drei Spielern im Spiel ist. Solange er lebt, kann kein Team (Dorf oder Wölfe) den Sieg erringen.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Mountain Wolf</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Ein Werwolf, der den Seher in einer Gruppe von Spielern aufspüren kann.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit (Erste Nacht)</h4>
+      Darf eine Gruppe von Spielern auswählen. Der Moderator gibt ihm ein Zeichen:
+      <ul>
+        <li><b>Daumen hoch:</b> Der Seher befindet sich in dieser Gruppe.</li>
+        <li><b>Daumen runter:</b> Der Seher ist nicht unter diesen Personen.</li>
+      </ul>
+      <h4>Wichtig</h4>
+      Er erfährt nicht, wer genau der Seher ist, nur ob er Teil der gewählten Gruppe ist. Dies hilft den Wölfen, die Suche frühzeitig einzugrenzen.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Mummer</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein Manipulator, der die Stimme eines anderen Spielers kontrolliert.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Wählt jede Nacht eine Person aus, die „hypnotisiert" wird.
+      <h4>Wirkung</h4>
+      Die hypnotisierte Person muss am darauffolgenden Tag bei der Abstimmung genau so stimmen wie der Mummer. Weicht sie ab, korrigiert der Moderator ihre Stimme öffentlich.
+      <h4>Einschränkung</h4>
+      Darf nicht zweimal hintereinander dieselbe Person wählen. Die Hypnose gilt immer nur für einen Tag.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Mystery Wolf</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Ein getarnter Werwolf, der für den Seher als einfacher Dorfbewohner erscheint.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Besonderheit</h4>
+      Der Mystery Wolf wacht nachts mit den anderen Wölfen auf und hilft bei der Opferwahl. Er ist jedoch immun gegen die Untersuchung des Sehers.
+      <h4>Wirkung</h4>
+      Wenn der Seher den Mystery Wolf überprüft, zeigt der Moderator „Kein Werwolf" (Daumen runter). Er ist somit der perfekte Spion innerhalb des Dorfes.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Mystic Wolf</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Ein seherischer Werwolf, der jede Nacht eine genaue Rolle überprüfen kann.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Wacht jede Nacht zusätzlich alleine auf und wählt eine Person aus. Der Moderator zeigt ihm daraufhin die exakte Rollenkarte dieser Person.
+      <h4>Strategie</h4>
+      Im Gegensatz zum normalen Seher oder anderen Wölfen erhält er die volle Information über Spezialrollen (z. B. Hexe, Bodyguard oder Hunter), was ihn extrem gefährlich macht.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card neutral-card" data-team="neutral">
+  <div class="role-header">
+    <div class="role-title">Nosferatu</div>
+    <span class="neutral-badge">Neutral</span>
+  </div>
+  <div class="short-desc">Ein neutraler Vampir, der Spieler durch Markierungen in den Abgrund reißt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ziel der Rolle</h4>
+      Nosferatu gewinnt, wenn er unter den letzten drei Spielern ist. Kein anderes Team kann gewinnen, solange er lebt.
+      <h4>Fähigkeit</h4>
+      Wählt jede Nacht eine Anzahl an Spielern aus (Anzahl der aktuellen Wölfe minus 1). Diese Personen werden heimlich markiert.
+      <h4>Der Effekt</h4>
+      Wenn eine markierte Person am nächsten Tag zum zweiten Mal nominiert wird, stirbt sie sofort automatisch, ohne dass eine normale Abstimmung nötig ist.
+      <h4>Besonderheit</h4>
+      Er kann von Werwölfen eliminiert werden. Wenn er den letzten Werwolf markiert, passiert nichts, um das Spielende nicht zu erzwingen.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Oracle</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Eine Informationsquelle des Dorfes, die einmalig die volle Wahrheit erfährt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ziel der Rolle</h4>
+      Unterstützt das Dorfteam durch gezielte Spionage.
+      <h4>Fähigkeit (einmal pro Spiel)</h4>
+      Darf in einer beliebigen Nacht eine Person auswählen. Der Moderator zeigt dem Oracle daraufhin die exakte Rollenkarte dieser Person (nicht nur „Wolf" oder „Mensch").
+      <h4>Strategie</h4>
+      Da die Fähigkeit nur einmal einsetzbar ist, muss das Oracle den perfekten Moment abwarten, um eine Schlüsselrolle (wie den Seher oder einen verdächtigen Wolf) zu bestätigen.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Oracle Wolf</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Ein seherischer Werwolf, der die Rollenverteilung im Dorf analysiert.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Wacht jede Nacht mit den Wölfen auf. Zusätzlich darf er in der ersten Nacht eine Gruppe von Spielern wählen.
+      <h4>Information</h4>
+      Der Moderator gibt ihm ein Zeichen, wie viele Spezialrollen (Rollen mit aktiven Nachtfähigkeiten) sich in dieser Gruppe befinden.
+      <h4>Strategie</h4>
+      Hilft dem Wolfsteam dabei, Gebiete im Dorf zu identifizieren, in denen sich gefährliche Gegner wie die Hexe oder der Bodyguard verstecken.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Outcast</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein verstoßener Dorfbewohner, der nach seinem Tod das Team wechselt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ablauf</h4>
+      Beginnt als normaler Dorfbewohner. Wenn der Outcast vom Dorf hingerichtet wird, stirbt er nicht sofort im herkömmlichen Sinne.
+      <h4>Der Verrat</h4>
+      Er wird aus dem Dorf verstoßen und schließt sich ab der nächsten Nacht dem Wolfsteam an. Er erfährt nun, wer die Wölfe sind, und gewinnt ab sofort nur noch mit den Werwölfen.
+      <h4>Wichtig</h4>
+      Wird er nachts von den Wölfen gefressen, stirbt er ganz normal und bleibt im Dorfteam. Nur die Hinrichtung durch das Dorf löst den Teamwechsel aus.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Outsider Wolf</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Ein einsamer Werwolf, der erst später zum Rudel findet.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Besonderheit</h4>
+      In der ersten Nacht wacht der Outsider Wolf nicht mit den anderen Werwölfen auf. Er kennt sie nicht und sie kennen ihn nicht.
+      <h4>Ablauf</h4>
+      Er wird erst in der Nacht aktiv, in der der erste andere Werwolf stirbt. Ab diesem Moment wird er vom Moderator geweckt, erfährt wer die restlichen Wölfe sind und agiert als vollwertiges Mitglied des Rudels.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Pet Wolf</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Der loyale „Haustier-Wolf", der seine Identität erst spät preisgibt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Tarnung</h4>
+      Solange mindestens zwei andere Werwölfe am Leben sind, wird der Pet Wolf vom Seher als „Dorfbewohner" erkannt.
+      <h4>Erwachen</h4>
+      Er wacht jede Nacht mit den Wölfen auf und kennt sein Team von Anfang an. Sobald jedoch nur noch ein oder kein anderer Wolf mehr lebt, verliert er seine Tarnung und wird für den Seher als Werwolf sichtbar.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Reactive Seer</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein Ersatz-Seher, der nur aktiv wird, wenn das Dorf Unschuldige hinrichtet.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Bedingung</h4>
+      Der Reactive Seer besitzt nur dann eine Fähigkeit, wenn kein anderer Seher (normaler Seer, Aura Seer etc.) im Spiel ist. Ansonsten agiert er als normaler Dorfbewohner.
+      <h4>Fähigkeit</h4>
+      Seine Seher-Kraft wird nur in der Nacht nach einer Fehlentscheidung des Dorfes aktiviert. Wenn am Tag ein Mitglied des Dorfteams hingerichtet wurde, darf er nachts eine Person überprüfen.
+      <h4>Information</h4>
+      Der Moderator gibt ihm ein Zeichen: Daumen hoch für einen Werwolf, Daumen runter für kein Werwolf.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Reanimator</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein Heiler des Dorfes, der einmalig einen Verstorbenen zurückholen kann.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ziel der Rolle</h4>
+      Gehört zum Dorfteam und versucht, wichtige Mitspieler zu retten.
+      <h4>Fähigkeit (einmal pro Spiel)</h4>
+      Darf in einer beliebigen Nacht eine bereits eliminierte Person auswählen.
+      <h4>Wirkung</h4>
+      Diese Person wird „reanimiert" und kehrt mit ihrer ursprünglichen Rolle und all ihren Fähigkeiten (sofern noch nicht verbraucht) ins Spiel zurück. Dies kann das Blatt wenden, wenn eine Schlüsselrolle wie der Seher oder die Hexe wiederkehrt.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Reviler</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein rachsüchtiger Dorfbewohner, der nach seinem Tod jemanden verstummen lässt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit (nach dem Tod)</h4>
+      Sobald der Reviler eliminiert wird, darf er eine Person bestimmen.
+      <h4>Wirkung</h4>
+      Die gewählte Person ist für den Rest des Spiels „verflucht": Sie darf bei Abstimmungen nicht mehr mitzählen und keine aktiven Nachtfähigkeiten mehr einsetzen. Der Reviler nimmt so auch nach seinem Ausscheiden Einfluss auf die Dynamik.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card neutral-card" data-team="neutral">
+  <div class="role-header">
+    <div class="role-title">Savant</div>
+    <span class="neutral-badge">Neutral</span>
+  </div>
+  <div class="short-desc">Ein allwissender Außenseiter, der Dorfbewohner opfert, um zu gewinnen.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Wissen</h4>
+      In der ersten Nacht erfährt der Savant die exakten Rollen aller Mitspieler.
+      <h4>Fähigkeit</h4>
+      Jede Nacht darf er eine bestimmte Anzahl an normalen Dorfbewohnern eliminieren (Anzahl der Werwölfe minus 2).
+      <h4>Gewinnbedingung</h4>
+      Er ist eine neutrale Rolle und gewinnt, wenn er bis zum Ende überlebt oder nur noch 3 Spieler (einschließlich ihm selbst) übrig sind.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Seher</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Die wichtigste Informationsquelle des Dorfes zur Identifizierung von Wölfen.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Wacht jede Nacht auf und überprüft eine Person.
+      <h4>Information</h4>
+      Der Moderator zeigt „Daumen hoch" für einen Werwolf oder „Daumen runter" für „kein Werwolf".
+      <h4>Einschränkung</h4>
+      Der Seer kann nicht zwischen normalen Dorfbewohnern und neutralen oder Spezialrollen unterscheiden; alle erscheinen als „kein Werwolf".
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Soothsayer</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein Wahrsager, der in der ersten Nacht die Team-Zugehörigkeit zweier Spieler prüft.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit (Erste Nacht)</h4>
+      Wacht in der ersten Nacht auf und darf zwei beliebige Mitspieler auswählen. Der Moderator gibt ein Zeichen:
+      <ul>
+        <li><b>Ja:</b> Beide Spieler gehören zum gleichen Team (beide Dorf oder beide Wölfe).</li>
+        <li><b>Nein:</b> Die Spieler gehören zu unterschiedlichen Teams.</li>
+      </ul>
+      <h4>Besonderheiten</h4>
+      Der Soothsayer darf sich nicht selbst auswählen. Ein Lycan wird bei dieser Prüfung als Teil des Wolfsteams gewertet, was die Information verfälschen kann.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Sorceress</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Eine Verbündete der Wölfe, die jede Nacht nach dem Seher sucht.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ziel der Rolle</h4>
+      Arbeitet für das Werwolf-Team. Ihr Ziel ist es, den Seher zu entdecken und den Wölfen indirekt zu helfen.
+      <h4>Fähigkeit</h4>
+      Wacht jede Nacht auf und überprüft eine Person. Der Moderator zeigt:
+      <ul>
+        <li><b>Daumen hoch:</b> Die Person ist der Seher.</li>
+        <li><b>Daumen runter:</b> Die Person ist nicht der Seher.</li>
+      </ul>
+      <h4>Besonderheit</h4>
+      Die Sorceress kennt die Werwölfe zu Beginn nicht und die Wölfe kennen sie nicht. Sie arbeitet verdeckt und muss ihre Informationen vorsichtig einfließen lassen.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Sorcerer Wolf</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Ein Werwolf, der den Seher des Dorfes aktiv aufspürt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Solange noch kein Werwolf gestorben ist, wacht er jede Nacht zusätzlich allein auf und sucht nach dem Seher. Er erhält vom Moderator ein Ja/Nein-Signal für die gewählte Person.
+      <h4>Besonderheit</h4>
+      Sobald der erste Werwolf eliminiert wird, verliert er diese Suchfähigkeit und wird zu einem normalen Werwolf.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Spawn</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Ein verborgener Verbündeter, der zum Werwolf wird, wenn das Rudel fällt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Besonderheit</h4>
+      Solange noch andere Werwölfe im Spiel sind, wird der Spawn vom Seher als „kein Werwolf" erkannt und wacht nachts nicht mit ihnen auf. Er ist ein „schlafender" Wolf.
+      <h4>Transformation</h4>
+      Sobald alle echten Werwölfe eliminiert wurden, verwandelt sich der Spawn sofort in einen vollwertigen Werwolf. Er übernimmt ab dann die nächtlichen Angriffe, was das Dorf oft völlig unvorbereitet trifft.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Spellcaster</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein Dorfbewohner, der Mitspieler mit einem Schweigezauber belegt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Wacht jede Nacht auf und wählt einen Spieler aus, der mit einem Zauber belegt wird.
+      <h4>Wirkung</h4>
+      Die gewählte Person darf am gesamten folgenden Tag kein einziges Wort sprechen. Sie darf zwar an der Abstimmung teilnehmen, kann sich aber nicht verteidigen oder andere beschuldigen.
+      <h4>Einschränkung</h4>
+      Der Spellcaster darf nicht zweimal hintereinander dieselbe Person zum Schweigen bringen.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Spy</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein dörflicher Spion, der jede Nacht die Teamzugehörigkeit prüft.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Wacht jede Nacht auf und überprüft eine Person.
+      <h4>Information</h4>
+      Der Moderator zeigt dem Spy, ob die Person zum Dorfteam oder zum Wolfsteam gehört. Im Gegensatz zum Seher erkennt der Spy auch Werwolf-Unterstützer (wie die Sorceress), die nicht direkt Werwölfe sind, als Teil des Wolfsteams.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Starving Wolf</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Ein gieriger Werwolf, der ein zweites Mal zuschlägt, wenn er isoliert ist.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Spezialfähigkeit</h4>
+      Wenn der Starving Wolf der einzige verbliebene Werwolf im Spiel ist, darf er in jeder Nacht zwei Opfer statt nur einem auswählen.
+      <h4>Gefahr</h4>
+      Diese Rolle macht das Wolfsteam gegen Ende des Spiels extrem gefährlich, da er die Anzahl der Dorfbewohner doppelt so schnell reduzieren kann, um die Parität zu erzwingen.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card neutral-card" data-team="neutral">
+  <div class="role-header">
+    <div class="role-title">Tanner</div>
+    <span class="neutral-badge">Neutral</span>
+  </div>
+  <div class="short-desc">Der lebensmüde Gerber, der nur gewinnt, wenn er hingerichtet wird.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Gewinnbedingung</h4>
+      Der Tanner hasst sein Leben und gewinnt das Spiel nur dann, wenn er vom Dorf am Tag hingerichtet wird. Stirbt er nachts durch die Wölfe oder eine andere Fähigkeit, hat er verloren.
+      <h4>Strategie</h4>
+      Er muss sich so verdächtig verhalten, dass das Dorf ihn für einen Wolf hält, aber nicht so offensichtlich, dass sie seinen Plan durchschauen. Wenn der Tanner gewinnt, haben alle anderen Teams (Dorf und Wölfe) verloren.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">The Cloak</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein getarnter Dorfbewohner, dessen wahre Rolle erst spät enthüllt wird.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Besonderheit</h4>
+      Wenn der Cloak stirbt oder vom Seher überprüft wird, erscheint er immer nur als einfacher „Dorfbewohner" (Villager).
+      <h4>Ablauf</h4>
+      In der ersten Nacht wählt der Moderator eine andere, nicht im Spiel befindliche Spezialrolle für den Cloak aus. Der Cloak erfährt diese Rolle erst, wenn eine bestimmte Bedingung erfüllt ist (z. B. nach drei Nächten oder wenn eine bestimmte Person stirbt). Bis dahin bleibt er völlig im Dunkeln über seine eigentliche Macht.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Tough Girl</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Eine widerstandsfähige Dorfbewohnerin, die einen nächtlichen Angriff überlebt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Das Tough Girl ist besonders zäh. Wenn sie in der Nacht von den Werwölfen angegriffen wird, stirbt sie nicht sofort.
+      <h4>Ablauf</h4>
+      Sie überlebt die Nacht des Angriffs und den darauffolgenden Tag. Erst in der darauffolgenden Nacht erliegt sie ihren Verletzungen und scheidet aus dem Spiel aus.
+      <h4>Vorteil</h4>
+      Dies gibt ihr einen zusätzlichen Tag Zeit, um ihre Beobachtungen mit dem Dorf zu teilen oder eine wichtige Stimme bei der Hinrichtung abzugeben.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card neutral-card" data-team="neutral">
+  <div class="role-header">
+    <div class="role-title">Vanillacabra</div>
+    <span class="neutral-badge">Neutral</span>
+  </div>
+  <div class="short-desc">Ein neutraler Jäger, der gezielt „einfache" Rollen ohne Spezialfähigkeiten eliminiert.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ziel der Rolle</h4>
+      Neutraler Einzelgänger. Gewinnt, wenn sie unter den letzten drei Spielern ist.
+      <h4>Fähigkeit</h4>
+      Wählt jede Nacht eine bestimmte Anzahl an Spielern aus (Anzahl der Werwölfe minus 1).
+      <h4>Wirkung</h4>
+      Nur Spieler OHNE Spezialfähigkeiten (normale Dorfbewohner oder einfache Werwölfe) werden eliminiert. Spieler mit Sonderrollen (Seher, Hexe etc.) überleben den Angriff unbeschadet.
+      <h4>Besonderheit</h4>
+      Wenn sie den letzten Werwolf auswählt, passiert nichts, um das Spiel nicht vorzeitig zu beenden.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Villager</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Der klassische Dorfbewohner ohne Sonderkraft, aber mit der Macht der Stimme.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Aufgabe</h4>
+      Der Villager hat keine Nachtaktion. Seine Stärke liegt in der Diskussion und der Abstimmung am Tag.
+      <h4>Bedeutung</h4>
+      Obwohl er keine „Magie" besitzt, bildet er das Rückgrat des Dorfes. Durch logisches Kombinieren und Beobachten des Verhaltens anderer muss er versuchen, die Werwölfe zu entlarven. Ein geschickter Villager kann für die Wölfe gefährlicher sein als eine unvorsichtige Spezialrolle.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Village Idiot</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein Dorfbewohner, dessen Stimme bei Unentschieden immer den Ausschlag gibt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Der Village Idiot hat eine passive, aber entscheidende Kraft bei der Tagabstimmung.
+      <h4>Wirkung</h4>
+      Sollte es bei einer Abstimmung zu einem Gleichstand kommen, wird die Person hingerichtet, für die der Village Idiot gestimmt hat. Seine Stimme zählt in diesem speziellen Fall also doppelt bzw. als „Tie-Breaker". Er sorgt dafür, dass das Dorf immer eine Entscheidung trifft.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Warlock</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Ein dunkler Magier auf der Seite der Wölfe, der den Seher verfluchen kann.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit</h4>
+      Wählt jede Nacht eine Person aus. Wenn er dabei den Seher (Seer) trifft, wird dieser verflucht.
+      <h4>Effekt</h4>
+      Der verfluchte Seer erhält ab der nächsten Nacht nur noch falsche Informationen vom Moderator (ein „Werwolf" wird als „kein Werwolf" angezeigt und umgekehrt). Der Warlock ist somit der perfekte Gegenspieler zur wichtigsten Informationsrolle des Dorfes.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Werwolf</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Die klassische antagonistische Rolle, die jede Nacht ein Opfer fordert.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Ablauf</h4>
+      Wacht jede Nacht gemeinsam mit den anderen Werwölfen auf. Das Rudel einigt sich lautlos auf einen Spieler, der eliminiert werden soll.
+      <h4>Ziel</h4>
+      Die Werwölfe gewinnen, wenn sie die Parität erreichen (genauso viele oder mehr Wölfe wie Dorfbewohner im Spiel). Tagsüber müssen sie sich als normale Dorfbewohner tarnen und den Verdacht von sich ablenken.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Wise Old Man</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Ein Mentor des Dorfes, der alle Spezialrollen kennt, aber bald vor Altersschwäche stirbt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit (Erste Nacht)</h4>
+      Der Moderator zeigt dem Wise Old Man alle Spieler, die eine Spezialrolle im Dorfteam haben (z. B. Seher, Hexe, Bodyguard). Er erfährt jedoch nicht, wer welche spezifische Rolle hat.
+      <h4>Der Fluch der Zeit</h4>
+      Er stirbt automatisch nach dem zweiten Tag (am Ende der zweiten Nacht) aufgrund seines hohen Alters, egal ob er angegriffen wurde oder nicht.
+      <h4>Vermächtnis</h4>
+      Sollten die Werwölfe ihn vor seinem natürlichen Tod töten, erhält der Seher in dieser Nacht eine zusätzliche Untersuchung als Bonus.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card" data-team="village">
+  <div class="role-header">
+    <div class="role-title">Witch</div>
+    <span class="village-badge">Dorf</span>
+  </div>
+  <div class="short-desc">Eine mächtige Verbündete des Dorfes mit der Macht über Leben und Tod.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Fähigkeit (einmal pro Spiel)</h4>
+      Die Hexe erfährt jede Nacht vom Moderator, wer das Opfer der Werwölfe ist. Sie hat dann zwei Optionen:
+      <ul>
+        <li><b>Retten:</b> Sie heilt das Opfer, sodass in dieser Nacht niemand stirbt.</li>
+        <li><b>Töten:</b> Sie bestimmt eine zusätzliche Person, die sofort eliminiert wird.</li>
+      </ul>
+      <h4>Einschränkung</h4>
+      Sobald sie eine der beiden Aktionen (Heilen oder Töten) genutzt hat, verliert sie ihre Zauberkraft für den Rest des Spiels und erfährt nachts nicht mehr, wer angegriffen wird.
+    </div>
+  </details>
+ </div>
+
+ <div class="role-card wolf-card" data-team="wolf">
+  <div class="role-header">
+    <div class="role-title">Wolf Cub</div>
+    <span class="wolf-badge">Wolf</span>
+  </div>
+  <div class="short-desc">Ein junger Werwolf, dessen Tod das Rudel in rasende Wut versetzt.</div>
+  <details>
+    <summary>Mehr anzeigen</summary>
+    <div class="full-content">
+      <h4>Besonderheit</h4>
+      Er agiert nachts wie ein normaler Werwolf. Das Besondere geschieht jedoch, wenn der Wolf Cub stirbt (egal ob durch Hinrichtung oder eine Fähigkeit).
+      <h4>Rache-Effekt</h4>
+      In der Nacht, die auf seinen Tod folgt, sind die verbliebenen Werwölfe so voller Zorn, dass sie zwei Opfer statt nur einem auswählen dürfen. Dies kann das Dorf extrem schwächen.
+    </div>
+  </details>
+ </div>
+
+</div><!-- .role-grid -->
+
+<footer>
+  <p>Basiert auf den Dokumentationen zu Ultimate Werewolf.</p>
+  <p style="margin-top:8px;">Created by <span>AHITS 2025/26</span> — Tobias Strobl · Felix Resch · Alessandro Strasser · Maxi Joszt</p>
+</footer>
+
+<script>
+/* ============================================================
+   SEARCH + FILTER
+============================================================ */
+let activeFilter = 'all';
+
+function setFilter(team) {
+  activeFilter = team;
+  // Update button states
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('filter' + team.charAt(0).toUpperCase() + team.slice(1)).classList.add('active');
+  filterCards();
+}
+
+function filterCards() {
+  const query = document.getElementById('searchInput').value.toLowerCase().trim();
+  document.querySelectorAll('.role-card').forEach(card => {
+    const team    = card.dataset.team || '';
+    const text    = card.innerText.toLowerCase();
+    const teamOk  = activeFilter === 'all' || team === activeFilter;
+    const searchOk = !query || text.includes(query);
+    card.classList.toggle('hidden', !(teamOk && searchOk));
+  });
+}
+
+/* Staggered card animation on load */
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.role-card').forEach((card, i) => {
+    card.style.animationDelay = (i * 0.03) + 's';
+  });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,2645 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Werwolf – Spielfeld</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+:root {
+  --gold:#d4a843; --gold-light:#f0c96a; --red:#dc2626; --red-dark:#7f1d1d;
+  --green:#16a34a; --blue:#2563eb;
+  --glass-night:rgba(255,255,255,0.06); --border-night:rgba(255,255,255,0.12);
+  --text-night:#f8fafc; --shadow:0 25px 60px rgba(0,0,0,0.6);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Crimson Pro',Georgia,serif;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;transition:background 1.4s;color:var(--text-night)}
+body.night{background:radial-gradient(ellipse at 20% 0%,#1e1b4b 0%,#020617 40%,#0f0a00 100%)}
+body.day{background:radial-gradient(ellipse at 80% 0%,#0ea5e9 0%,#0c4a6e 40%,#082f49 100%)}
+body.transition-overlay::after{content:'';position:fixed;inset:0;z-index:9999;background:#000;animation:fadeInOut 1.2s ease forwards}
+@keyframes fadeInOut{0%{opacity:0}40%{opacity:1}100%{opacity:0}}
+.stars{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(1px 1px at 10% 15%,rgba(255,255,255,.8) 0%,transparent 100%),radial-gradient(1px 1px at 25% 40%,rgba(255,255,255,.5) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 40% 8%,rgba(255,255,255,.9) 0%,transparent 100%),radial-gradient(1px 1px at 55% 30%,rgba(255,255,255,.6) 0%,transparent 100%),radial-gradient(1px 1px at 70% 18%,rgba(255,255,255,.7) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 85% 5%,rgba(255,255,255,.8) 0%,transparent 100%),radial-gradient(1px 1px at 92% 45%,rgba(255,255,255,.5) 0%,transparent 100%),radial-gradient(1px 1px at 15% 65%,rgba(255,255,255,.4) 0%,transparent 100%),radial-gradient(1px 1px at 60% 55%,rgba(255,255,255,.6) 0%,transparent 100%),radial-gradient(1px 1px at 78% 70%,rgba(255,255,255,.3) 0%,transparent 100%),radial-gradient(1px 1px at 32% 80%,rgba(255,255,255,.5) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 50% 90%,rgba(255,255,255,.4) 0%,transparent 100%);opacity:1;transition:opacity 1.4s}
+body.day .stars{opacity:0}
+ 
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:12px 20px;backdrop-filter:blur(20px);background:rgba(0,0,0,.45);border-bottom:1px solid rgba(255,255,255,.1);gap:10px;flex-wrap:wrap}
+.phase-badge{display:flex;align-items:center;gap:10px;font-family:'Cinzel',serif;font-size:1rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold-light);text-shadow:0 0 20px rgba(212,168,67,.6)}
+.phase-icon{font-size:1.5rem;animation:pulsate 3s ease-in-out infinite}
+@keyframes pulsate{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.stats-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.stat-chip{padding:5px 12px;border-radius:20px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);font-family:'Cinzel',serif;font-size:0.72rem;font-weight:600;letter-spacing:1px;color:#e2e8f0;white-space:nowrap}
+.stat-chip.wolves{color:#fca5a5;border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.1)}
+.stat-chip.alive{color:#86efac;border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.1)}
+.stat-chip.night-c{color:var(--gold-light);border-color:rgba(212,168,67,.4);background:rgba(212,168,67,.1)}
+.topbar-actions{display:flex;gap:6px;flex-wrap:wrap}
+.btn-tiny{padding:6px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#e2e8f0;font-family:'Cinzel',serif;font-size:0.7rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-tiny:hover{background:rgba(255,255,255,.18);transform:translateY(-1px)}
+.btn-tiny.danger{border-color:rgba(220,38,38,.5);color:#fca5a5;background:rgba(220,38,38,.1)}
+.btn-tiny.danger:hover{background:rgba(220,38,38,.25)}
+.btn-tiny.gold{border-color:rgba(212,168,67,.5);color:var(--gold-light);background:rgba(212,168,67,.1)}
+.btn-tiny.gold:hover{background:rgba(212,168,67,.25)}
+.btn-tiny.green-btn{border-color:rgba(34,197,94,.5);color:#86efac;background:rgba(34,197,94,.1)}
+.btn-tiny.green-btn:hover{background:rgba(34,197,94,.25)}
+.btn-tiny.purple-btn{border-color:rgba(168,85,247,.5);color:#d8b4fe;background:rgba(168,85,247,.1)}
+.btn-tiny.purple-btn:hover{background:rgba(168,85,247,.25)}
+.btn-tiny:disabled{opacity:.4;cursor:not-allowed;transform:none}
+ 
+/* MAIN */
+.game-wrap{flex:1;max-width:1100px;width:100%;margin:0 auto;padding:24px 16px 20px;position:relative;z-index:1}
+.instruction-card{background:rgba(0,0,0,.35);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:24px 28px;text-align:center;margin-bottom:22px;box-shadow:var(--shadow);animation:slideUp .5s ease-out;position:relative;overflow:hidden}
+.instruction-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.instruction-card h2{font-family:'Cinzel Decorative',serif;font-size:1.4rem;font-weight:700;color:var(--gold-light);text-shadow:0 0 30px rgba(212,168,67,.5);margin-bottom:8px;letter-spacing:1px}
+.instruction-card p{font-size:1rem;color:rgba(255,255,255,.75);font-style:italic}
+.role-tag{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-family:'Cinzel',serif;font-size:0.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.role-tag.wolf{background:rgba(220,38,38,.2);border:1px solid rgba(220,38,38,.5);color:#fca5a5}
+.role-tag.village{background:rgba(34,197,94,.2);border:1px solid rgba(34,197,94,.5);color:#86efac}
+.role-tag.neutral{background:rgba(168,85,247,.2);border:1px solid rgba(168,85,247,.5);color:#d8b4fe}
+.role-tag.special{background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.4);color:var(--gold-light)}
+ 
+/* PLAYER GRID */
+.player-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:22px;animation:slideUp .5s ease-out .1s both}
+.player-card{background:rgba(255,255,255,.05);backdrop-filter:blur(10px);border:1.5px solid rgba(255,255,255,.12);border-radius:18px;padding:18px 12px 14px;text-align:center;cursor:pointer;transition:all .25s cubic-bezier(.175,.885,.32,1.275);position:relative;min-width:130px;max-width:155px;flex:1 1 130px;user-select:none}
+.player-card:hover:not(.dead):not(.no-click){transform:scale(1.06) translateY(-4px);background:rgba(255,255,255,.12);border-color:var(--gold);box-shadow:0 12px 30px rgba(0,0,0,.5),0 0 20px rgba(212,168,67,.2)}
+.player-card.selected{border-color:var(--gold-light)!important;background:rgba(212,168,67,.15)!important;box-shadow:0 0 25px rgba(212,168,67,.4),0 12px 30px rgba(0,0,0,.4);transform:scale(1.04) translateY(-2px)}
+.player-card.voted{border-color:#ef4444!important;background:rgba(239,68,68,.12)!important}
+.player-card.dead{opacity:.22;filter:grayscale(1) blur(.5px);pointer-events:none;border-color:rgba(255,255,255,.05)!important}
+.player-card.no-click{cursor:default}
+.vote-badge{position:absolute;top:-8px;right:-8px;width:26px;height:26px;border-radius:50%;background:#dc2626;border:2px solid rgba(0,0,0,.5);color:white;font-family:'Cinzel',serif;font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;animation:popIn .3s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes popIn{from{transform:scale(0)}to{transform:scale(1)}}
+.shield-badge{position:absolute;top:-8px;left:-8px;font-size:1.1rem;animation:popIn .3s ease}
+.avatar-circle{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1e3a5f,#0f172a);border:2px solid rgba(212,168,67,.4);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-family:'Cinzel Decorative',serif;font-size:1.2rem;font-weight:700;color:var(--gold-light);box-shadow:0 4px 12px rgba(0,0,0,.4);transition:all .3s}
+.player-card:hover:not(.dead) .avatar-circle{border-color:var(--gold-light);box-shadow:0 4px 20px rgba(212,168,67,.3)}
+.player-card.selected .avatar-circle{border-color:var(--gold-light);background:linear-gradient(135deg,#2d1b00,#1a1000);box-shadow:0 0 16px rgba(212,168,67,.5)}
+.player-name{font-family:'Cinzel',serif;font-size:.8rem;font-weight:600;letter-spacing:.5px;color:#e2e8f0;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.player-role-hint{font-size:.7rem;color:rgba(255,255,255,.35);font-style:italic}
+.action-card{background:rgba(255,255,255,.05);backdrop-filter:blur(10px);border:1.5px solid rgba(255,255,255,.12);border-radius:18px;padding:18px 12px 14px;text-align:center;cursor:pointer;transition:all .25s cubic-bezier(.175,.885,.32,1.275);min-width:130px;max-width:155px;flex:1 1 130px}
+.action-card:hover{transform:scale(1.06) translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.5)}
+ 
+/* VOTE */
+.vote-section{background:rgba(0,0,0,.3);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px 20px;margin-bottom:18px;animation:slideUp .4s ease-out}
+.vote-section h3{font-family:'Cinzel',serif;font-size:.85rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.vote-tally{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.vote-entry{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:10px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);font-size:.85rem}
+.vote-entry .ve-name{font-family:'Cinzel',serif;font-size:.75rem;font-weight:600;color:#fca5a5}
+.vote-entry .ve-count{font-family:'Cinzel',serif;font-size:.88rem;font-weight:700;color:#ef4444}
+.vote-buttons{display:flex;gap:10px;flex-wrap:wrap}
+.btn-vote-confirm{padding:9px 20px;border-radius:12px;border:1px solid rgba(220,38,38,.5);background:rgba(220,38,38,.2);color:#fca5a5;font-family:'Cinzel',serif;font-size:.8rem;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s}
+.btn-vote-confirm:hover{background:rgba(220,38,38,.4);transform:translateY(-1px)}
+.btn-vote-confirm:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.btn-vote-clear{padding:9px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);font-family:'Cinzel',serif;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-vote-clear:hover{background:rgba(255,255,255,.12)}
+.btn-vote-skip{padding:9px 16px;border-radius:12px;border:1px solid rgba(212,168,67,.35);background:rgba(212,168,67,.08);color:var(--gold-light);font-family:'Cinzel',serif;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-vote-skip:hover{background:rgba(212,168,67,.2)}
+ 
+/* DAY ACTIONS BAR */
+.day-actions{background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;animation:slideUp .3s ease}
+.day-actions-label{font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-right:4px;white-space:nowrap}
+.btn-day-action{padding:8px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#e2e8f0;font-family:'Cinzel',serif;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-day-action:hover{background:rgba(255,255,255,.14);transform:translateY(-1px)}
+.btn-day-action:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.btn-day-action.used{opacity:.25;cursor:not-allowed;text-decoration:line-through}
+ 
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(8px);animation:modalFadeIn .25s ease}
+.modal-overlay.active{display:flex}
+@keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
+.modal-card{background:#0f172a;border:1px solid rgba(212,168,67,.3);border-radius:24px;padding:36px 30px;width:100%;max-width:500px;text-align:center;box-shadow:0 0 80px rgba(0,0,0,.8),0 0 40px rgba(212,168,67,.1);animation:modalSlideIn .35s cubic-bezier(.175,.885,.32,1.275);position:relative;overflow:hidden}
+.modal-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+@keyframes modalSlideIn{from{opacity:0;transform:scale(.88) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-icon{font-size:3.5rem;margin-bottom:10px;line-height:1}
+.modal-label{font-family:'Cinzel',serif;font-size:.75rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:5px}
+.modal-title{font-family:'Cinzel Decorative',serif;font-size:1.4rem;font-weight:700;color:var(--gold-light);text-shadow:0 0 30px rgba(212,168,67,.5);margin-bottom:14px;line-height:1.2}
+.modal-body{font-size:.95rem;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:24px;max-height:48vh;overflow-y:auto;text-align:left}
+.modal-body::-webkit-scrollbar{width:4px}
+.modal-body::-webkit-scrollbar-thumb{background:rgba(212,168,67,.4);border-radius:4px}
+.modal-btn{width:100%;padding:13px;border-radius:14px;border:1px solid rgba(212,168,67,.4);background:rgba(212,168,67,.15);color:var(--gold-light);font-family:'Cinzel',serif;font-size:.85rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-top:6px}
+.modal-btn:hover{background:rgba(212,168,67,.3);transform:translateY(-1px)}
+.modal-btn-2{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.65)}
+.modal-btn-2:hover{background:rgba(255,255,255,.12)}
+.night-report-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;margin-bottom:7px;font-size:.92rem;text-align:left}
+.nri-death{background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);color:#fca5a5}
+.nri-safe{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:#86efac}
+.nri-info{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:#93c5fd}
+.nri-gold{background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.3);color:var(--gold-light)}
+ 
+/* WIN SCREEN */
+.win-card{position:relative;overflow:hidden}
+.win-card.village-win{background:linear-gradient(135deg,#052e16,#065f46,#0f172a);border-color:rgba(52,211,153,.5)}
+.win-card.wolf-win{background:linear-gradient(135deg,#450a0a,#7f1d1d,#0f172a);border-color:rgba(239,68,68,.5)}
+.win-title{font-family:'Cinzel Decorative',serif;font-size:1.7rem;font-weight:900;letter-spacing:2px;margin-bottom:5px;line-height:1.1}
+.win-title.village{color:#6ee7b7;text-shadow:0 0 30px rgba(52,211,153,.6)}
+.win-title.wolf{color:#fca5a5;text-shadow:0 0 30px rgba(239,68,68,.6)}
+.win-subtitle{font-size:.95rem;color:rgba(255,255,255,.55);font-style:italic;margin-bottom:18px}
+.win-overview{max-height:40vh;overflow-y:auto;margin-bottom:18px;border:1px solid rgba(255,255,255,.1);border-radius:12px}
+.win-row{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.06);font-size:.85rem;gap:8px}
+.win-row:last-child{border-bottom:none}
+.win-row .wr-name{font-family:'Cinzel',serif;font-size:.78rem;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.win-row .wr-role{color:var(--gold);font-size:.8rem;flex:1;text-align:center}
+.win-row .wr-alive{font-size:.95rem;flex:0 0 auto}
+.win-btn{width:100%;padding:13px;border-radius:14px;font-family:'Cinzel Decorative',serif;font-size:.85rem;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;border:none}
+.win-btn.village{background:linear-gradient(135deg,#059669,#10b981);color:white}
+.win-btn.wolf{background:linear-gradient(135deg,#dc2626,#ef4444);color:white}
+.win-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+ 
+/* NIGHT ORDER BAR */
+.night-order-bar{display:flex;justify-content:center;gap:5px;flex-wrap:wrap;margin-bottom:18px;animation:slideUp .4s ease-out}
+.nob-step{padding:4px 10px;border-radius:20px;font-family:'Cinzel',serif;font-size:.62rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.25);transition:all .4s;display:flex;align-items:center;gap:4px}
+.nob-step.done{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.35);color:#4ade80}
+.nob-step.active{background:rgba(212,168,67,.15);border-color:rgba(212,168,67,.5);color:var(--gold-light);box-shadow:0 0 12px rgba(212,168,67,.2)}
+ 
+/* LOG */
+.log-panel{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:14px 18px;margin-bottom:14px;max-height:160px;overflow-y:auto}
+.log-panel::-webkit-scrollbar{width:4px}
+.log-panel::-webkit-scrollbar-thumb{background:rgba(212,168,67,.3);border-radius:4px}
+.log-entry{font-size:.8rem;color:rgba(255,255,255,.5);padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:baseline;gap:6px}
+.log-entry:last-child{border-bottom:none}
+.log-entry .log-time{font-size:.7rem;color:rgba(255,255,255,.25);white-space:nowrap;flex-shrink:0}
+.log-entry.log-death{color:#fca5a5}
+.log-entry.log-action{color:var(--gold)}
+.log-entry.log-day{color:#93c5fd}
+ 
+/* CONFIRM BANNER */
+.confirm-banner{background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.4);border-radius:14px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;animation:slideUp .3s ease-out}
+.confirm-banner p{font-family:'Cinzel',serif;font-size:.85rem;color:#fca5a5}
+.confirm-banner .cb-btns{display:flex;gap:8px}
+ 
+/* ADMIN ROWS */
+.admin-row{display:flex;justify-content:space-between;align-items:center;padding:9px 6px;border-bottom:1px solid rgba(255,255,255,.07);font-size:.88rem;text-align:left}
+.admin-row:last-child{border-bottom:none}
+.admin-row .ar-name{font-family:'Cinzel',serif;font-size:.8rem;font-weight:600;color:#e2e8f0}
+.admin-row .ar-role{color:var(--gold);font-style:italic;font-size:.82rem}
+.admin-row .ar-status{font-family:'Cinzel',serif;font-size:.72rem;font-weight:700;letter-spacing:1px}
+.ar-status.alive{color:#4ade80}
+.ar-status.dead{color:#f87171}
+ 
+footer{position:relative;z-index:1;text-align:center;padding:16px;border-top:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,.4);backdrop-filter:blur(10px)}
+footer p{font-family:'Cinzel',serif;font-size:.68rem;color:rgba(255,255,255,.25);letter-spacing:1px}
+footer p span{color:var(--gold);opacity:.6}
+ 
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.shake{animation:shake .4s ease}
+ 
+@media(max-width:600px){
+  .topbar{padding:8px 12px}
+  .game-wrap{padding:14px 10px}
+  .player-card{min-width:105px;max-width:125px;padding:14px 8px 10px}
+  .avatar-circle{width:44px;height:44px;font-size:1rem}
+  .modal-card{padding:24px 16px}
+  .instruction-card{padding:18px 16px}
+}
+</style>
+</head>
+<body class="night">
+<div class="stars"></div>
+ 
+<header class="topbar">
+  <div class="phase-badge">
+    <span class="phase-icon" id="phaseIcon">🌙</span>
+    <span id="phaseText">Nacht 1</span>
+  </div>
+  <div class="stats-row">
+    <div class="stat-chip alive" id="statAlive">👥 – Spieler</div>
+    <div class="stat-chip wolves" id="statWolves">🐺 – Wölfe</div>
+    <div class="stat-chip night-c" id="statNight">Runde –</div>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn-tiny gold" onclick="showAdminModal()">👁 Admin</button>
+    <button class="btn-tiny green-btn" onclick="toggleLog()">📜 Log</button>
+    <button class="btn-tiny danger" onclick="if(confirm('Spiel abbrechen?')) window.location.href='index.html'">🛑 Ende</button>
+  </div>
+</header>
+ 
+<main class="game-wrap" id="gameWrap">
+  <div class="night-order-bar" id="nightOrderBar"></div>
+  <section class="instruction-card">
+    <div id="roleTagDisplay"></div>
+    <h2 id="turnTitle">Wird geladen…</h2>
+    <p id="turnDesc">Bitte warten.</p>
+  </section>
+  <div class="confirm-banner" id="confirmBanner" style="display:none;">
+    <p id="confirmText">Bestätigung</p>
+    <div class="cb-btns">
+      <button class="btn-tiny danger" id="btnConfirmYes">✔ Ja</button>
+      <button class="btn-tiny" id="btnConfirmNo">✖ Nein</button>
+    </div>
+  </div>
+  <div class="vote-section" id="voteSection" style="display:none;">
+    <h3>⚖️ Abstimmung – Tag <span id="voteDay">1</span></h3>
+    <div class="vote-tally" id="voteTally"></div>
+    <div class="vote-buttons">
+      <button class="btn-vote-confirm" id="btnExecute" disabled>⚖️ Hinrichten</button>
+      <button class="btn-vote-clear" id="btnClearVotes">🗑 Zurücksetzen</button>
+      <button class="btn-vote-skip" id="btnSkipVote">⏭ Tag überspringen</button>
+    </div>
+  </div>
+  <div class="day-actions" id="dayActions" style="display:none;"></div>
+  <div class="log-panel" id="logPanel" style="display:none;"></div>
+  <section class="player-grid" id="playerGrid"></section>
+</main>
+ 
+<footer><p>Werwolf Pro — <span>AHITS 2025/26</span></p></footer>
+ 
+<!-- MAIN MODAL -->
+<div class="modal-overlay" id="mainModal">
+  <div class="modal-card" id="modalCard">
+    <div class="modal-icon" id="modalIcon">🌙</div>
+    <div class="modal-label" id="modalLabel">Info</div>
+    <div class="modal-title" id="modalTitle">Titel</div>
+    <div class="modal-body" id="modalBody"></div>
+    <button class="modal-btn" id="modalBtn">OK ▶</button>
+    <button class="modal-btn modal-btn-2" id="modalBtn2" style="display:none;"></button>
+  </div>
+</div>
+ 
+<!-- WIN MODAL -->
+<div class="modal-overlay" id="winModal">
+  <div class="modal-card win-card" id="winCard">
+    <div class="modal-icon" id="winIcon">🏆</div>
+    <div class="win-title" id="winTitle">Sieg!</div>
+    <div class="win-subtitle" id="winSubtitle"></div>
+    <div class="win-overview" id="winOverview"></div>
+    <button class="win-btn" id="winBtn" onclick="window.location.href='index.html'">🔄 Neues Spiel</button>
+  </div>
+</div>
+ 
+<script>
+/* ============================================================
+   ROLE INFO
+============================================================ */
+const ROLE_INFO = {
+  "Dorfbewohner":{"team":"village","icon":"👤","color":"village"},
+  "Villager":    {"team":"village","icon":"👤","color":"village"},
+  "Werwolf":     {"team":"wolf",   "icon":"🐺","color":"wolf"},
+  "Seher":       {"team":"village","icon":"🔮","color":"special"},
+  "Hexe":        {"team":"village","icon":"🧪","color":"special"},
+  "Witch":       {"team":"village","icon":"🧪","color":"special"},
+  "Hunter":      {"team":"village","icon":"🏹","color":"special"},
+  "Bodyguard":   {"team":"village","icon":"🛡","color":"special"},
+  "Wise Old Man":{"team":"village","icon":"👴","color":"special"},
+  "Tough Girl":  {"team":"village","icon":"💪","color":"special"},
+  "Copycat":     {"team":"village","icon":"🐱","color":"special"},
+  "Seher (Reactive)":{"team":"village","icon":"⚡","color":"special"},
+  "Reactive Seer":{"team":"village","icon":"⚡","color":"special"},
+  "Devotee":     {"team":"village","icon":"📿","color":"special"},
+  "Empath":      {"team":"village","icon":"💫","color":"special"},
+  "Spy":         {"team":"village","icon":"🕵️","color":"special"},
+  "Spellcaster": {"team":"village","icon":"✨","color":"special"},
+  "Bodyguard":   {"team":"village","icon":"🛡","color":"special"},
+  "Reanimator":  {"team":"village","icon":"💉","color":"special"},
+  "Oracle":      {"team":"village","icon":"🌙","color":"special"},
+  "Magistrate":  {"team":"village","icon":"⚖️","color":"special"},
+  "Cutthroat":   {"team":"village","icon":"⚔️","color":"special"},
+  "Influencer":  {"team":"village","icon":"📣","color":"special"},
+  "Innocent":    {"team":"village","icon":"😇","color":"special"},
+  "Insomniac":   {"team":"village","icon":"😴","color":"special"},
+  "Investigator":{"team":"village","icon":"🕵️","color":"special"},
+  "Village Idiot":{"team":"village","icon":"🃏","color":"village"},
+  "Gemini":      {"team":"village","icon":"♊","color":"special"},
+  "Masons":      {"team":"village","icon":"🤝","color":"special"},
+  "Soothsayer":  {"team":"village","icon":"🌟","color":"special"},
+  "Count Lycanthrope":{"team":"village","icon":"🧛","color":"special"},
+  "Reviler":     {"team":"village","icon":"😤","color":"special"},
+  "Gladys":      {"team":"village","icon":"🪟","color":"special"},
+  "Apprentice Exposer":{"team":"village","icon":"📢","color":"special"},
+  "Apprentice Illusionist":{"team":"village","icon":"🎭","color":"special"},
+  "The Cloak":   {"team":"village","icon":"🧥","color":"village"},
+  "Assassin Wolf":{"team":"wolf","icon":"🗡️","color":"wolf"},
+  "Den Mother":  {"team":"wolf","icon":"🐾","color":"wolf"},
+  "Kamikaze Wolf":{"team":"wolf","icon":"💥","color":"wolf"},
+  "Mama Wolf":   {"team":"wolf","icon":"🐺","color":"wolf"},
+  "Mountain Wolf":{"team":"wolf","icon":"🏔️","color":"wolf"},
+  "Mystery Wolf":{"team":"wolf","icon":"❓","color":"wolf"},
+  "Mystic Wolf": {"team":"wolf","icon":"🔮","color":"wolf"},
+  "Oracle Wolf": {"team":"wolf","icon":"🌕","color":"wolf"},
+  "Outsider Wolf":{"team":"wolf","icon":"🌲","color":"wolf"},
+  "Pet Wolf":    {"team":"wolf","icon":"🦴","color":"wolf"},
+  "Sorcerer Wolf":{"team":"wolf","icon":"🧙","color":"wolf"},
+  "Starving Wolf":{"team":"wolf","icon":"💀","color":"wolf"},
+  "Wolf Cub":    {"team":"wolf","icon":"🐶","color":"wolf"},
+  "Sorceress":   {"team":"wolf","icon":"🧙‍♀️","color":"wolf"},
+  "Warlock":     {"team":"wolf","icon":"🧙‍♂️","color":"wolf"},
+  "Mummer":      {"team":"wolf","icon":"🎪","color":"wolf"},
+  "Eye of the Seer":{"team":"wolf","icon":"👁","color":"wolf"},
+  "Illusionist": {"team":"wolf","icon":"🪄","color":"wolf"},
+  "Spawn":       {"team":"wolf","icon":"🥚","color":"wolf"},
+  "Assassin":    {"team":"neutral","icon":"🗡️","color":"neutral"},
+  "Auracabra":   {"team":"neutral","icon":"👁️","color":"neutral"},
+  "Black Cat":   {"team":"neutral","icon":"🐈‍⬛","color":"neutral"},
+  "Blighted":    {"team":"neutral","icon":"🤢","color":"neutral"},
+  "Blind Mary":  {"team":"neutral","icon":"🙈","color":"neutral"},
+  "Chupacabra":  {"team":"neutral","icon":"🦎","color":"neutral"},
+  "Grave Robber":{"team":"neutral","icon":"⚰️","color":"neutral"},
+  "Infected":    {"team":"neutral","icon":"🦠","color":"neutral"},
+  "Mad Destroyer":{"team":"neutral","icon":"💣","color":"neutral"},
+  "Master Tanner":{"team":"neutral","icon":"🪦","color":"neutral"},
+  "Matchmaker":  {"team":"neutral","icon":"💘","color":"neutral"},
+  "Nosferatu":   {"team":"neutral","icon":"🧛","color":"neutral"},
+  "Oracle":      {"team":"neutral","icon":"🌙","color":"neutral"},
+  "Outcast":     {"team":"village","icon":"🚪","color":"village"},
+  "Savant":      {"team":"neutral","icon":"🧠","color":"neutral"},
+  "Tanner":      {"team":"neutral","icon":"🪤","color":"neutral"},
+  "Vanillacabra":{"team":"neutral","icon":"🦌","color":"neutral"},
+  "Copycat":     {"team":"neutral","icon":"🐱","color":"neutral"},
+  "Blind Mary":  {"team":"neutral","icon":"🙈","color":"neutral"},
+  "Gladys":      {"team":"village","icon":"🪟","color":"special"},
+  "Investigator":{"team":"village","icon":"🔎","color":"special"},
+  "The Cloak":   {"team":"village","icon":"🧥","color":"special"},
+};
+ 
+/* ============================================================
+   GAME STATE
+============================================================ */
+let players = [];
+let beginnerMode = false; // loaded from localStorage on init
+let nightCount = 1;
+let gamePhase = "night";
+let nightQueue = [];
+let nightQueueDone = [];
+let victimThisNight = null;
+let secondVictimThisNight = null;
+let witchKilledThisNight = null;
+let witchHasHeal = true;
+let witchHasPoison = true;
+let bodyguardTarget = null;
+let bodyguardLastTarget = null;
+let wolfCubDied = false;
+let toughGirlInjured = null;
+let copycatTarget = null;
+let copycatResolved = false;
+let seerInverted = false;
+let apprenticeIllUsed = false;
+let mamaWolfLycan = null;
+let assassinTargetMap = {};   // assassinName → targetName
+let blightedActive = false;   // Blighted starts killing after first attack
+let nosferatuMarked = {};     // playerName → nominated count
+let spellcastedToday = null;  // player name silenced next day
+let mummerHypnotized = null;  // player name must vote same as mummer
+let matchmakerLinks = [];     // [{name, linked:[names]}]
+let blindMaryDead = false;    // Blind Mary dead → she can kill each night
+let blindMaryKillUsed = false;
+let gladysLastNeighborAction = false;
+let investigatorTeam = null;  // "village" or "wolf" depending on N1 choice
+let cloakRevealNight = 3;     // Cloak reveals after night 3
+let cloakRevealed = false;
+let infectedKilledByWolves = false;  // Next night wolves can't attack
+let masterTannerPhase = 1;   // 1=must survive, 2=must be hanged; switches after night 3
+let masterTannerActivated = false;
+let blackCatNightKill = false;
+let reanimatorUsed = false;
+let oracleVillageUsed = false;
+let exposerUsed = false;
+let cutthroatUsed = false;
+let magistrateUsed = false;
+let influencerAlive = false;
+let firstWolfDied = false;
+let outsiderWolfJoined = false;
+let wiseDayCount = 0;
+let votes = {};
+let gameLog = [];
+let logVisible = false;
+let lastExecWasVillage = false;
+let maxNightKills = 1;
+let nightKillCount = 0;
+let pendingSecondVictim = false;
+ 
+/* ============================================================
+   INIT
+============================================================ */
+window.onload = () => {
+  beginnerMode = localStorage.getItem("werwolf_beginner") === "1";
+  const saved = localStorage.getItem("werwolf_players");
+  if (!saved) {
+    players = demoPlayers();
+  } else {
+    players = JSON.parse(saved);
+    players.forEach(p => {
+      if (p.alive === undefined) p.alive = true;
+      if (!p.role) p.role = "Dorfbewohner";
+    });
+  }
+  influencerAlive = hasAliveRole("Influencer");
+  document.getElementById("btnExecute").onclick = executeVoted;
+  document.getElementById("btnClearVotes").onclick = clearVotes;
+  document.getElementById("btnSkipVote").onclick = skipVote;
+  log("Spiel gestartet!", "action");
+  updateTopBar();
+  startNightCycle();
+};
+ 
+/* ============================================================
+   ANFÄNGER-MODUS: Tipps & Erklärungen
+============================================================ */
+const BEGINNER_TIPS = {
+  night_start:   { icon:"🌙", text:"Alle Spieler schließen die Augen. Ruf die Rollen nacheinander auf – tippe auf den nächsten Schritt im Balken oben." },
+  day_start:     { icon:"☀️", text:"Alle öffnen die Augen. Erzähle wer gestorben ist. Das Dorf diskutiert und stimmt dann ab." },
+  wolves:        { icon:"🐺", text:'Sag: <b>„Werwölfe, öffnet die Augen."</b> — Die Wölfe einigen sich lautlos auf ein Opfer → tippe es an. Dann: <b>„Schließt die Augen."</b>' },
+  seer:          { icon:"🔮", text:'Sag: <b>„Seher, öffne die Augen."</b> — Er zeigt auf jemanden → du gibst 👍 (Wolf) oder 👎 (kein Wolf). Dann: <b>„Schließe die Augen."</b>' },
+  witch:         { icon:"🧪", text:'Sag: <b>„Hexe, öffne die Augen."</b> — Zeige ihr das Opfer. Sie entscheidet: heilen (💚, einmalig) oder vergiften (☠️, einmalig). Dann: <b>„Schließe die Augen."</b>' },
+  bodyguard:     { icon:"🛡️", text:'Sag: <b>„Bodyguard, öffne die Augen."</b> — Er zeigt auf eine Person die er schützt. Diese kann heute Nacht nicht von Wölfen getötet werden. Dann: <b>„Schließe die Augen."</b>' },
+  hunter:        { icon:"🏹", text:"Der Hunter wurde getötet! Er darf jetzt sofort eine weitere Person mit in den Tod reißen. Lass ihn auf das Opfer zeigen → tippe es an." },
+  den_mother:    { icon:"🐾", text:'Sag: <b>„Den Mother, öffne die Augen."</b> — Du gibst ihr ein Signal: Hat der Seher diese Nacht einen Wolf erkannt? 👍 Ja / 👎 Nein. Dann: <b>„Schließe die Augen."</b>' },
+  devotee:       { icon:"📿", text:'Sag: <b>„Devotee, öffne die Augen."</b> — Zeige ihm nacheinander die Namen der Wölfe (einen mehr pro Nacht). Tippe den entsprechenden Spieler an. Dann: <b>„Schließe die Augen."</b>' },
+  empath:        { icon:"💫", text:'Sag: <b>„Empath, öffne die Augen."</b> — Sitz er neben dem Seher? Wenn ja: Ist der Nachbar des Sehers ein Wolf? 👍 Ja / 👎 Nein. Dann: <b>„Schließe die Augen."</b>' },
+  spy:           { icon:"🕵️", text:'Sag: <b>„Spy, öffne die Augen."</b> — Er zeigt auf eine Person. Du sagst: Dorf-Team oder Wolf-Team (👍/👎). Dann: <b>„Schließe die Augen."</b>' },
+  mystic_wolf:   { icon:"🔮", text:'Sag: <b>„Mystic Wolf, öffne die Augen."</b> — Er zeigt auf eine Person. Du zeigst ihm still deren Rollenkarte. Dann: <b>„Schließe die Augen."</b>' },
+  sorcerer_wolf: { icon:"🧙", text:'Sag: <b>„Sorcerer Wolf, öffne die Augen."</b> — Er zeigt auf jemanden: Ist das der Seher? 👍 Ja / 👎 Nein. Dann: <b>„Schließe die Augen."</b>' },
+  sorceress:     { icon:"🧙‍♀️", text:'Sag: <b>„Sorceress, öffne die Augen."</b> — Sie zeigt auf jemanden: Ist das der Seher? 👍 Ja / 👎 Nein. Wichtig: Sie kennt die Wölfe NICHT. Dann: <b>„Schließe die Augen."</b>' },
+  warlock:       { icon:"🧙‍♂️", text:'Sag: <b>„Warlock, öffne die Augen."</b> — Er sucht den Seher. Du gibst 👍/👎. Trifft er ihn, erhält der Seher ab sofort falsche Ergebnisse. Dann: <b>„Schließe die Augen."</b>' },
+  spellcaster:   { icon:"✨", text:'Sag: <b>„Spellcaster, öffne die Augen."</b> — Er zeigt auf jemanden der morgen NICHT sprechen darf. Notiere es. Dann: <b>„Schließe die Augen."</b>' },
+  mummer:        { icon:"🎪", text:'Sag: <b>„Mummer, öffne die Augen."</b> — Er zeigt auf jemanden. Diese Person MUSS morgen genauso abstimmen wie der Mummer. Notiere es. Dann: <b>„Schließe die Augen."</b>' },
+  nosferatu:     { icon:"🧛", text:'Sag: <b>„Nosferatu, öffne die Augen."</b> — Er zeigt auf (Wolfanzahl−1) Spieler und markiert sie. Werden sie erneut nominiert → sofort tot. Dann: <b>„Schließe die Augen."</b>' },
+  matchmaker:    { icon:"💘", text:'Sag: <b>„Matchmaker, öffne die Augen."</b> — Er verbindet Spieler. Stirbt einer der verbundenen, sterben alle. Er gewinnt unter den letzten 3. Dann: <b>„Schließe die Augen."</b>' },
+  chupacabra:    { icon:"🦎", text:'Sag: <b>„Chupacabra, öffne die Augen."</b> — Er tötet jede Nacht eine Person. Zuerst nur Wölfe, dann alle. Er will der letzte Überlebende sein. Dann: <b>„Schließe die Augen."</b>' },
+  auracabra:     { icon:"👁️", text:'Sag: <b>„Auracabra, öffne die Augen."</b> — Er wählt eine Person. Nur wenn sie eine Sonderrolle hat stirbt sie. Dorf/Werwolf ohne Sonderfähigkeit überleben. Dann: <b>„Schließe die Augen."</b>' },
+  vanillacabra:  { icon:"🦌", text:'Sag: <b>„Vanillacabra, öffne die Augen."</b> — Er wählt Spieler OHNE Sonderrolle. Nur einfache Dorfbewohner/Werwölfe sterben. Sonderrollen überleben. Dann: <b>„Schließe die Augen."</b>' },
+  blighted:      { icon:"🤢", text:'Sag: <b>„Blighted, öffne die Augen."</b> — Er wurde von Wölfen angegriffen aber überlebt. Ab jetzt darf er jede Nacht selbst töten. Dann: <b>„Schließe die Augen."</b>' },
+  savant:        { icon:"🧠", text:'Sag: <b>„Savant, öffne die Augen."</b> — Er kennt alle Rollen und wählt jede Nacht (Wolfanzahl−2) Dorfbewohner zum töten. Tippe die Opfer an. Dann: <b>„Schließe die Augen."</b>' },
+  reanimator:    { icon:"💉", text:'Sag: <b>„Reanimator, öffne die Augen."</b> — Er kann einmalig eine tote Person wiederbeleben. Sie kehrt mit ihrer ursprünglichen Rolle zurück. Dann: <b>„Schließe die Augen."</b>' },
+  oracle:        { icon:"🌙", text:'Sag: <b>„Oracle, öffne die Augen."</b> — Er zeigt auf eine Person. Du zeigst ihm still deren vollständige Rollenkarte (einmalig). Dann: <b>„Schließe die Augen."</b>' },
+  exposer:       { icon:"📢", text:'Sag: <b>„Apprentice Exposer, öffne die Augen."</b> — Er wählt eine Person. Du zeigst ALLEN Spielern deren Rollenkarte (einmalig). Dann: <b>„Schließe die Augen."</b>' },
+  mama_wolf:     { icon:"🐺", text:'Sag: <b>„Mama Wolf, öffne die Augen."</b> — Sie wählt in Nacht 1 einen Dorfbewohner. Dieser erscheint ab sofort für den Seher als Wolf (ist aber keiner). Dann: <b>„Schließe die Augen."</b>' },
+  mountain_wolf: { icon:"🏔️", text:'Sag: <b>„Mountain Wolf, öffne die Augen."</b> — Sie wählt in Nacht 1 eine Gruppe. Du gibst 👍 wenn der Seher darin ist, sonst 👎. Dann: <b>„Schließe die Augen."</b>' },
+  oracle_wolf:   { icon:"🌕", text:'Sag: <b>„Oracle Wolf, öffne die Augen."</b> — Er wählt in Nacht 1 eine Gruppe. Du sagst wie viele Sonderrollen darin sitzen. Dann: <b>„Schließe die Augen."</b>' },
+  outsider_wolf: { icon:"🌲", text:'Sag: <b>„Outsider Wolf, öffne die Augen."</b> — Er kennt die anderen Wölfe nicht. Schläft in Nacht 1. Wird erst aktiv wenn der erste Wolf stirbt.' },
+  soothsayer:    { icon:"🌟", text:'Sag: <b>„Soothsayer, öffne die Augen."</b> — Er wählt in Nacht 1 eine Gruppe. Du sagst wie viele Wölfe darin sind (Zahl). Dann: <b>„Schließe die Augen."</b>' },
+  count_lyc:     { icon:"🧛", text:'Sag: <b>„Count Lycanthrope, öffne die Augen."</b> — Er wählt in Nacht 1 eine Person. Diese erscheint ab sofort für den Seher als Wolf (ist aber keiner). Dann: <b>„Schließe die Augen."</b>' },
+  masons:        { icon:"🤝", text:'Sag: <b>„Masons, öffnet die Augen."</b> — Die Freimaurer öffnen die Augen und schauen sich an. Sie kennen jetzt ihre Verbündeten. Dann: <b>„Schließt die Augen."</b>' },
+  gemini:        { icon:"♊", text:'Sag: <b>„Gemini, öffnet die Augen."</b> — Die Zwillinge schauen sich an. Stirbt einer, stirbt der andere sofort mit. Dann: <b>„Schließt die Augen."</b>' },
+  copycat:       { icon:"🐱", text:'Sag: <b>„Copycat, öffne die Augen."</b> — Er zeigt auf eine Person. Stirbt diese Person später, übernimmt der Copycat ihre Rolle komplett. Dann: <b>„Schließe die Augen."</b>' },
+  assassin:      { icon:"🗡️", text:'Sag: <b>„Assassin, öffne die Augen."</b> — Er zeigt in Nacht 1 auf sein Ziel. Stirbt dieses Ziel während er noch lebt → Assassin gewinnt sofort. Dann: <b>„Schließe die Augen."</b>' },
+  savant_n1:     { icon:"🧠", text:'Sag: <b>„Savant, öffne die Augen."</b> — Zeige ihm still die Rollenkarten ALLER Spieler (oder flüstere sie). Er kennt ab jetzt alle Rollen. Dann: <b>„Schließe die Augen."</b>' },
+  wise_old_man:  { icon:"👴", text:'Sag: <b>„Weiser Alter Mann, öffne die Augen."</b> — Alle Spieler mit Dorf-Sonderrollen heben kurz die Hand. Er sieht wie viele es sind. Dann: <b>„Schließe die Augen."</b>' },
+  insomniac:     { icon:"😴", text:'Sag: <b>„Insomniac, du schläfst nur halb."</b> — Er hält die Augen als Schlitze offen und beobachtet. Du sagst ob diese Nacht jemand die Rolle gewechselt hat (👍/👎). Dann: <b>„Schlaf weiter."</b>' },
+  investigator:  { icon:"🔎", text:'Sag: <b>„Investigator, öffne die Augen."</b> — Er zeigt auf 3 nebeneinander sitzende Spieler. Du gibst 👍 wenn ein Wolf dabei ist, sonst 👎. Dann: <b>„Schließe die Augen."</b>' },
+  cloak:         { icon:"🧥", text:'Sag: <b>„The Cloak, öffne die Augen."</b> — Flüstere ihm die Sonderrolle die du für ihn notiert hast. Ab jetzt kann er seine versteckte Fähigkeit nutzen. Dann: <b>„Schließe die Augen."</b>' },
+  gladys:        { icon:"🪟", text:'Sag: <b>„Gladys, öffne die Augen."</b> — Du gibst ihr ein Signal: Hat ein direkter Sitznachbar diese Nacht eine Aktion ausgeführt? 👍 Ja / 👎 Nein. Dann: <b>„Schließe die Augen."</b>' },
+  blind_mary:    { icon:"🙈", text:'<b>Blind Mary ist tot</b> – aber sie darf jetzt jede Nacht noch jemanden töten. Sie zeigt still auf eine Person → tippe sie an.' },
+  vote:          { icon:"🗳️", text:"Das Dorf diskutiert. Dann gleichzeitig abstimmen: Jeder zeigt auf den Verdächtigen. Tippe auf die Spieler um Stimmen zu vergeben. Die Person mit den meisten Stimmen wird hingerichtet." },
+  execution:     { icon:"⚖️", text:"Die Person wird hingerichtet und ihre Rolle enthüllt. Jetzt können Sondereffekte ausgelöst werden (Hunter, Tanner, Assassin Wolf...). Prüfe das Display." }
+};
+
+function showBeginnerTip(key, callback) {
+  if (!beginnerMode) { if (callback) callback(); return; }
+  const tip = BEGINNER_TIPS[key];
+  if (!tip) { if (callback) callback(); return; }
+  showModal(tip.icon || "🎓", "SPIELLEITER-TIPP", "",
+    `<div class="night-report-item nri-info" style="text-align:left;line-height:1.8;font-size:.95rem;">${tip.text}</div>`,
+    callback
+  );
+}
+
+function demoPlayers() {
+  const names = ["Anna","Ben","Clara","David","Eva","Frank","Greta","Hans","Iris","Jan"];
+  const roles = ["Werwolf","Werwolf","Seher","Hexe","Hunter","Bodyguard","Dorfbewohner","Dorfbewohner","Dorfbewohner","Dorfbewohner"];
+  roles.sort(()=>Math.random()-.5);
+  return names.map((n,i) => ({name:n, role:roles[i], alive:true}));
+}
+ 
+/* ============================================================
+   HELPERS
+============================================================ */
+function ri(role) { return ROLE_INFO[role] || {team:"village",icon:"❓",color:"village"}; }
+function isWolf(p) {
+  const wolfRoles = ["Werwolf","Assassin Wolf","Den Mother","Kamikaze Wolf","Mama Wolf",
+    "Mountain Wolf","Mystery Wolf","Mystic Wolf","Oracle Wolf","Outsider Wolf","Pet Wolf",
+    "Sorcerer Wolf","Starving Wolf","Wolf Cub","Sorceress","Warlock","Mummer",
+    "Eye of the Seer","Illusionist","Spawn","Apprentice Illusionist"];
+  if (wolfRoles.includes(p.role)) return true;
+  // Investigator who picked a group with no wolf → secretly supports wolves
+  if (p.role === "Investigator" && investigatorTeam === "wolf") return true;
+  return false;
+}
+function hasAliveRole(r) { return players.some(p => p.alive && p.role === r); }
+function getAlive(r) { return players.filter(p => p.alive && (!r || p.role === r)); }
+function isWolfRole(r) { return ri(r).team === "wolf"; }
+function isVillageTeam(p) { return !isWolf(p); }
+ 
+function aliveWolfCount() { return players.filter(p => p.alive && isWolf(p)).length; }
+function aliveVillageCount() { return players.filter(p => p.alive && !isWolf(p)).length; }
+ 
+function log(msg, type="info") {
+  const now = new Date();
+  const t = now.getHours().toString().padStart(2,"0") + ":" + now.getMinutes().toString().padStart(2,"0");
+  gameLog.unshift({msg, type, t});
+  renderLog();
+}
+function renderLog() {
+  const panel = document.getElementById("logPanel");
+  if (!logVisible) return;
+  panel.innerHTML = gameLog.slice(0,50).map(e =>
+    `<div class="log-entry log-${e.type}"><span class="log-time">${e.t}</span><span>${e.msg}</span></div>`
+  ).join("");
+}
+function toggleLog() {
+  logVisible = !logVisible;
+  document.getElementById("logPanel").style.display = logVisible ? "block" : "none";
+  if (logVisible) renderLog();
+}
+function updateTopBar() {
+  const alive = players.filter(p => p.alive).length;
+  const wolves = players.filter(p => p.alive && isWolf(p)).length;
+  document.getElementById("statAlive").textContent = `👥 ${alive} Spieler`;
+  document.getElementById("statWolves").textContent = `🐺 ${wolves} Wölfe`;
+  document.getElementById("statNight").textContent = `Runde ${nightCount}`;
+  // Anfänger-Modus Badge
+  const existing = document.getElementById("beginnerBadge");
+  if (beginnerMode && !existing) {
+    const badge = document.createElement("div");
+    badge.id = "beginnerBadge";
+    badge.style.cssText = "position:fixed;top:8px;right:8px;z-index:999;background:rgba(168,85,247,0.85);color:#fff;font-size:0.65rem;font-family:'Cinzel',serif;letter-spacing:1px;padding:4px 10px;border-radius:20px;";
+    badge.textContent = "🎓 Anfänger";
+    document.body.appendChild(badge);
+  } else if (!beginnerMode && existing) {
+    existing.remove();
+  }
+}
+function setInstruction(title, desc, tagType, tagLabel) {
+  document.getElementById("turnTitle").textContent = title;
+  document.getElementById("turnDesc").textContent = desc;
+  const tagDiv = document.getElementById("roleTagDisplay");
+  tagDiv.innerHTML = (tagType && tagLabel)
+    ? `<div class="role-tag ${tagType}">● ${tagLabel}</div>` : "";
+}
+ 
+function updateNightBar() {
+  const bar = document.getElementById("nightOrderBar");
+  bar.innerHTML = nightQueue.map((step,i) => {
+    const cls = nightQueueDone.includes(i) ? "done" : (i === nightQueueDone.length ? "active" : "");
+    return `<div class="nob-step ${cls}">${step.icon} ${step.label}</div>`;
+  }).join("");
+}
+ 
+/* ============================================================
+   NIGHT CYCLE – QUEUE BUILDER
+============================================================ */
+function buildNightQueue() {
+  const q = [];
+
+  // ══════════════════════════════════════════════════════════════
+  // PHASE 1 – NACHT-1-EINMALIG: Rollen die sich nur in Nacht 1
+  //           gegenseitig kennenlernen oder ihre Ziele wählen
+  // ══════════════════════════════════════════════════════════════
+  if (nightCount === 1) {
+    // Wolf-interne Sonderfälle: Außenseiter & Verstärker kennenlernen
+    const outsider = players.find(p => p.alive && p.role === "Outsider Wolf");
+    if (outsider) q.push({id:"outsider_note", label:"Outsider Wolf", icon:"🌲", fn: () => phase_OutsiderNote(outsider)});
+    const mamaW = players.find(p => p.alive && p.role === "Mama Wolf");
+    if (mamaW) q.push({id:"mama_wolf_n1", label:"Mama Wolf", icon:"🐺", fn: () => phase_MamaWolfN1(mamaW)});
+    const mountainW = players.find(p => p.alive && p.role === "Mountain Wolf");
+    if (mountainW) q.push({id:"mountain_wolf_n1", label:"Mountain Wolf", icon:"🏔️", fn: () => phase_MountainWolfN1(mountainW)});
+    const oracleW = players.find(p => p.alive && p.role === "Oracle Wolf");
+    if (oracleW) q.push({id:"oracle_wolf_n1", label:"Oracle Wolf", icon:"🌕", fn: () => phase_OracleWolfN1(oracleW)});
+    // Dorf-Bruderschaften kennenlernen
+    if (hasAliveRole("Masons"))   q.push({id:"masons_n1",   label:"Masons",      icon:"🤝", fn: () => phase_MasonsN1()});
+    if (hasAliveRole("Gemini"))   q.push({id:"gemini_n1",   label:"Gemini",      icon:"♊",  fn: () => phase_GeminiN1()});
+    // Neutrale Zielvergabe in Nacht 1
+    if (hasAliveRole("Assassin")) q.push({id:"assassin_n1", label:"Assassin",    icon:"🗡️", fn: () => phase_AssassinN1()});
+    if (hasAliveRole("Copycat"))  q.push({id:"copycat_n1",  label:"Copycat",     icon:"🐱", fn: () => phase_CopycatN1()});
+    // Einmalige Dorf-Infos Nacht 1
+    if (hasAliveRole("Wise Old Man"))  q.push({id:"wom_n1",       label:"Wise Old Man",  icon:"👴", fn: () => phase_WiseOldManN1()});
+    if (hasAliveRole("Savant"))        q.push({id:"savant_n1",    label:"Savant",         icon:"🧠", fn: () => phase_SavantN1()});
+    if (hasAliveRole("Count Lycanthrope")) q.push({id:"count_lyc", label:"Count Lyc.",   icon:"🧛", fn: () => phase_CountLycanN1()});
+    if (hasAliveRole("Soothsayer"))    q.push({id:"soothsayer_n1",label:"Soothsayer",     icon:"🌟", fn: () => phase_SoothsayerN1()});
+    if (hasAliveRole("Investigator"))  q.push({id:"investigator_n1", label:"Investigator",icon:"🔎", fn: () => phase_InvestigatorN1()});
+    if (hasAliveRole("The Cloak"))     q.push({id:"cloak_n1",     label:"The Cloak",      icon:"🧥", fn: () => phase_CloakN1()});
+  }
+
+  // Insomniac: jede Nacht – beobachtet Rollenwechsel
+  if (hasAliveRole("Insomniac")) q.push({id:"insomniac", label:"Insomniac", icon:"😴", fn: () => phase_Insomniac()});
+
+  // ══════════════════════════════════════════════════════════════
+  // PHASE 2 – AUFKLÄRUNG: Dorf-Seher & Info-Rollen schauen zuerst,
+  //           damit die Info noch vor dem Angriff gesammelt wird
+  // ══════════════════════════════════════════════════════════════
+  const seer  = players.find(p => p.alive && p.role === "Seher");
+  const rSeer = players.find(p => p.alive && p.role === "Reactive Seer");
+  const seerActive = seer || (rSeer && lastExecWasVillage);
+
+  if (seer)  q.push({id:"seer",  label:"Seher",         icon:"🔮", fn: () => phase_Seer(seer)});
+  else if (rSeer && lastExecWasVillage)
+             q.push({id:"seer",  label:"Reactive Seer", icon:"⚡",  fn: () => phase_Seer(rSeer)});
+
+  // Den Mother sieht direkt nach dem Seher ob ihre Wölfe gecheckt wurden
+  const denM = players.find(p => p.alive && p.role === "Den Mother");
+  if (denM && seerActive) q.push({id:"den_mother", label:"Den Mother", icon:"🐾", fn: () => phase_DenMother(denM)});
+
+  // Devotee erfährt schrittweise Wolfnamen
+  const dev = players.find(p => p.alive && p.role === "Devotee");
+  if (dev) q.push({id:"devotee", label:"Devotee", icon:"📿", fn: () => phase_Devotee(dev)});
+
+  // Empath prüft ob Nachbar des Sehers ein Wolf ist
+  const emp = players.find(p => p.alive && p.role === "Empath");
+  if (emp && seerActive) q.push({id:"empath", label:"Empath", icon:"💫", fn: () => phase_Empath(emp)});
+
+  // Spy prüft Team einer Person
+  const spy = players.find(p => p.alive && p.role === "Spy");
+  if (spy) q.push({id:"spy", label:"Spy", icon:"🕵️", fn: () => phase_Spy(spy)});
+
+  // Einmalige Info-Rollen (Oracle, Apprentice Exposer) – vor dem Angriff
+  const oracleV = players.find(p => p.alive && p.role === "Oracle" && ri(p.role).team !== "wolf");
+  if (oracleV && !oracleVillageUsed) q.push({id:"oracle_v", label:"Oracle", icon:"🌙", fn: () => phase_OracleVillage(oracleV)});
+  const expo = players.find(p => p.alive && p.role === "Apprentice Exposer");
+  if (expo && !exposerUsed) q.push({id:"exposer", label:"App. Exposer", icon:"📢", fn: () => phase_ApprenticeExposer(expo)});
+
+  // Savant tötet ab Nacht 2 (kennt alle Rollen aus N1)
+  const savant = players.find(p => p.alive && p.role === "Savant");
+  if (savant && nightCount > 1) q.push({id:"savant", label:"Savant", icon:"🧠", fn: () => phase_Savant(savant)});
+
+  // ══════════════════════════════════════════════════════════════
+  // PHASE 3 – SCHUTZ: Bodyguard schützt bevor Wölfe angreifen
+  // ══════════════════════════════════════════════════════════════
+  const bg = players.find(p => p.alive && p.role === "Bodyguard");
+  if (bg) q.push({id:"bodyguard", label:"Bodyguard", icon:"🛡️", fn: () => phase_Bodyguard(bg)});
+
+  // ══════════════════════════════════════════════════════════════
+  // PHASE 4 – WOLF-VORBEREITUNG: Sorceress/Warlock suchen Seher,
+  //           Mystic Wolf sieht Rollen – vor dem eigentlichen Kill
+  // ══════════════════════════════════════════════════════════════
+  const sorc = players.find(p => p.alive && p.role === "Sorceress");
+  if (sorc) q.push({id:"sorceress", label:"Sorceress", icon:"🧙‍♀️", fn: () => phase_Sorceress(sorc)});
+  const warlk = players.find(p => p.alive && p.role === "Warlock");
+  if (warlk) q.push({id:"warlock", label:"Warlock", icon:"🧙‍♂️", fn: () => phase_Warlock(warlk)});
+  const sorcW = players.find(p => p.alive && p.role === "Sorcerer Wolf");
+  if (sorcW && !firstWolfDied) q.push({id:"sorcerer_wolf", label:"Sorcerer Wolf", icon:"🧙", fn: () => phase_SorcererWolf(sorcW)});
+  const mystic = players.find(p => p.alive && p.role === "Mystic Wolf");
+  if (mystic) q.push({id:"mystic", label:"Mystic Wolf", icon:"🔮", fn: () => phase_MysticWolf(mystic)});
+
+  // ══════════════════════════════════════════════════════════════
+  // PHASE 5 – WOLF-ANGRIFF: Alle Wölfe wählen ihr Opfer
+  // ══════════════════════════════════════════════════════════════
+  q.push({id:"wolves", label:"Werwölfe", icon:"🐺", fn: () => phase_Wolves()});
+
+  // ══════════════════════════════════════════════════════════════
+  // PHASE 6 – REAKTION AUF ANGRIFF: Hexe weiß wer angegriffen
+  //           wurde und kann heilen oder vergiften
+  // ══════════════════════════════════════════════════════════════
+  const witch = players.find(p => p.alive && (p.role === "Hexe" || p.role === "Witch"));
+  if (witch && (witchHasHeal || witchHasPoison)) q.push({id:"witch", label:"Hexe", icon:"🧪", fn: () => phase_Witch(witch)});
+
+  // Blighted ist aktiv nachdem er überlebt hat
+  if (blightedActive) {
+    const bl = players.find(p => p.alive && p.role === "Blighted");
+    if (bl) q.push({id:"blighted", label:"Blighted", icon:"🤢", fn: () => phase_Blighted(bl)});
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // PHASE 7 – NEUTRALE KILLER: Töten unabhängig vom Wolf-Angriff
+  // ══════════════════════════════════════════════════════════════
+  const chupa = players.find(p => p.alive && p.role === "Chupacabra");
+  if (chupa) q.push({id:"chupacabra", label:"Chupacabra", icon:"🦎", fn: () => phase_Chupacabra(chupa)});
+  const aura = players.find(p => p.alive && p.role === "Auracabra");
+  if (aura) q.push({id:"auracabra", label:"Auracabra", icon:"👁️", fn: () => phase_Auracabra(aura)});
+  const van = players.find(p => p.alive && p.role === "Vanillacabra");
+  if (van) q.push({id:"vanillacabra", label:"Vanillacabra", icon:"🦌", fn: () => phase_Vanillacabra(van)});
+  // Blind Mary (nach eigenem Tod) tötet jede Nacht
+  if (blindMaryDead) {
+    const bm = players.find(p => !p.alive && p.role === "Blind Mary");
+    if (bm) q.push({id:"blind_mary_kill", label:"Blind Mary", icon:"🙈", fn: () => phase_BlindMaryKill()});
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // PHASE 8 – MANIPULATION & PASSIVE: Beeinflussen den nächsten
+  //           Tag ohne direkt zu töten
+  // ══════════════════════════════════════════════════════════════
+  const spell = players.find(p => p.alive && p.role === "Spellcaster");
+  if (spell) q.push({id:"spellcaster", label:"Spellcaster", icon:"✨", fn: () => phase_Spellcaster(spell)});
+  const mum = players.find(p => p.alive && p.role === "Mummer");
+  if (mum) q.push({id:"mummer", label:"Mummer", icon:"🎪", fn: () => phase_Mummer(mum)});
+  const nosf = players.find(p => p.alive && p.role === "Nosferatu");
+  if (nosf) q.push({id:"nosferatu", label:"Nosferatu", icon:"🧛", fn: () => phase_Nosferatu(nosf)});
+  const mm = players.find(p => p.alive && p.role === "Matchmaker");
+  if (mm) q.push({id:"matchmaker", label:"Matchmaker", icon:"💘", fn: () => phase_Matchmaker(mm)});
+
+  // ══════════════════════════════════════════════════════════════
+  // PHASE 9 – BEOBACHTUNG & EINMALIG: Rollen die das Ergebnis
+  //           der Nacht beobachten oder einmalig handeln
+  // ══════════════════════════════════════════════════════════════
+  const reani = players.find(p => p.alive && p.role === "Reanimator");
+  if (reani && !reanimatorUsed) q.push({id:"reanimator", label:"Reanimator", icon:"💉", fn: () => phase_Reanimator(reani)});
+  // Gladys beobachtet ob ein Nachbar aktiv war (ganz am Ende wenn alle Aktionen bekannt)
+  const gladys = players.find(p => p.alive && p.role === "Gladys");
+  if (gladys) q.push({id:"gladys", label:"Gladys", icon:"🪟", fn: () => phase_Gladys(gladys)});
+  // The Cloak-Enthüllung ab Nacht 3
+  if (!cloakRevealed && nightCount >= cloakRevealNight) {
+    const cloak = players.find(p => p.alive && p.role === "The Cloak");
+    if (cloak) q.push({id:"cloak_reveal", label:"The Cloak", icon:"🧥", fn: () => phase_CloakReveal(cloak)});
+  }
+
+  return q;
+}
+ 
+function nextNightPhase() {
+  nightQueueDone.push(nightQueueDone.length);
+  updateNightBar();
+  const idx = nightQueueDone.length;
+  if (idx >= nightQueue.length) {
+    processNightEnd();
+    return;
+  }
+  setTimeout(() => nightQueue[idx].fn(), 200);
+}
+ 
+/* ============================================================
+   NIGHT CYCLE – START
+============================================================ */
+function startNightCycle() {
+  gamePhase = "night";
+  victimThisNight = null;
+  secondVictimThisNight = null;
+  witchKilledThisNight = null;
+  nightKillCount = 0;
+  nightQueueDone = [];
+  bodyguardTarget = null;
+  spellcastedToday = null;
+  mummerHypnotized = null;
+  blackCatNightKill = false;
+ 
+  maxNightKills = wolfCubDied ? 2 : 1;
+  wolfCubDied = false;
+  // Starving Wolf: last wolf → 2 kills
+  const aliveWolves = players.filter(p => p.alive && isWolf(p));
+  if (aliveWolves.length === 1 && aliveWolves[0].role === "Starving Wolf") maxNightKills = 2;
+ 
+  document.body.className = "night";
+  document.getElementById("phaseIcon").textContent = "🌙";
+  document.getElementById("phaseText").textContent = "Nacht " + nightCount;
+  document.getElementById("voteSection").style.display = "none";
+  document.getElementById("dayActions").style.display = "none";
+  document.getElementById("confirmBanner").style.display = "none";
+  clearVotes();
+  updateTopBar();
+ 
+  nightQueue = buildNightQueue();
+  updateNightBar();
+
+  // Master Tanner Phase 2 activation
+  if (!masterTannerActivated && nightCount >= 4) {
+    const mt = players.find(p => p.alive && p.role === "Master Tanner");
+    if (mt) {
+      masterTannerActivated = true;
+      log(`🪦 Master Tanner ${mt.name}: Phase 2 aktiv – muss jetzt gehängt werden!`, "action");
+    }
+  }
+ 
+  if (nightQueue.length === 0) {
+    processNightEnd();
+    return;
+  }
+  // Anfänger-Tipp: Nacht beginnt (nur in Nacht 1)
+  if (nightCount === 1) {
+    showBeginnerTip("night_start", () => setTimeout(() => nightQueue[0].fn(), 200));
+  } else {
+    setTimeout(() => nightQueue[0].fn(), 300);
+  }
+}
+ 
+/* ============================================================
+   NIGHT PHASES – NIGHT 1 SPECIALS
+============================================================ */
+function phase_OutsiderNote(outsider) {
+  showModal("🌲","OUTSIDER WOLF","Schläft allein",
+    `<div class="night-report-item nri-info">🌲 <b>${outsider.name}</b> ist der Outsider Wolf und wacht in Nacht 1 NICHT mit dem Rudel auf. Er kennt die Wölfe noch nicht.<br><br>Erst wenn der erste andere Wolf stirbt, schließt er sich dem Rudel an.</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+function phase_MamaWolfN1(mama) {
+  showBeginnerTip("mama_wolf", () => _phase_MamaWolfN1(mama));
+}
+function _phase_MamaWolfN1(mama) {
+  setInstruction("🐺 Mama Wolf – Nacht 1", `${mama.name} wählt einen Dorfbewohner als Lycan (erscheint beim Seher als Wolf).`, "wolf", "Mama Wolf");
+  const targets = players.filter(p => p.alive && !isWolf(p));
+  renderGrid(targets, (p) => {
+    showConfirmBanner(`🐺 ${p.name} zum Lycan machen?`, () => {
+      mamaWolfLycan = p.name;
+      p.isLycan = true;
+      log(`🐺 Mama Wolf macht ${p.name} zum Lycan`, "action");
+      showModal("🐺","MAMA WOLF","Lycan erwählt!",
+        `<div class="night-report-item nri-info">✅ ${p.name} ist jetzt ein Lycan – erscheint beim Seher als Werwolf, ist aber Dorfteam.</div>`,
+        () => nextNightPhase()
+      );
+    });
+  });
+}
+ 
+function phase_MountainWolfN1(mw) {
+  showBeginnerTip("mountain_wolf", () => _phase_MountainWolfN1(mw));
+}
+function _phase_MountainWolfN1(mw) {
+  showModal("🏔️","MOUNTAIN WOLF","Gruppe prüfen – Nacht 1",
+    `<div class="night-report-item nri-info">🏔️ <b>${mw.name}</b> wählt eine Gruppe von Spielern. Der Spielleiter gibt ein Signal:<br><br>👍 = Seher ist in dieser Gruppe<br>👎 = Seher ist nicht dabei</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+function phase_OracleWolfN1(ow) {
+  showBeginnerTip("oracle_wolf", () => _phase_OracleWolfN1(ow));
+}
+function _phase_OracleWolfN1(ow) {
+  showModal("🌕","ORACLE WOLF","Spezialrollen zählen – Nacht 1",
+    `<div class="night-report-item nri-info">🌕 <b>${ow.name}</b> wählt eine Spielergruppe. Der Spielleiter zählt, wie viele Spezialrollen (mit aktiven Nachtfähigkeiten) sich darin befinden und gibt die Anzahl per Signal.</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+function phase_CountLycanN1() {
+  showBeginnerTip("count_lyc", () => _phase_CountLycanN1());
+}
+function _phase_CountLycanN1() {
+  const cl = players.find(p => p.alive && p.role === "Count Lycanthrope");
+  if (!cl) { nextNightPhase(); return; }
+  const wolves = players.filter(p => p.alive && isWolf(p));
+  const seer = players.find(p => p.alive && p.role === "Seher");
+  showModal("🧛","COUNT LYCANTHROPE","Wolfverteilung – Nacht 1",
+    `<div class="night-report-item nri-info">🧛 <b>${cl.name}</b> erhält vom Spielleiter folgende Informationen:<br><br>
+    • Wo die Grenze der zwei Tischhälften liegt<br>
+    • Wie viele Wölfe (inkl. Lycans) in jeder Hälfte sitzen<br>
+    • In welcher Hälfte der Seher sitzt<br><br>
+    <b>Wölfe im Spiel:</b> ${wolves.map(p=>p.name).join(", ") || "–"}<br>
+    <b>Seher:</b> ${seer ? seer.name : "nicht im Spiel"}</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+function phase_SoothsayerN1() {
+  showBeginnerTip("soothsayer", () => _phase_SoothsayerN1());
+}
+function _phase_SoothsayerN1() {
+  const ss = players.find(p => p.alive && p.role === "Soothsayer");
+  if (!ss) { nextNightPhase(); return; }
+  showModal("🌟","SOOTHSAYER","Teamprüfung – Nacht 1",
+    `<div class="night-report-item nri-info">🌟 <b>${ss.name}</b> wählt 2 Mitspieler. Der Spielleiter gibt ein Signal:<br><br>✅ Ja = beide gehören dem gleichen Team an<br>❌ Nein = verschiedene Teams</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+function phase_MasonsN1() {
+  showBeginnerTip("masons", () => _phase_MasonsN1());
+}
+function _phase_MasonsN1() {
+  const masons = players.filter(p => p.alive && p.role === "Masons");
+  if (!masons.length) { nextNightPhase(); return; }
+  showModal("🤝","MASONS","Bruderschaft – Nacht 1",
+    `<div class="night-report-item nri-info">🤝 Die Masons <b>${masons.map(p=>p.name).join(" & ")}</b> wachen auf und erkennen sich gegenseitig als vertrauenswürdig (Dorfteam).</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+function phase_GeminiN1() {
+  showBeginnerTip("gemini", () => _phase_GeminiN1());
+}
+function _phase_GeminiN1() {
+  const gemini = players.filter(p => p.alive && p.role === "Gemini");
+  if (!gemini.length) { nextNightPhase(); return; }
+  showModal("♊","GEMINI","Zwillinge – Nacht 1",
+    `<div class="night-report-item nri-info">♊ Die Gemini-Zwillinge <b>${gemini.map(p=>p.name).join(" & ")}</b> wachen auf und erkennen sich. Stirbt einer, stirbt der andere sofort mit!</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+function phase_CopycatN1() {
+  showBeginnerTip("copycat", () => _phase_CopycatN1());
+}
+function _phase_CopycatN1() {
+  const cc = players.find(p => p.alive && p.role === "Copycat");
+  if (!cc) { nextNightPhase(); return; }
+  setInstruction("🐱 Copycat – Nacht 1", `${cc.name} wählt eine Person. Stirbt diese Person, übernimmt der Copycat ihre Rolle.`, "neutral", "Copycat");
+  const targets = players.filter(p => p.alive && p.name !== cc.name);
+  renderGrid(targets, (p) => {
+    copycatTarget = p.name;
+    log(`🐱 Copycat beobachtet: ${p.name}`, "action");
+    showModal("🐱","COPYCAT","Beobachtet",
+      `<div class="night-report-item nri-info">🐱 Copycat <b>${cc.name}</b> beobachtet <b>${p.name}</b>. Wenn ${p.name} stirbt, übernimmt der Copycat sofort deren Rolle.</div>`,
+      () => nextNightPhase()
+    );
+  });
+}
+ 
+function phase_AssassinN1() {
+  showBeginnerTip("assassin", () => _phase_AssassinN1());
+}
+function _phase_AssassinN1() {
+  const ass = players.find(p => p.alive && p.role === "Assassin");
+  if (!ass) { nextNightPhase(); return; }
+  setInstruction("🗡️ Assassin – Nacht 1", `${ass.name} wählt sein geheimes Ziel.`, "neutral", "Assassin");
+  const targets = players.filter(p => p.alive && p.name !== ass.name);
+  renderGrid(targets, (p) => {
+    assassinTargetMap[ass.name] = p.name;
+    log(`🗡️ Assassin ${ass.name} Ziel: ${p.name}`, "action");
+    showModal("🗡️","ASSASSIN","Ziel gewählt",
+      `<div class="night-report-item nri-info">🗡️ <b>${ass.name}</b> hat <b>${p.name}</b> als geheimes Ziel gewählt. Wenn ${p.name} stirbt (und Assassin noch lebt), gewinnt der Assassin sofort!</div>`,
+      () => nextNightPhase()
+    );
+  });
+}
+ 
+function phase_SavantN1() {
+  showBeginnerTip("savant_n1", () => _phase_SavantN1());
+}
+function _phase_SavantN1() {
+  const sav = players.find(p => p.alive && p.role === "Savant");
+  if (!sav) { nextNightPhase(); return; }
+  const roleList = players.map(p => `<b>${p.name}</b>: ${ri(p.role).icon} ${p.role}`).join("<br>");
+  showModal("🧠","SAVANT","Allwissend – Nacht 1",
+    `<div class="night-report-item nri-info">🧠 <b>${sav.name}</b> (Savant) sieht alle Rollen:<br><br>${roleList}</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+function phase_WiseOldManN1() {
+  showBeginnerTip("wise_old_man", () => _phase_WiseOldManN1());
+}
+function _phase_WiseOldManN1() {
+  const wom = players.find(p => p.alive && p.role === "Wise Old Man");
+  if (!wom) { nextNightPhase(); return; }
+  const specials = players.filter(p => p.alive && ri(p.role).team === "village" && p.role !== "Dorfbewohner" && p.role !== "Villager" && p.role !== "Wise Old Man");
+  showModal("👴","WISE OLD MAN","Dorf-Spezialrollen – Nacht 1",
+    `<div class="night-report-item nri-info">👴 <b>${wom.name}</b> sieht alle Dorf-Spezialrollen (aber nicht welche Person welche hat):<br><br>${specials.map(p=>`${ri(p.role).icon} ${p.role}: <b>${p.name}</b>`).join("<br>")}
+    <br><br>⚠️ Der Wise Old Man stirbt automatisch am Ende von Nacht 2!</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+function phase_InsomniacNote() { phase_Insomniac(); }
+function phase_Insomniac() {
+  showBeginnerTip("insomniac", () => _phase_Insomniac());
+}
+function _phase_Insomniac() {
+  const ins = players.find(p => p.alive && p.role === "Insomniac");
+  if (!ins) { nextNightPhase(); return; }
+  const roleChanges = [];
+  if (copycatResolved) roleChanges.push("Copycat hat eine neue Rolle angenommen");
+  if (outsiderWolfJoined) roleChanges.push("Outsider Wolf ist dem Rudel beigetreten");
+  const msg = roleChanges.length > 0
+    ? `😴 <b>${ins.name}</b> beobachtet: Es gab einen Rollenwechsel!<br><br>🔔 <b>${roleChanges.join("<br>")}</b><br><br><em>(Spielleiter gibt nur ein Ja/Nein-Signal – keine Details)</em>`
+    : `😴 <b>${ins.name}</b> beobachtet: <b>Kein Rollenwechsel</b> diese Nacht.`;
+  showModal("😴","INSOMNIAC",`Nacht ${nightCount} – Beobachtung`,
+    `<div class="night-report-item nri-info">${msg}</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+/* ============================================================
+   NIGHT PHASES – INVESTIGATOR (N1), CLOAK, GLADYS, BLIND MARY
+============================================================ */
+function phase_InvestigatorN1() {
+  showBeginnerTip("investigator", () => _phase_InvestigatorN1());
+}
+function _phase_InvestigatorN1() {
+  const inv = players.find(p => p.alive && p.role === "Investigator");
+  if (!inv) { nextNightPhase(); return; }
+  setInstruction("🔎 Investigator – Nacht 1", `${inv.name} wählt 3 nebeneinander sitzende Spieler aus.`, "special", "Investigator");
+  showModal("🔎","INVESTIGATOR","Team-Wahl – Nacht 1",
+    `<div class="night-report-item nri-info">🔎 <b>${inv.name}</b> wählt 3 Spieler, die nebeneinander sitzen.<br><br>
+    ✅ Mindestens 1 davon ist ein Wolf → <b>Investigator bleibt im Dorfteam</b><br>
+    ❌ Kein Wolf dabei → <b>Investigator wird heimlich zum Wolf-Unterstützer</b><br><br>
+    Spielleiter: Prüfe die Wahl und gib dem Investigator das Signal (👍/👎).</div>`,
+    () => {
+      const targets = players.filter(p => p.alive && p.name !== inv.name);
+      setInstruction("🔎 Investigator", "3 Spieler wählen (Spielleiter bestimmt Ergebnis)", "special", "Investigator");
+      const grid = document.getElementById("playerGrid");
+      grid.innerHTML = "";
+      const wolfBtn = makeActionCard("👍","Wolf dabei – Dorf","#16a34a");
+      wolfBtn.onclick = () => {
+        investigatorTeam = "village";
+        log(`🔎 Investigator ${inv.name}: Wolf in Gruppe → bleibt Dorf`, "action");
+        showModal("🔎","INVESTIGATOR","Ergebnis",
+          `<div class="night-report-item nri-safe">✅ Mindestens ein Wolf ist dabei – ${inv.name} bleibt im <b>Dorfteam</b>.</div>`,
+          () => nextNightPhase()
+        );
+      };
+      const noWolfBtn = makeActionCard("👎","Kein Wolf – Wolf-Unterstützer","#dc2626");
+      noWolfBtn.onclick = () => {
+        investigatorTeam = "wolf";
+        log(`🔎 Investigator ${inv.name}: kein Wolf → Wolf-Unterstützer`, "action");
+        showModal("🔎","INVESTIGATOR","Ergebnis",
+          `<div class="night-report-item nri-death">❌ Kein Wolf dabei – ${inv.name} wird heimlich zum <b>Wolf-Unterstützer</b>! (Spielleiter-Info only)</div>`,
+          () => nextNightPhase()
+        );
+      };
+      grid.appendChild(wolfBtn);
+      grid.appendChild(noWolfBtn);
+    }
+  );
+}
+
+function phase_CloakN1() {
+  const cloak = players.find(p => p.alive && p.role === "The Cloak");
+  if (!cloak) { nextNightPhase(); return; }
+  showModal("🧥","THE CLOAK","Verborgene Macht – Nacht 1",
+    `<div class="night-report-item nri-info">🧥 <b>${cloak.name}</b> ist The Cloak.<br><br>
+    Der Spielleiter wählt <b>heimlich</b> eine Sonderrolle (die nicht im Spiel ist) für den Cloak aus und notiert sie.<br><br>
+    Nach Nacht ${cloakRevealNight} (oder nach Bedingungserfüllung) erfährt der Cloak seine echte Fähigkeit.<br><br>
+    <b>Bis dahin:</b> Seher sieht ihn als normalen Dorfbewohner. Der Cloak selbst kennt seine Fähigkeit noch nicht.</div>`,
+    () => nextNightPhase()
+  );
+}
+
+function phase_CloakReveal(cloak) {
+  showBeginnerTip("cloak", () => _phase_CloakReveal(cloak));
+}
+function _phase_CloakReveal(cloak) {
+  cloakRevealed = true;
+  log(`🧥 The Cloak ${cloak.name} erfährt seine wahre Rolle!`, "action");
+  showModal("🧥","THE CLOAK","Enthüllung!",
+    `<div class="night-report-item nri-gold">🧥 <b>${cloak.name}</b> erfährt jetzt die Sonderrolle, die der Spielleiter in Nacht 1 für ihn notiert hat!<br><br>
+    Spielleiter: Zeige dem Cloak seine geheime Fähigkeit und erkläre sie flüstern.</div>`,
+    () => nextNightPhase()
+  );
+}
+
+function phase_Gladys(gladys) {
+  showBeginnerTip("gladys", () => _phase_Gladys(gladys));
+}
+function _phase_Gladys(gladys) {
+  showModal("🪟","GLADYS","Nachbar-Beobachtung",
+    `<div class="night-report-item nri-info">🪟 <b>${gladys.name}</b> (Gladys) beobachtet ihre Nachbarn.<br><br>
+    Spielleiter: Hat mindestens einer der direkten Sitznachbarn von ${gladys.name} heute Nacht eine Nachtaktion durchgeführt?<br><br>
+    👍 Ja, mindestens ein Nachbar war aktiv<br>
+    👎 Nein, kein Nachbar hatte eine Aktion</div>`,
+    () => nextNightPhase()
+  );
+}
+
+function phase_BlindMaryKill() {
+  showBeginnerTip("blind_mary", () => _phase_BlindMaryKill());
+}
+function _phase_BlindMaryKill() {
+  setInstruction("🙈 Blind Mary (tot – Rache)", "Blind Mary ist tot und darf jede Nacht eine Person eliminieren.", "neutral", "Blind Mary");
+  const targets = players.filter(p => p.alive);
+  if (!targets.length) { nextNightPhase(); return; }
+  renderGrid(targets, (p) => {
+    showConfirmBanner(`🙈 ${p.name} von Blind Mary töten?`, () => {
+      p.alive = false;
+      log(`🙈 Blind Mary (tot) tötet: ${p.name}`, "death");
+      showModal("🙈","BLIND MARY","Rache-Kill",
+        `<div class="night-report-item nri-death">🙈 Die tote Blind Mary tötet <b>${p.name}</b> aus dem Jenseits!</div>`,
+        () => { updateTopBar(); nextNightPhase(); }
+      );
+    });
+  });
+}
+
+/* ============================================================
+   NIGHT PHASES – WOLF ATTACK
+============================================================ */
+function phase_Wolves() {
+  showBeginnerTip("wolves", () => _phase_Wolves());
+}
+function _phase_Wolves() {
+  // Spawn schläft bis alle echten Wölfe tot sind
+  const spawnP = players.find(p => p.alive && p.role === "Spawn");
+  const otherWolvesAlive = players.filter(p => p.alive && isWolf(p) && p.role !== "Spawn").length;
+  const spawnAwake = spawnP && otherWolvesAlive === 0; // Spawn nur aktiv wenn alle anderen Wölfe tot
+
+  // Outsider Wolf schläft bis firstWolfDied
+  const outsiderP = players.find(p => p.alive && p.role === "Outsider Wolf");
+  const outsiderAwake = outsiderP && outsiderWolfJoined;
+
+  // Alle Wölfe die diese Nacht wach sind
+  const allWolves = players.filter(p => {
+    if (!p.alive || !isWolf(p)) return false;
+    if (p.role === "Spawn" && !spawnAwake) return false;
+    if (p.role === "Outsider Wolf" && !outsiderAwake) return false;
+    return true;
+  });
+
+  if (allWolves.length === 0) { nextNightPhase(); return; }
+
+  // Infected penalty: wolves skipped this night
+  if (infectedKilledByWolves) {
+    infectedKilledByWolves = false;
+    log("🦠 Strafnacht! Wölfe dürfen diese Nacht niemanden angreifen (Infected-Strafe).", "action");
+    showModal("🦠","STRAFNACHT","Wölfe können nicht angreifen!",
+      `<div class="night-report-item nri-info">🦠 Die Wölfe haben den <b>Infected</b> getötet! Als Strafe dürfen sie diese Nacht <b>NIEMANDEN</b> angreifen.<br><br>Wölfe: ${allWolves.map(p=>p.name).join(", ")}<br><br>Diese Nacht gibt es kein Wolfsopfer.</div>`,
+      () => nextNightPhase()
+    );
+    return;
+  }
+
+  // Sonderhinweise für bestimmte Wolfrollen
+  const hints = [];
+  if (allWolves.find(p => p.role === "Kamikaze Wolf")) hints.push("💥 Kamikaze Wolf: Seher-Check = beide tot");
+  if (allWolves.find(p => p.role === "Mystery Wolf")) hints.push("🎭 Mystery Wolf: immer Dorf beim Seher");
+  if (allWolves.find(p => p.role === "Pet Wolf")) {
+    const otherW = players.filter(p => p.alive && isWolf(p) && p.role !== "Pet Wolf").length;
+    hints.push(`🐾 Pet Wolf: ${otherW >= 2 ? "tarnt als Dorf" : "⚠️ Tarnung weg!"}`);
+  }
+  if (allWolves.find(p => p.role === "Wolf Cub")) hints.push("🐶 Wolf Cub: Tod = nächste Nacht 2×");
+  if (allWolves.find(p => p.role === "Starving Wolf") && allWolves.length === 1) hints.push("🐺 Starving Wolf: allein = 2 Opfer heute!");
+  if (allWolves.find(p => p.role === "Eye of the Seer")) hints.push("👁️ Eye of the Seer: Tod = Seher invertiert");
+  if (allWolves.find(p => p.role === "Illusionist")) hints.push("🪄 Illusionist: Seher-Check = Dauerinversion");
+  if (allWolves.find(p => p.role === "Assassin Wolf")) hints.push("🗡️ Assassin Wolf: Hinrichtung = zieht jemanden mit");
+  if (spawnAwake) hints.push("🥚 Spawn: wacht erstmals auf!");
+
+  const hintHtml = hints.length > 0
+    ? `<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:4px 0">${hints.map(h=>`<span style="background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);border-radius:8px;padding:4px 10px;font-size:.82rem;">${h}</span>`).join("")}</div>`
+    : "";
+
+  const label = maxNightKills > 1 ? `Wählt ${maxNightKills} Opfer!` : "Wählt ein Opfer.";
+  setInstruction(`🐺 Werwölfe – Nacht ${nightCount}`,
+    `Wölfe: ${allWolves.map(p=>p.name).join(", ")}. ${label}`,
+    "wolf", "Wolfsteam"
+  );
+
+  if (hints.length > 0) {
+    showModal("🐺","WOLFTEAM",`Nacht ${nightCount} – Hinweise`,
+      hintHtml,
+      () => {
+        nightKillCount = 0;
+        const targets = players.filter(p => p.alive && !isWolf(p));
+        if (targets.length === 0) { nextNightPhase(); return; }
+        renderGrid(targets, (p) => wolfKill(p, targets));
+      }
+    );
+    return;
+  }
+
+  nightKillCount = 0;
+  const targets = players.filter(p => p.alive && !isWolf(p));
+  if (targets.length === 0) { nextNightPhase(); return; }
+  renderGrid(targets, (p) => wolfKill(p, targets));
+}
+ 
+function wolfKill(p, allTargets) {
+  showConfirmBanner(`🐺 ${p.name} als Opfer wählen?`, () => {
+    if (nightKillCount === 0) {
+      victimThisNight = p.name;
+    } else {
+      secondVictimThisNight = p.name;
+    }
+    nightKillCount++;
+    log(`🐺 Wölfe wählen: ${p.name}`, "action");
+ 
+    if (nightKillCount < maxNightKills) {
+      const remaining = players.filter(x => x.alive && !isWolf(x) && x.name !== victimThisNight);
+      if (remaining.length > 0) {
+        setInstruction("🐺 Werwölfe – 2. Opfer", "Wählt ein zweites Opfer.", "wolf", "Wolfsteam");
+        renderGrid(remaining, (q) => {
+          showConfirmBanner(`🐺 ${q.name} als 2. Opfer?`, () => {
+            secondVictimThisNight = q.name;
+            nightKillCount++;
+            log(`🐺 Wölfe wählen 2. Opfer: ${q.name}`, "action");
+            nextNightPhase();
+          });
+        });
+        return;
+      }
+    }
+    nextNightPhase();
+  });
+}
+ 
+/* ============================================================
+   NIGHT PHASES – WOLF SPECIALS
+============================================================ */
+function phase_MysticWolf(mw) {
+  showBeginnerTip("mystic_wolf", () => _phase_MysticWolf(mw));
+}
+function _phase_MysticWolf(mw) {
+  setInstruction("🔮 Mystic Wolf", `${mw.name} wählt eine Person und erfährt deren exakte Rolle.`, "wolf", "Mystic Wolf");
+  const targets = players.filter(p => p.alive && p.name !== mw.name);
+  renderGrid(targets, (p) => {
+    log(`🔮 Mystic Wolf sieht: ${p.name} = ${p.role}`, "action");
+    showModal("🔮","MYSTIC WOLF","Genaue Rolle erkannt",
+      `<div class="night-report-item nri-gold">${ri(p.role).icon} <b>${p.name}</b> ist: <b>${p.role}</b></div>`,
+      () => nextNightPhase()
+    );
+  });
+}
+ 
+function phase_SorcererWolf(sw) {
+  showBeginnerTip("sorcerer_wolf", () => _phase_SorcererWolf(sw));
+}
+function _phase_SorcererWolf(sw) {
+  setInstruction("🧙 Sorcerer Wolf", `${sw.name} sucht den Seher. Ja/Nein-Signal vom Spielleiter.`, "wolf", "Sorcerer Wolf");
+  const targets = players.filter(p => p.alive && !isWolf(p));
+  renderGrid(targets, (p) => {
+    const isSeher = p.role === "Seher" || p.role === "Reactive Seer";
+    log(`🧙 Sorcerer Wolf prüft ${p.name} → ${isSeher ? "SEHER!" : "kein Seher"}`, "action");
+    showModal("🧙","SORCERER WOLF","Sehersuche",
+      `<div class="night-report-item ${isSeher ? "nri-death" : "nri-safe"}">${isSeher ? "👍 JA – Das ist der Seher!" : "👎 NEIN – kein Seher."}</div>`,
+      () => nextNightPhase()
+    );
+  });
+}
+ 
+function phase_Sorceress(s) {
+  showBeginnerTip("sorceress", () => _phase_Sorceress(s));
+}
+function _phase_Sorceress(s) {
+  setInstruction("🧙‍♀️ Sorceress", `${s.name} sucht den Seher (kennt die Wölfe nicht).`, "wolf", "Sorceress");
+  const targets = players.filter(p => p.alive && p.name !== s.name);
+  renderGrid(targets, (p) => {
+    const isSeher = p.role === "Seher" || p.role === "Reactive Seer";
+    log(`🧙‍♀️ Sorceress prüft ${p.name} → ${isSeher ? "SEHER!" : "kein Seher"}`, "action");
+    showModal("🧙‍♀️","SORCERESS","Sehersuche",
+      `<div class="night-report-item ${isSeher ? "nri-death" : "nri-safe"}">${isSeher ? "👍 JA – Das ist der Seher!" : "👎 NEIN – kein Seher."}</div>`,
+      () => nextNightPhase()
+    );
+  });
+}
+ 
+function phase_Warlock(w) {
+  showBeginnerTip("warlock", () => _phase_Warlock(w));
+}
+function _phase_Warlock(w) {
+  setInstruction("🧙‍♂️ Warlock", `${w.name} sucht den Seher. Trifft er ihn, wird der Seher verflucht.`, "wolf", "Warlock");
+  const targets = players.filter(p => p.alive && p.name !== w.name);
+  renderGrid(targets, (p) => {
+    const isSeher = p.role === "Seher" || p.role === "Reactive Seer";
+    if (isSeher) {
+      seerInverted = true;
+      log(`🧙‍♂️ Warlock findet Seher ${p.name} – ab jetzt verflucht!`, "action");
+      showModal("🧙‍♂️","WARLOCK","Seher gefunden & verflucht!",
+        `<div class="night-report-item nri-death">⚡ Warlock hat <b>${p.name}</b> (Seher) getroffen! Ab sofort erhält der Seher nur noch falsche (invertierte) Visionen.</div>`,
+        () => nextNightPhase()
+      );
+    } else {
+      log(`🧙‍♂️ Warlock prüft ${p.name} → kein Seher`, "action");
+      showModal("🧙‍♂️","WARLOCK","Kein Seher",
+        `<div class="night-report-item nri-safe">👎 NEIN – ${p.name} ist nicht der Seher.</div>`,
+        () => nextNightPhase()
+      );
+    }
+  });
+}
+ 
+/* ============================================================
+   NIGHT PHASES – SEER
+============================================================ */
+function phase_Seer(seer) {
+  showBeginnerTip("seer", () => _phase_Seer(seer));
+}
+function _phase_Seer(seer) {
+  setInstruction("🔮 Seher erwacht", `${seer.name} wählt eine Person zur Überprüfung.`, "special", "Seher");
+  const targets = players.filter(p => p.alive && p.name !== seer.name);
+  renderGrid(targets, (p) => seerCheck(seer, p));
+}
+ 
+function seerCheck(seer, target) {
+  let actuallyWolf = isWolf(target) || (target.isLycan);
+  let showAsWolf = actuallyWolf;
+ 
+  // Pet Wolf: shows as village if 2+ other wolves alive
+  if (target.role === "Pet Wolf") {
+    const otherWolves = players.filter(p => p.alive && isWolf(p) && p.name !== target.name).length;
+    if (otherWolves >= 2) showAsWolf = false;
+  }
+  // Mystery Wolf: always shows as village
+  if (target.role === "Mystery Wolf") showAsWolf = false;
+  // Spawn: shows as village while other wolves alive
+  if (target.role === "Spawn") {
+    const otherWolves = players.filter(p => p.alive && isWolf(p) && p.role !== "Spawn").length;
+    if (otherWolves > 0) showAsWolf = false;
+  }
+  // Outsider Wolf: shows as village until he joins the pack
+  if (target.role === "Outsider Wolf" && !outsiderWolfJoined) showAsWolf = false;
+ 
+  // Apprentice Illusionist: one-time false result
+  if (!apprenticeIllUsed && hasAliveRole("Apprentice Illusionist")) {
+    apprenticeIllUsed = true;
+    showAsWolf = !showAsWolf;
+    log(`🎭 Apprentice Illusionist fälscht Seherergebnis einmalig!`, "action");
+  }
+ 
+  // Kamikaze Wolf: both die
+  if (target.role === "Kamikaze Wolf") {
+    target.alive = false;
+    seer.alive = false;
+    log(`💥 Kamikaze Wolf! ${seer.name} und ${target.name} sterben beide!`, "death");
+    showModal("💥","KAMIKAZE WOLF","Beide sterben!",
+      `<div class="night-report-item nri-death">💥 Der Seher <b>${seer.name}</b> hat den Kamikaze Wolf <b>${target.name}</b> geprüft. BEIDE sterben sofort!</div>`,
+      () => { updateTopBar(); nextNightPhase(); }
+    );
+    return;
+  }
+ 
+  // Illusionist: seer gets inverted from now on
+  if (target.role === "Illusionist" && !seerInverted) {
+    seerInverted = true;
+    log(`🪄 Illusionist gefunden – Seher bekommt ab jetzt invertierte Ergebnisse!`, "action");
+  }
+ 
+  // Apply inversion
+  if (seerInverted) showAsWolf = !showAsWolf;
+ 
+  // Innocent: special signal
+  if (target.role === "Innocent" && !seerInverted) {
+    log(`😇 Seher prüft Innocent ${target.name} – spezielles Zeichen!`, "action");
+    showModal("🔮","SEHER","Ergebnis",
+      `<div class="night-report-item nri-safe">😇 SPEZIELL: <b>${target.name}</b> ist der INNOCENT – absolut unschuldig und nicht verfälschbar!</div>`,
+      () => nextNightPhase()
+    );
+    return;
+  }
+ 
+  const result = showAsWolf ? "🐺 WERWOLF" : "✅ Kein Werwolf";
+  const cls = showAsWolf ? "nri-death" : "nri-safe";
+  log(`🔮 Seher prüft ${target.name} → ${result}${seerInverted ? " (invertiert!)" : ""}`, "action");
+  showModal("🔮","SEHER",`${target.name} ist…`,
+    `<div class="night-report-item ${cls}">${result}${seerInverted ? " <em>(Seher ist verflucht – möglicherweise falsch!)</em>" : ""}</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+function phase_DenMother(dm) {
+  showBeginnerTip("den_mother", () => _phase_DenMother(dm));
+}
+function _phase_DenMother(dm) {
+  // Was asked after seer phase
+  const seer = players.find(p => (p.role === "Seher" || p.role === "Reactive Seer"));
+  showModal("🐾","DEN MOTHER","Seherin-Ergebnis",
+    `<div class="night-report-item nri-info">🐾 <b>${dm.name}</b> (Den Mother) erfährt das Seherergebnis:<br><br>Spielleiter: Gib das Signal (👍 = Seher fand einen Wolf / 👎 = kein Wolf gefunden / ✋ = Seher tot)</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+/* ============================================================
+   NIGHT PHASES – VILLAGE & NEUTRAL
+============================================================ */
+function phase_Devotee(dev) {
+  showBeginnerTip("devotee", () => _phase_Devotee(dev));
+}
+function _phase_Devotee(dev) {
+  const wolves = players.filter(p => p.alive && isWolf(p));
+  const infoIdx = nightCount - 1;
+  const wolfToReveal = wolves[infoIdx] ? wolves[infoIdx] : null;
+  const msg = wolfToReveal
+    ? `Der nächste Wolf in der Sitzreihenfolge ist: <b>${wolfToReveal.name}</b> (${wolfToReveal.role})`
+    : "Keine weiteren Wölfe mehr zu enthüllen.";
+  log(`📿 Devotee erhält: ${wolfToReveal ? wolfToReveal.name : "keinen"}`, "action");
+  showModal("📿","DEVOTEE",`Nacht ${nightCount} – Wolf-Info`,
+    `<div class="night-report-item nri-gold">📿 <b>${dev.name}</b>: ${msg}</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+function phase_Empath(emp) {
+  showBeginnerTip("empath", () => _phase_Empath(emp));
+}
+function _phase_Empath(emp) {
+  const seer = players.find(p => p.alive && (p.role === "Seher" || p.role === "Reactive Seer"));
+  if (!seer) { nextNightPhase(); return; }
+  const neighbors = []; // Simplified: moderator decides
+  showModal("💫","EMPATH","Seherin-Nachbarn",
+    `<div class="night-report-item nri-info">💫 <b>${emp.name}</b> (Empath) erfährt:<br><br>Spielleiter: Ist mindestens einer der Sitz-Nachbarn des Sehers <b>${seer.name}</b> ein Werwolf?<br><br>👍 Ja &nbsp;&nbsp;&nbsp; 👎 Nein</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+function phase_Bodyguard(bg) {
+  showBeginnerTip("bodyguard", () => _phase_Bodyguard(bg));
+}
+function _phase_Bodyguard(bg) {
+  setInstruction("🛡️ Bodyguard", `${bg.name} wählt eine Person zum Schützen (nicht sich selbst${bodyguardLastTarget ? ", nicht " + bodyguardLastTarget : ""}).`, "special", "Bodyguard");
+  const targets = players.filter(p => p.alive && p.name !== bg.name && p.name !== bodyguardLastTarget);
+  if (!targets.length) {
+    showModal("🛡️","BODYGUARD","Keine gültige Wahl",
+      `<div class="night-report-item nri-info">Bodyguard kann niemanden schützen (alle Optionen ausgeschöpft).</div>`,
+      () => nextNightPhase()
+    );
+    return;
+  }
+  renderGrid(targets, (p) => {
+    bodyguardTarget = p.name;
+    bodyguardLastTarget = p.name;
+    if (victimThisNight === p.name) {
+      victimThisNight = null;
+      log(`🛡️ Bodyguard rettet ${p.name}!`, "action");
+    }
+    if (secondVictimThisNight === p.name) {
+      secondVictimThisNight = null;
+    }
+    log(`🛡️ Bodyguard schützt: ${p.name}`, "action");
+    showModal("🛡️","BODYGUARD","Schutz aktiviert",
+      `<div class="night-report-item nri-safe">✅ ${p.name} ist diese Nacht geschützt.</div>`,
+      () => nextNightPhase()
+    );
+  });
+}
+ 
+function phase_Spy(spy) {
+  showBeginnerTip("spy", () => _phase_Spy(spy));
+}
+function _phase_Spy(spy) {
+  setInstruction("🕵️ Spy", `${spy.name} prüft die Teamzugehörigkeit einer Person.`, "special", "Spy");
+  const targets = players.filter(p => p.alive && p.name !== spy.name);
+  renderGrid(targets, (p) => {
+    const isWolfTeam = isWolf(p);
+    log(`🕵️ Spy prüft ${p.name} → ${isWolfTeam ? "WOLFTEAM" : "DORFTEAM"}`, "action");
+    showModal("🕵️","SPY","Team erkannt",
+      `<div class="night-report-item ${isWolfTeam ? "nri-death" : "nri-safe"}"><b>${p.name}</b> gehört zum: ${isWolfTeam ? "🐺 WOLFTEAM" : "🏘️ DORFTEAM"}</div>`,
+      () => nextNightPhase()
+    );
+  });
+}
+ 
+function phase_Spellcaster(spell) {
+  showBeginnerTip("spellcaster", () => _phase_Spellcaster(spell));
+}
+function _phase_Spellcaster(spell) {
+  setInstruction("✨ Spellcaster", `${spell.name} wählt eine Person, die morgen schweigen muss.`, "special", "Spellcaster");
+  const targets = players.filter(p => p.alive && p.name !== spell.name);
+  renderGrid(targets, (p) => {
+    spellcastedToday = p.name;
+    log(`✨ Spellcaster verstummt: ${p.name}`, "action");
+    showModal("✨","SPELLCASTER","Schweigezauber",
+      `<div class="night-report-item nri-gold">✨ <b>${p.name}</b> darf morgen den ganzen Tag kein einziges Wort sprechen!</div>`,
+      () => nextNightPhase()
+    );
+  });
+}
+ 
+function phase_Mummer(mum) {
+  showBeginnerTip("mummer", () => _phase_Mummer(mum));
+}
+function _phase_Mummer(mum) {
+  setInstruction("🎪 Mummer", `${mum.name} wählt eine Person, die morgen so abstimmen muss wie er.`, "wolf", "Mummer");
+  const targets = players.filter(p => p.alive && p.name !== mum.name);
+  renderGrid(targets, (p) => {
+    mummerHypnotized = p.name;
+    log(`🎪 Mummer hypnotisiert: ${p.name}`, "action");
+    showModal("🎪","MUMMER","Hypnose aktiv",
+      `<div class="night-report-item nri-gold">🎪 <b>${p.name}</b> muss morgen genauso abstimmen wie <b>${mum.name}</b>. Abweichung wird vom Spielleiter korrigiert.</div>`,
+      () => nextNightPhase()
+    );
+  });
+}
+ 
+function phase_Nosferatu(nosf) {
+  showBeginnerTip("nosferatu", () => _phase_Nosferatu(nosf));
+}
+function _phase_Nosferatu(nosf) {
+  const wCount = aliveWolfCount();
+  const markCount = Math.max(1, wCount - 1);
+  setInstruction("🧛 Nosferatu", `${nosf.name} markiert ${markCount} Spieler. Bei 2. Nominierung → sofort tot.`, "neutral", "Nosferatu");
+  showModal("🧛","NOSFERATU","Spieler markieren",
+    `<div class="night-report-item nri-info">🧛 <b>${nosf.name}</b> markiert heimlich <b>${markCount}</b> Spieler (Anzahl Wölfe - 1). Der Spielleiter notiert diese.<br><br>Werden diese Spieler morgen ein 2. Mal nominiert, sterben sie sofort automatisch.</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+function phase_Matchmaker(mm) {
+  showBeginnerTip("matchmaker", () => _phase_Matchmaker(mm));
+}
+function _phase_Matchmaker(mm) {
+  showModal("💘","MATCHMAKER","Schicksale verknüpfen",
+    `<div class="night-report-item nri-info">💘 <b>${mm.name}</b> wählt eine Gruppe von Spielern, deren Schicksale verknüpft werden. Stirbt einer → sterben alle verknüpften. Der Spielleiter notiert die Verknüpfung.</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+function phase_Chupacabra(chupa) {
+  showBeginnerTip("chupacabra", () => _phase_Chupacabra(chupa));
+}
+function _phase_Chupacabra(chupa) {
+  const wolvesAlive = players.filter(p => p.alive && isWolf(p));
+  const label = wolvesAlive.length > 0 ? "Jagt einen Werwolf!" : "Alle Wölfe tot – jagt jeden Spieler!";
+  setInstruction("🦎 Chupacabra", `${chupa.name} wählt: ${label}`, "neutral", "Chupacabra");
+  const targets = wolvesAlive.length > 0
+    ? wolvesAlive
+    : players.filter(p => p.alive && p.name !== chupa.name);
+  renderGrid(targets, (p) => {
+    showConfirmBanner(`🦎 ${p.name} jagen?`, () => {
+      p.alive = false;
+      log(`🦎 Chupacabra tötet: ${p.name}`, "death");
+      showModal("🦎","CHUPACABRA","Gejagt!",
+        `<div class="night-report-item nri-death">🦎 <b>${p.name}</b> wurde vom Chupacabra getötet!</div>`,
+        () => { updateTopBar(); nextNightPhase(); }
+      );
+    });
+  });
+}
+ 
+function phase_Auracabra(aura) {
+  showBeginnerTip("auracabra", () => _phase_Auracabra(aura));
+}
+function _phase_Auracabra(aura) {
+  setInstruction("👁️ Auracabra", `${aura.name} wählt eine Person. Nur Spezialrollen sterben.`, "neutral", "Auracabra");
+  const targets = players.filter(p => p.alive && p.name !== aura.name);
+  renderGrid(targets, (p) => {
+    const hasSpecial = p.role !== "Dorfbewohner" && p.role !== "Villager" && p.role !== "Werwolf";
+    showConfirmBanner(`👁️ ${p.name} anvisieren?`, () => {
+      if (hasSpecial) {
+        p.alive = false;
+        log(`👁️ Auracabra tötet Spezialrolle: ${p.name} (${p.role})`, "death");
+        showModal("👁️","AURACABRA","Spezialrolle eliminiert",
+          `<div class="night-report-item nri-death">👁️ <b>${p.name}</b> hatte eine Spezialrolle (${p.role}) und stirbt!</div>`,
+          () => { updateTopBar(); nextNightPhase(); }
+        );
+      } else {
+        log(`👁️ Auracabra: ${p.name} hat keine Spezialrolle – überlebt`, "action");
+        showModal("👁️","AURACABRA","Kein Treffer",
+          `<div class="night-report-item nri-safe">✅ ${p.name} hat keine Spezialrolle – überlebt den Angriff.</div>`,
+          () => nextNightPhase()
+        );
+      }
+    });
+  });
+}
+ 
+function phase_Vanillacabra(van) {
+  showBeginnerTip("vanillacabra", () => _phase_Vanillacabra(van));
+}
+function _phase_Vanillacabra(van) {
+  const wCount = aliveWolfCount();
+  const killCount = Math.max(1, wCount - 1);
+  setInstruction("🦌 Vanillacabra", `${van.name} wählt ${killCount} Spieler – nur Spieler OHNE Sonderrolle sterben.`, "neutral", "Vanillacabra");
+  showModal("🦌","VANILLACABRA","Normale Spieler jagen",
+    `<div class="night-report-item nri-info">🦌 <b>${van.name}</b> wählt <b>${killCount}</b> Spieler. Spielleiter prüft: Nur Spieler OHNE Spezialfähigkeiten (normale Dorfbewohner / normale Werwölfe) sterben.</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+function phase_Blighted(bl) {
+  showBeginnerTip("blighted", () => _phase_Blighted(bl));
+}
+function _phase_Blighted(bl) {
+  setInstruction("🤢 Blighted (aktiv)", `${bl.name} wurde angegriffen und tötet jetzt selbst jede Nacht.`, "neutral", "Blighted");
+  const targets = players.filter(p => p.alive && p.name !== bl.name);
+  renderGrid(targets, (p) => {
+    showConfirmBanner(`🤢 ${p.name} töten?`, () => {
+      p.alive = false;
+      log(`🤢 Blighted tötet: ${p.name}`, "death");
+      showModal("🤢","BLIGHTED","Opfer gewählt",
+        `<div class="night-report-item nri-death">🤢 <b>${p.name}</b> wurde vom Blighted getötet!</div>`,
+        () => { updateTopBar(); nextNightPhase(); }
+      );
+    });
+  });
+}
+ 
+function phase_Savant(sav) {
+  showBeginnerTip("savant", () => _phase_Savant(sav));
+}
+function _phase_Savant(sav) {
+  const wCount = aliveWolfCount();
+  const killCount = Math.max(0, wCount - 2);
+  if (killCount === 0) {
+    showModal("🧠","SAVANT","Keine Kills",
+      `<div class="night-report-item nri-info">🧠 Savant: Wölfe - 2 = 0. Keine Eliminierungen diese Nacht.</div>`,
+      () => nextNightPhase()
+    );
+    return;
+  }
+  showModal("🧠","SAVANT","Dorfbewohner eliminieren",
+    `<div class="night-report-item nri-info">🧠 <b>${sav.name}</b> eliminiert <b>${killCount}</b> normale Dorfbewohner. Spielleiter wählt gemeinsam mit Savant.</div>`,
+    () => nextNightPhase()
+  );
+}
+ 
+function phase_Reanimator(reani) {
+  showBeginnerTip("reanimator", () => _phase_Reanimator(reani));
+}
+function _phase_Reanimator(reani) {
+  const dead = players.filter(p => !p.alive);
+  if (!dead.length) { nextNightPhase(); return; }
+  showModal("💉","REANIMATOR","Spieler zurückbringen?",
+    `<div class="night-report-item nri-info">💉 <b>${reani.name}</b> kann EINMALIG einen toten Spieler zurückbringen. Verstorbene: <b>${dead.map(p=>p.name).join(", ")}</b></div>`,
+    () => {
+      setInstruction("💉 Reanimator", "Wen zurückbringen? (oder 'Nichts tun' wählen)", "special", "Reanimator");
+      const grid = document.getElementById("playerGrid");
+      grid.innerHTML = "";
+      dead.forEach(p => {
+        const c = makeActionCard(ri(p.role).icon, p.name, "#22d3ee");
+        c.onclick = () => {
+          showConfirmBanner(`💉 ${p.name} zurückbringen?`, () => {
+            p.alive = true;
+            reanimatorUsed = true;
+            log(`💉 Reanimator bringt ${p.name} zurück (${p.role})`, "action");
+            showModal("💉","REANIMATOR","Zurückgebracht!",
+              `<div class="night-report-item nri-safe">✅ <b>${p.name}</b> (${p.role}) kehrt ins Spiel zurück!</div>`,
+              () => { updateTopBar(); nextNightPhase(); }
+            );
+          });
+        };
+        grid.appendChild(c);
+      });
+      const skip = makeActionCard("💤","Nichts tun","#475569");
+      skip.onclick = () => { reanimatorUsed = true; nextNightPhase(); };
+      grid.appendChild(skip);
+    }
+  );
+}
+ 
+function phase_OracleVillage(oracle) {
+  showBeginnerTip("oracle", () => _phase_OracleVillage(oracle));
+}
+function _phase_OracleVillage(oracle) {
+  showModal("🌙","ORACLE","Exakte Rolle sehen?",
+    `<div class="night-report-item nri-info">🌙 <b>${oracle.name}</b> kann EINMALIG die exakte Rolle einer Person sehen.</div>`,
+    () => {
+      setInstruction("🌙 Oracle", "Eine Person wählen oder überspringen.", "special", "Oracle");
+      const targets = players.filter(p => p.alive && p.name !== oracle.name);
+      const grid = document.getElementById("playerGrid");
+      grid.innerHTML = "";
+      targets.forEach(p => {
+        const c = makeActionCard(ri(p.role).icon, p.name, "#f0c96a");
+        c.onclick = () => {
+          oracleVillageUsed = true;
+          log(`🌙 Oracle sieht: ${p.name} = ${p.role}`, "action");
+          showModal("🌙","ORACLE","Rolle enthüllt",
+            `<div class="night-report-item nri-gold">${ri(p.role).icon} <b>${p.name}</b> ist: <b>${p.role}</b></div>`,
+            () => nextNightPhase()
+          );
+        };
+        grid.appendChild(c);
+      });
+      const skip = makeActionCard("💤","Überspringen","#475569");
+      skip.onclick = () => { oracleVillageUsed = true; nextNightPhase(); };
+      grid.appendChild(skip);
+    }
+  );
+}
+ 
+function phase_ApprenticeExposer(expo) {
+  showBeginnerTip("exposer", () => _phase_ApprenticeExposer(expo));
+}
+function _phase_ApprenticeExposer(expo) {
+  showModal("📢","APPRENTICE EXPOSER","Rolle enthüllen?",
+    `<div class="night-report-item nri-info">📢 <b>${expo.name}</b> kann EINMALIG eine Rolle allen Spielern zeigen.</div>`,
+    () => {
+      setInstruction("📢 App. Exposer", "Eine Person wählen oder überspringen.", "special", "App. Exposer");
+      const targets = players.filter(p => p.alive && p.name !== expo.name);
+      const grid = document.getElementById("playerGrid");
+      grid.innerHTML = "";
+      targets.forEach(p => {
+        const c = makeActionCard(ri(p.role).icon, p.name, "#f0c96a");
+        c.onclick = () => {
+          exposerUsed = true;
+          log(`📢 Apprentice Exposer enthüllt: ${p.name} = ${p.role}`, "action");
+          showModal("📢","ALLE SEHEN!",`${p.name}'s Rolle ist…`,
+            `<div class="night-report-item nri-gold" style="font-size:1.2rem; text-align:center; justify-content:center;">${ri(p.role).icon} <b>${p.role}</b></div>
+            <div class="night-report-item nri-info">📢 Der Spielleiter zeigt ALLEN Spielern diese Karte.</div>`,
+            () => nextNightPhase()
+          );
+        };
+        grid.appendChild(c);
+      });
+      const skip = makeActionCard("💤","Überspringen","#475569");
+      skip.onclick = () => { exposerUsed = true; nextNightPhase(); };
+      grid.appendChild(skip);
+    }
+  );
+}
+ 
+/* ---- WITCH ---- */
+function phase_Witch(witch) {
+  showBeginnerTip("witch", () => _phase_Witch(witch));
+}
+function _phase_Witch(witch) {
+  if (!witchHasHeal && !witchHasPoison) { nextNightPhase(); return; }
+  setInstruction("🧪 Hexe erwacht", `${witch.name} – Heiltrank oder Gift?`, "special", "Hexe");
+  const grid = document.getElementById("playerGrid");
+  grid.innerHTML = "";
+ 
+  if (witchHasHeal && victimThisNight) {
+    const c = makeActionCard("🧪", `${victimThisNight} retten`, "#10b981");
+    c.onclick = () => showConfirmBanner(`🧪 ${victimThisNight} retten?`, () => {
+      victimThisNight = null;
+      witchHasHeal = false;
+      log("🧪 Hexe heilt das Opfer", "action");
+      nextNightPhase();
+    });
+    grid.appendChild(c);
+  }
+ 
+  if (witchHasPoison) {
+    const c = makeActionCard("💀","Gift einsetzen","#ef4444");
+    c.onclick = () => {
+      setInstruction("🧪 Hexengift", "Wen vergiften?", "special", "Hexe");
+      const targets = players.filter(p => p.alive && p.name !== witch.name);
+      renderGrid(targets, (p) => showConfirmBanner(`💀 ${p.name} vergiften?`, () => {
+        witchKilledThisNight = p.name;
+        witchHasPoison = false;
+        log(`💀 Hexe vergiftet: ${p.name}`, "action");
+        nextNightPhase();
+      }));
+    };
+    grid.appendChild(c);
+  }
+ 
+  const skip = makeActionCard("💤","Nichts tun","#475569");
+  skip.onclick = nextNightPhase;
+  grid.appendChild(skip);
+}
+ 
+/* ============================================================
+   NIGHT END
+============================================================ */
+function processNightEnd() {
+  gamePhase = "day_report";
+  document.body.className = "day";
+  document.getElementById("phaseIcon").textContent = "☀️";
+  document.getElementById("phaseText").textContent = "Tag " + nightCount;
+ 
+  const deaths = [];
+  const messages = [];
+ 
+  // Tough Girl delayed death
+  if (toughGirlInjured) {
+    const tg = players.find(p => p.name === toughGirlInjured);
+    if (tg && tg.alive) {
+      tg.alive = false;
+      deaths.push(tg);
+      messages.push(`<div class="night-report-item nri-death">💔 ${tg.name} erliegt ihren Verletzungen (Tough Girl).</div>`);
+      log(`💀 ${tg.name} stirbt (Tough Girl Verzögerung)`, "death");
+    }
+    toughGirlInjured = null;
+  }
+ 
+  // Wolf victims
+  for (const victimName of [victimThisNight, secondVictimThisNight]) {
+    if (!victimName) continue;
+    const p = players.find(x => x.name === victimName);
+    if (!p || !p.alive) continue;
+ 
+    if (p.role === "Tough Girl" && !toughGirlInjured) {
+      toughGirlInjured = p.name;
+      messages.push(`<div class="night-report-item nri-info">💪 ${p.name} überlebt den Angriff! (Tough Girl – stirbt erst morgen Nacht)</div>`);
+      log(`💪 ${p.name} überlebt als Tough Girl`, "action");
+    } else if (p.role === "Tough Girl" && toughGirlInjured === p.name) {
+      p.alive = false;
+      deaths.push(p);
+      toughGirlInjured = null;
+      messages.push(`<div class="night-report-item nri-death">💔 ${p.name} (Tough Girl) wird ein zweites Mal angegriffen und stirbt sofort!</div>`);
+      log(`💀 ${p.name} Tough Girl – zweiter Angriff, sofort tot`, "death");
+    } else if (p.role === "Blighted" && !blightedActive) {
+      blightedActive = true;
+      messages.push(`<div class="night-report-item nri-info">🤢 ${p.name} (Blighted) überlebt den Angriff – wird ab jetzt selbst aktiv!</div>`);
+      log(`🤢 Blighted aktiviert`, "action");
+    } else {
+      p.alive = false;
+      deaths.push(p);
+      messages.push(`<div class="night-report-item nri-death">🐺 ${p.name} wurde von Werwölfen gefressen.</div>`);
+      log(`💀 ${p.name} von Wölfen getötet`, "death");
+    }
+  }
+ 
+  // Witch poison
+  if (witchKilledThisNight) {
+    const p = players.find(x => x.name === witchKilledThisNight);
+    if (p && p.alive) {
+      p.alive = false;
+      deaths.push(p);
+      messages.push(`<div class="night-report-item nri-death">🧪 ${p.name} wurde vergiftet.</div>`);
+      log(`💀 ${p.name} vergiftet`, "death");
+    }
+  }
+ 
+  // Black Cat: wenn Wölfe sie nachts töten → zieht einen Wolf mit
+  deaths.forEach(d => {
+    if (d.role === "Black Cat") {
+      const wolves = players.filter(p => p.alive && isWolf(p));
+      if (wolves.length > 0) {
+        messages.push(`<div class="night-report-item nri-death">🐈‍⬛ <b>${d.name}</b> (Black Cat) wurde von Wölfen getötet – sie reißt einen Wolf mit!</div>`);
+        blackCatNightKill = true;
+      }
+    }
+  });
+
+  // Blind Mary death → becomes night killer
+  deaths.forEach(d => {
+    if (d.role === "Blind Mary" && !blindMaryDead) {
+      blindMaryDead = true;
+      messages.push(`<div class="night-report-item nri-info">🙈 <b>${d.name}</b> (Blind Mary) ist tot – sie kann ab jetzt jede Nacht jemanden eliminieren!</div>`);
+      log(`🙈 Blind Mary tot – wird zur Nacht-Killerin`, "action");
+    }
+  });
+
+  // Infected: wenn Wölfe ihn töten → Strafnacht
+  const infectedDeath = deaths.find(d => d.role === "Infected");
+  if (infectedDeath && (victimThisNight === infectedDeath.name || secondVictimThisNight === infectedDeath.name)) {
+    infectedKilledByWolves = true;
+    messages.push(`<div class="night-report-item nri-info">🦠 <b>${infectedDeath.name}</b> (Infected) wurde von Wölfen getötet! Die Wölfe müssen nächste Nacht als Strafe aussetzen.</div>`);
+    log(`🦠 Infected von Wölfen getötet – Strafnacht aktiv`, "action");
+  }
+
+  // Outsider Wolf joining after first wolf death
+  deaths.forEach(d => {
+    if (isWolf(d) && !firstWolfDied) {
+      firstWolfDied = true;
+      const outsider = players.find(p => p.alive && p.role === "Outsider Wolf" && !outsiderWolfJoined);
+      if (outsider) {
+        outsiderWolfJoined = true;
+        messages.push(`<div class="night-report-item nri-info">🌲 Outsider Wolf <b>${outsider.name}</b> schließt sich ab jetzt dem Rudel an!</div>`);
+        log(`🌲 Outsider Wolf ${outsider.name} schließt sich dem Rudel an`, "action");
+      }
+    }
+  });
+ 
+  // Wolf Cub
+  deaths.forEach(d => {
+    if (d.role === "Wolf Cub") {
+      wolfCubDied = true;
+      log("🐶 Wolf Cub gestorben – nächste Nacht: 2 Angriffe!", "action");
+      messages.push(`<div class="night-report-item nri-info">🐶 Wolf Cub ist tot! Die Wölfe schlagen nächste Nacht zweimal zu!</div>`);
+    }
+  });
+ 
+  // Wise Old Man
+  wiseDayCount++;
+  const wom = players.find(p => p.alive && p.role === "Wise Old Man");
+  if (wom && wiseDayCount >= 2) {
+    wom.alive = false;
+    deaths.push(wom);
+    messages.push(`<div class="night-report-item nri-info">👴 ${wom.name} (Wise Old Man) stirbt an Altersschwäche.</div>`);
+    log(`💀 ${wom.name} stirbt (Wise Old Man)`, "death");
+  }
+ 
+  // Eye of the Seer death → seer inverted
+  deaths.forEach(d => {
+    if (d.role === "Eye of the Seer" && !seerInverted) {
+      seerInverted = true;
+      messages.push(`<div class="night-report-item nri-death">👁️ Eye of the Seer ist tot – der Seher erhält ab jetzt nur noch falsche Visionen!</div>`);
+      log("👁️ Eye of the Seer tot – Seher invertiert!", "action");
+    }
+  });
+ 
+  // Spawn transforms when all original wolves dead
+  const spawnP = players.find(p => p.alive && p.role === "Spawn");
+  if (spawnP) {
+    const otherWolves = players.filter(p => p.alive && isWolf(p) && p.role !== "Spawn").length;
+    if (otherWolves === 0) {
+      messages.push(`<div class="night-report-item nri-death">🥚 SPAWN <b>${spawnP.name}</b> verwandelt sich! Alle echten Wölfe sind tot – der Spawn ist jetzt aktiver Werwolf!</div>`);
+      spawnP.role = "Werwolf";
+      log(`🥚 Spawn ${spawnP.name} transformiert!`, "death");
+    }
+  }
+ 
+  // Assassin win check
+  deaths.forEach(d => checkAssassinWin(d));
+ 
+  // Copycat
+  deaths.forEach(d => {
+    if (!copycatResolved && d.name === copycatTarget) {
+      const cc = players.find(p => p.alive && p.role === "Copycat");
+      if (cc) {
+        cc.role = d.role;
+        copycatResolved = true;
+        messages.push(`<div class="night-report-item nri-info">🐱 Copycat <b>${cc.name}</b> übernimmt die Rolle: <b>${d.role}</b>!</div>`);
+        log(`🐱 Copycat wird ${d.role}`, "action");
+      }
+    }
+  });
+ 
+  // Gemini linked death
+  deaths.forEach(d => checkGeminiDeath(d, deaths, messages));
+ 
+  // Matchmaker linked death
+  deaths.forEach(d => checkMatchmakerDeath(d, messages));
+ 
+  // Reviler on death
+  deaths.forEach(d => {
+    if (d.role === "Reviler") {
+      messages.push(`<div class="night-report-item nri-info">😤 <b>${d.name}</b> (Reviler) darf sterbend jemanden verfluchen. Spielleiter fragt den Reviler.</div>`);
+    }
+  });
+ 
+  // Mad Destroyer on death
+  deaths.forEach(d => {
+    if (d.role === "Mad Destroyer") {
+      const wCount = aliveWolfCount();
+      const kills = Math.max(0, wCount - 1);
+      messages.push(`<div class="night-report-item nri-death">💣 <b>${d.name}</b> (Mad Destroyer) explodiert! ${kills} Nachbarn in einer gewählten Richtung sterben mit!</div>`);
+      log(`💣 Mad Destroyer ${d.name} explodiert – ${kills} Nachbarn tot`, "death");
+      // Mad Destroyer kills are handled by moderator
+    }
+  });
+ 
+  // Assassin Wolf on night kill (not handled here – only on execution)
+ 
+  // Hunter night death → last shot (message only, interactive in modal below)
+  const hunterDeath = deaths.find(d => d.role === "Hunter");
+  if (hunterDeath) {
+    messages.push(`<div class="night-report-item nri-info">🏹 <b>${hunterDeath.name}</b> ist der Hunter – er darf noch jemanden mit in den Tod reißen!</div>`);
+  }
+
+  if (messages.length === 0) {
+    messages.push(`<div class="night-report-item nri-safe">✅ Niemand ist diese Nacht gestorben. Das Dorf schläft in Sicherheit.</div>`);
+    // Blind Mary wins if no one died this phase and she is alive
+    const bm = players.find(p => p.alive && p.role === "Blind Mary");
+    if (bm) {
+      setTimeout(() => showVictoryScreen("neutral","Blind Mary",[bm]), 800);
+    }
+  }
+ 
+  // Day status notes
+  if (spellcastedToday) {
+    messages.push(`<div class="night-report-item nri-gold">🤫 Heute muss <b>${spellcastedToday}</b> schweigen (Spellcaster)!</div>`);
+  }
+  if (mummerHypnotized) {
+    const mummer = players.find(p => p.alive && p.role === "Mummer");
+    messages.push(`<div class="night-report-item nri-gold">🎪 <b>${mummerHypnotized}</b> ist hypnotisiert – muss genauso abstimmen wie ${mummer ? mummer.name : "Mummer"}!</div>`);
+  }
+ 
+  lastExecWasVillage = false;
+  updateTopBar();
+ 
+  showModal("☀️","NACHTBERICHT","Der Morgen graut",
+    messages.join(""),
+    () => {
+      // Black Cat night kill: pull a wolf interactively
+      if (blackCatNightKill) {
+        blackCatNightKill = false;
+        const wolves = players.filter(p => p.alive && isWolf(p));
+        if (wolves.length > 0) {
+          showModal("🐈‍⬛","BLACK CAT","Wolf mitreißen!",
+            `<div class="night-report-item nri-death">🐈‍⬛ Black Cat reißt einen Wolf mit in den Tod – welchen?</div>`,
+            () => {
+              setInstruction("🐈‍⬛ Black Cat", "Wähle den Wolf der mitsterben soll.", "neutral", "Black Cat");
+              renderGrid(wolves, (w) => {
+                showConfirmBanner(`🐈‍⬛ ${w.name} stirbt mit?`, () => {
+                  w.alive = false;
+                  log(`🐈‍⬛ Black Cat reißt Wolf ${w.name} mit`, "death");
+                  updateTopBar();
+                  const hd = deaths.find(d => d.role === "Hunter");
+                  if (hd) { handleHunterNightShot(hd); return; }
+                  if (!checkWinConditions()) renderDayPhase();
+                });
+              });
+            }
+          );
+          return;
+        }
+      }
+      // Hunter night death: let him shoot
+      const hunterDeath = deaths.find(d => d.role === "Hunter");
+      if (hunterDeath) { handleHunterNightShot(hunterDeath); return; }
+      if (!checkWinConditions()) renderDayPhase();
+    }
+  );
+}
+
+function handleHunterNightShot(hunterDeath) {
+  showModal("🏹","HUNTER","Letzter Schuss!",
+    `<div class="night-report-item nri-info">🏹 <b>${hunterDeath.name}</b> (Hunter) wurde heute Nacht getötet! Er darf noch jemanden mit in den Tod reißen.</div>`,
+    () => {
+      setInstruction("🏹 Hunter", `${hunterDeath.name} wählt sein letztes Opfer.`, "special", "Hunter");
+      renderGrid(players.filter(x => x.alive), (t) => {
+        showConfirmBanner(`🏹 ${t.name} mitreißen?`, () => {
+          t.alive = false;
+          log(`🏹 Hunter reißt ${t.name} mit (Nacht)`, "death");
+          checkAssassinWin(t);
+          updateTopBar();
+          if (!checkWinConditions()) renderDayPhase();
+        });
+      });
+    }
+  );
+}
+ 
+function checkGeminiDeath(dead, deathList, messages) {
+  if (dead.role !== "Gemini") return;
+  const twin = players.find(p => p.alive && p.role === "Gemini" && p.name !== dead.name);
+  if (twin && !deathList.find(d => d.name === twin.name)) {
+    twin.alive = false;
+    deathList.push(twin);
+    messages.push(`<div class="night-report-item nri-death">♊ <b>${twin.name}</b> stirbt vor Kummer – Gemini-Zwilling <b>${dead.name}</b> ist tot!</div>`);
+    log(`💀 Gemini ${twin.name} stirbt mit`, "death");
+  }
+}
+ 
+function checkMatchmakerDeath(dead, messages) {
+  if (!matchmakerLinks.length) return;
+  // Simplified: moderator handles chain deaths
+}
+ 
+/* ============================================================
+   DAY CYCLE
+============================================================ */
+function renderDayPhase() {
+  showBeginnerTip("day_start", () => _renderDayPhase());
+}
+function _renderDayPhase() {
+  gamePhase = "day_discuss";
+  document.getElementById("voteSection").style.display = "block";
+  document.getElementById("voteDay").textContent = nightCount;
+  clearVotes();
+  updateTopBar();
+  updateNightBar();
+ 
+  setInstruction("☀️ Dorfversammlung",
+    "Diskutiert und stimmt ab! Klicke Spieler an, um eine Stimme zu geben.",
+    "village","Tag"
+  );
+ 
+  // Day actions bar
+  buildDayActionsBar();
+ 
+  const alive = players.filter(p => p.alive);
+  renderGrid(alive, (p) => castVote(p), true, true);
+}
+ 
+function buildDayActionsBar() {
+  const bar = document.getElementById("dayActions");
+  bar.style.display = "flex";
+  bar.innerHTML = `<span class="day-actions-label">⚡ Tagesaktionen:</span>`;
+ 
+  const cutthroat = players.find(p => p.alive && p.role === "Cutthroat");
+  if (cutthroat) {
+    const btn = document.createElement("button");
+    btn.className = "btn-day-action" + (cutthroatUsed ? " used" : "");
+    btn.textContent = `⚔️ Cutthroat${cutthroatUsed ? " (verbraucht)" : ""}`;
+    btn.disabled = cutthroatUsed;
+    btn.onclick = () => useCutthroat(cutthroat);
+    bar.appendChild(btn);
+  }
+ 
+  const magistrate = players.find(p => p.alive && p.role === "Magistrate");
+  if (magistrate) {
+    const btn = document.createElement("button");
+    btn.className = "btn-day-action" + (magistrateUsed ? " used" : "");
+    btn.textContent = `⚖️ Magistrate${magistrateUsed ? " (verbraucht)" : ""}`;
+    btn.disabled = magistrateUsed;
+    btn.onclick = () => useMagistrate();
+    bar.appendChild(btn);
+  }
+ 
+  if (spellcastedToday) {
+    const info = document.createElement("span");
+    info.style.cssText = "font-family:'Cinzel',serif;font-size:.7rem;color:#fbbf24;padding:6px 10px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:8px;";
+    info.textContent = `🤫 Schweigt: ${spellcastedToday}`;
+    bar.appendChild(info);
+  }
+ 
+  if (mummerHypnotized) {
+    const mummer = players.find(p => p.alive && p.role === "Mummer");
+    const info = document.createElement("span");
+    info.style.cssText = "font-family:'Cinzel',serif;font-size:.7rem;color:#d8b4fe;padding:6px 10px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);border-radius:8px;";
+    info.textContent = `🎪 Hypnotisiert: ${mummerHypnotized}${mummer ? " → muss wie " + mummer.name + " stimmen" : ""}`;
+    bar.appendChild(info);
+  }
+ 
+  if (!cutthroat && !magistrate && !spellcastedToday && !mummerHypnotized) {
+    bar.style.display = "none";
+  }
+}
+ 
+function useCutthroat(cutthroat) {
+  if (cutthroatUsed) return;
+  setInstruction("⚔️ Cutthroat", `${cutthroat.name} eliminiert sofort jemanden. Der Tag läuft danach weiter!`, "special","Cutthroat");
+  const alive = players.filter(p => p.alive && p.name !== cutthroat.name);
+  renderGrid(alive, (p) => {
+    showConfirmBanner(`⚔️ ${p.name} sofort hinrichten?`, () => {
+      p.alive = false;
+      cutthroatUsed = true;
+      log(`⚔️ Cutthroat eliminiert: ${p.name} (${p.role})`, "death");
+      checkAssassinWin(p);
+      updateTopBar();
+      showModal("⚔️","CUTTHROAT","Sofort-Hinrichtung!",
+        `<div class="night-report-item nri-death">⚔️ <b>${p.name}</b> war: <b>${p.role}</b> ${ri(p.role).icon}<br>Der Tag läuft weiter – normale Abstimmung folgt noch!</div>`,
+        () => { if (!checkWinConditions()) renderDayPhase(); }
+      );
+    });
+  });
+}
+ 
+function useMagistrate() {
+  if (magistrateUsed) return;
+  magistrateUsed = true;
+  log("⚖️ Magistrate stoppt die Hinrichtung!", "action");
+  showModal("⚖️","MAGISTRATE","Hinrichtung gestoppt!",
+    `<div class="night-report-item nri-safe">⚖️ Der Magistrate greift ein! Die Hinrichtung wird annulliert. Der Tag endet sofort ohne Hinrichtung.</div>`,
+    () => { nightCount++; startNightCycle(); }
+  );
+}
+ 
+function castVote(target) {
+  votes[target.name] = (votes[target.name] || 0) + 1;
+  log(`⚖️ Stimme für ${target.name} (${votes[target.name]} gesamt)`, "day");
+  renderVoteTally();
+  const cards = document.querySelectorAll(".player-card");
+  cards.forEach(c => {
+    if (c.dataset.name === target.name) {
+      c.classList.add("voted");
+      let badge = c.querySelector(".vote-badge");
+      if (!badge) { badge = document.createElement("div"); badge.className = "vote-badge"; c.appendChild(badge); }
+      badge.textContent = votes[target.name];
+    }
+  });
+  document.getElementById("btnExecute").disabled = false;
+}
+ 
+function renderVoteTally() {
+  const tally = document.getElementById("voteTally");
+  if (Object.keys(votes).length === 0) {
+    tally.innerHTML = `<span style="color:rgba(255,255,255,.3);font-size:.85rem;font-style:italic;">Noch keine Stimmen</span>`;
+    return;
+  }
+  const sorted = Object.entries(votes).sort((a,b) => b[1]-a[1]);
+  let html = sorted.map(([name,cnt]) =>
+    `<div class="vote-entry"><span class="ve-count">${cnt}×</span><span class="ve-name">${name}</span></div>`
+  ).join("");
+  // Influencer bonus
+  if (players.some(p => p.alive && p.role === "Influencer") && sorted.length > 0) {
+    html += `<div class="vote-entry" style="border-color:rgba(212,168,67,.3);background:rgba(212,168,67,.1);">
+      <span class="ve-count" style="color:var(--gold-light);">+1</span>
+      <span class="ve-name" style="color:var(--gold-light);">${sorted[0][0]} (Influencer-Bonus)</span>
+    </div>`;
+  }
+  tally.innerHTML = html;
+  document.getElementById("btnExecute").disabled = sorted[0][1] === 0;
+}
+ 
+function clearVotes() {
+  votes = {};
+  const tally = document.getElementById("voteTally");
+  if (tally) tally.innerHTML = `<span style="color:rgba(255,255,255,.3);font-size:.85rem;font-style:italic;">Noch keine Stimmen</span>`;
+  const exec = document.getElementById("btnExecute");
+  if (exec) exec.disabled = true;
+  document.querySelectorAll(".player-card").forEach(c => {
+    c.classList.remove("voted");
+    const b = c.querySelector(".vote-badge");
+    if (b) b.remove();
+  });
+}
+ 
+function skipVote() {
+  if (!gamePhase.startsWith("day")) return;
+  if (confirm("Tag überspringen? (Keine Hinrichtung)")) {
+    log("⏭ Tag übersprungen – keine Hinrichtung", "day");
+    // Blind Mary wins if alive and no kill happened this day
+    const bm = players.find(p => p.alive && p.role === "Blind Mary");
+    if (bm) {
+      showVictoryScreen("neutral","Blind Mary",[bm]);
+      return;
+    }
+    nightCount++;
+    startNightCycle();
+  }
+}
+ 
+function executeVoted() {
+  const sorted = Object.entries(votes).sort((a,b) => b[1]-a[1]);
+  if (!sorted.length) return;
+ 
+  // Influencer: +1 to leader
+  const infBonus = players.some(p => p.alive && p.role === "Influencer") ? 1 : 0;
+  const adjustedSorted = sorted.map(([n,c]) => [n, c + (n === sorted[0][0] ? infBonus : 0)]).sort((a,b) => b[1]-a[1]);
+ 
+  // Tie check
+  if (adjustedSorted.length > 1 && adjustedSorted[0][1] === adjustedSorted[1][1]) {
+    const vi = players.find(p => p.alive && p.role === "Village Idiot");
+    if (vi) {
+      showModal("🃏","VILLAGE IDIOT","Gleichstand!",
+        `<div class="night-report-item nri-info">🃏 Village Idiot <b>${vi.name}</b> bricht den Gleichstand! Stimme gilt für: <b>${adjustedSorted[0][0]}</b></div>`,
+        () => doExecution(adjustedSorted[0][0])
+      );
+      return;
+    }
+    showModal("⚖️","GLEICHSTAND","Unentschieden!",
+      `<div class="night-report-item nri-info">⚠️ Stimmengleichheit zwischen <b>${adjustedSorted.slice(0,2).map(x=>x[0]).join(" & ")}</b>. Niemand wird hingerichtet.</div>`,
+      () => { nightCount++; startNightCycle(); }
+    );
+    return;
+  }
+ 
+  const target = adjustedSorted[0][0];
+  showConfirmBanner(`⚖️ ${target} hinrichten? (${adjustedSorted[0][1]} Stimmen)`, () => doExecution(target));
+}
+ 
+/* ============================================================
+   EXECUTION
+============================================================ */
+function doExecution(name) {
+  const p = players.find(x => x.name === name);
+  if (!p || !p.alive) return;
+ 
+  p.alive = false;
+  log(`⚖️ ${p.name} hingerichtet (${p.role})`, "death");
+  lastExecWasVillage = !isWolf(p) && p.role !== "Outcast";
+ 
+  // Assassin win check
+  checkAssassinWin(p);
+ 
+  // Copycat
+  if (!copycatResolved && p.name === copycatTarget) {
+    const cc = players.find(q => q.alive && q.role === "Copycat");
+    if (cc) {
+      cc.role = p.role;
+      copycatResolved = true;
+      log(`🐱 Copycat ${cc.name} übernimmt: ${p.role}`, "action");
+    }
+  }
+ 
+  // Gemini chain
+  if (p.role === "Gemini") {
+    const twin = players.find(q => q.alive && q.role === "Gemini");
+    if (twin) { twin.alive = false; log(`💀 Gemini ${twin.name} stirbt mit`, "death"); }
+  }
+ 
+  // Outcast: switches sides
+  if (p.role === "Outcast") {
+    p.role = "Werwolf";
+    p.alive = true;
+    lastExecWasVillage = false;
+    log(`🚪 ${p.name} wird verstoßen – wechselt zu den Wölfen!`, "action");
+    showModal("🚪","OUTCAST","Verbannung!",
+      `<div class="night-report-item nri-info">🚪 <b>${p.name}</b> wird verstoßen und schließt sich den Werwölfen an! Er ist ab jetzt ein Werwolf.</div>`,
+      () => { updateTopBar(); if (!checkWinConditions()) { nightCount++; startNightCycle(); } }
+    );
+    return;
+  }
+ 
+  // Tanner win (immediately)
+  if (p.role === "Tanner") {
+    showVictoryScreen("neutral", "Tanner", [p]);
+    return;
+  }
+
+  // Master Tanner: only wins in Phase 2 (after surviving past day 3)
+  if (p.role === "Master Tanner") {
+    if (masterTannerActivated) {
+      // Phase 2: gets hanged → wins!
+      showVictoryScreen("neutral", "Master Tanner", [p]);
+    } else {
+      // Phase 1: died too early → loses, but gets to choose an Apprentice
+      showModal("🪦","MASTER TANNER","Zu früh gestorben!",
+        `<div class="night-report-item nri-info">🪦 <b>${p.name}</b> (Master Tanner) wurde zu früh hingerichtet (vor Tag 4).<br><br>Er darf jetzt einen lebenden Spieler als <b>Apprentice Tanner</b> bestimmen. Wenn dieser Spieler nach Tag 3 hingerichtet wird, gewinnen beide zusammen!<br><br>Spielleiter: Frage ${p.name} wen er wählt und notiere es.</div>`,
+        () => { updateTopBar(); if (!checkWinConditions()) { nightCount++; startNightCycle(); } }
+      );
+    }
+    return;
+  }
+ 
+  // Hunter shot
+  if (p.role === "Hunter") {
+    showModal("🏹","HUNTER","Letzter Schuss!",
+      `<div class="night-report-item nri-info">🏹 <b>${p.name}</b> ist der Hunter! Er darf noch jemanden mit in den Tod reißen.</div>`,
+      () => {
+        setInstruction("🏹 Hunter", `${p.name} wählt sein letztes Opfer.`, "special","Hunter");
+        renderGrid(players.filter(x => x.alive), (t) => {
+          showConfirmBanner(`🏹 ${t.name} mitreißen?`, () => {
+            t.alive = false;
+            log(`🏹 Hunter reißt ${t.name} mit`, "death");
+            checkAssassinWin(t);
+            updateTopBar();
+            showModal("🏹","URTEIL",`${p.name} wurde hingerichtet`,
+              `<div class="night-report-item nri-death">⚖️ <b>${p.name}</b> war: <b>${p.role}</b></div><div class="night-report-item nri-death">🏹 <b>${t.name}</b> wird mitgerissen (war: ${t.role})</div>`,
+              () => { if (!checkWinConditions()) { nightCount++; startNightCycle(); } }
+            );
+          });
+        });
+      }
+    );
+    return;
+  }
+ 
+  // Assassin Wolf shot
+  if (p.role === "Assassin Wolf") {
+    showModal("🗡️","ASSASSIN WOLF","Rache!",
+      `<div class="night-report-item nri-death">🗡️ <b>${p.name}</b> ist ein Assassin Wolf! Er reißt jemanden mit.</div>`,
+      () => {
+        renderGrid(players.filter(x => x.alive), (t) => {
+          showConfirmBanner(`🗡️ ${t.name} mitreißen?`, () => {
+            t.alive = false;
+            log(`🗡️ Assassin Wolf reißt ${t.name} mit`, "death");
+            checkAssassinWin(t);
+            updateTopBar();
+            showModal("⚖️","URTEIL",`${p.name} wurde hingerichtet`,
+              `<div class="night-report-item nri-death">⚖️ <b>${p.name}</b> war: <b>${p.role}</b></div><div class="night-report-item nri-death">🗡️ <b>${t.name}</b> stirbt mit (war: ${t.role})</div>`,
+              () => { if (!checkWinConditions()) { nightCount++; startNightCycle(); } }
+            );
+          });
+        });
+      }
+    );
+    return;
+  }
+ 
+  // Black Cat: village killed her → she takes someone from the killing team (village = she takes village member)
+  if (p.role === "Black Cat") {
+    const possibleTargets = players.filter(x => x.alive && !isWolf(x));
+    if (!possibleTargets.length) {
+      showExecutionResult(p, [], () => { if (!checkWinConditions()) { nightCount++; startNightCycle(); } });
+      return;
+    }
+    showModal("🐈‍⬛","BLACK CAT","Rache!",
+      `<div class="night-report-item nri-info">🐈‍⬛ Black Cat wurde vom Dorf hingerichtet – sie reißt ein Dorf-Mitglied mit!</div>`,
+      () => {
+        renderGrid(possibleTargets, (t) => {
+          showConfirmBanner(`🐈‍⬛ ${t.name} mitreißen?`, () => {
+            t.alive = false;
+            log(`🐈‍⬛ Black Cat reißt ${t.name} mit`, "death");
+            updateTopBar();
+            showExecutionResult(p, [t], () => { if (!checkWinConditions()) { nightCount++; startNightCycle(); } });
+          });
+        });
+      }
+    );
+    return;
+  }
+ 
+  // Mad Destroyer on execution
+  if (p.role === "Mad Destroyer") {
+    const wCount = aliveWolfCount();
+    const kills = Math.max(0, wCount - 1);
+    showModal("💣","MAD DESTROYER","Explosion!",
+      `<div class="night-report-item nri-death">💣 <b>${p.name}</b> explodiert! ${kills} Nachbar(n) in gewählter Richtung sterben mit. Spielleiter verarbeitet das Ergebnis.</div>`,
+      () => { updateTopBar(); if (!checkWinConditions()) { nightCount++; startNightCycle(); } }
+    );
+    return;
+  }
+ 
+  // Reviler on execution
+  if (p.role === "Reviler") {
+    showModal("😤","REVILER","Sterbender Fluch",
+      `<div class="night-report-item nri-info">😤 <b>${p.name}</b> (Reviler) stirbt und verflucht jemanden. Die verfluchte Person verliert Abstimmungsrecht und Nachtfähigkeiten. Spielleiter fragt ${p.name}.</div>`,
+      () => { updateTopBar(); showExecutionResult(p, [], () => { if (!checkWinConditions()) { nightCount++; startNightCycle(); } }); }
+    );
+    return;
+  }
+ 
+  // Grave Robber on execution
+  if (p.role === "Grave Robber") {
+    const alivePlayers = players.filter(x => x.alive);
+    if (!alivePlayers.length) {
+      showExecutionResult(p, [], () => { if (!checkWinConditions()) { nightCount++; startNightCycle(); } });
+      return;
+    }
+    showModal("ⰰ️","GRAVE ROBBER","Rollen-Diebstahl!",
+      `<div class="night-report-item nri-info">⚰️ <b>${p.name}</b> (Grave Robber) stirbt und wählt eine lebende Person – diese stirbt, Grave Robber übernimmt ihre Rolle!</div>`,
+      () => {
+        renderGrid(alivePlayers, (t) => {
+          showConfirmBanner(`⚰️ ${t.name} berauben?`, () => {
+            const stolenRole = t.role;
+            t.alive = false;
+            p.alive = true;
+            p.role = stolenRole;
+            log(`⚰️ Grave Robber stiehlt ${stolenRole} von ${t.name}`, "action");
+            showModal("⚰️","GRAVE ROBBER","Rolle gestohlen!",
+              `<div class="night-report-item nri-gold">⚰️ <b>${p.name}</b> übernimmt die Rolle <b>${stolenRole}</b> von ${t.name} und kehrt ins Spiel zurück!</div>`,
+              () => { updateTopBar(); if (!checkWinConditions()) { nightCount++; startNightCycle(); } }
+            );
+          });
+        });
+      }
+    );
+    return;
+  }
+ 
+  updateTopBar();
+  showExecutionResult(p, [], () => { if (!checkWinConditions()) { nightCount++; startNightCycle(); } });
+}
+ 
+function showExecutionResult(p, also, callback) {
+  let html = `<div class="night-report-item nri-death">⚖️ <b>${p.name}</b> war: <b>${p.role}</b> ${ri(p.role).icon}</div>`;
+  also.forEach(d => {
+    html += `<div class="night-report-item nri-death">💀 <b>${d.name}</b> stirbt auch (war: ${d.role} ${ri(d.role).icon})</div>`;
+  });
+  showModal("⚖️","URTEIL",`${p.name} wurde hingerichtet`, html, callback);
+}
+ 
+function checkAssassinWin(deadPlayer) {
+  players.forEach(ass => {
+    if (ass.role === "Assassin" && ass.alive && assassinTargetMap[ass.name] === deadPlayer.name) {
+      log(`🗡️ Assassin ${ass.name} gewinnt – Ziel ${deadPlayer.name} ist tot!`, "action");
+      setTimeout(() => showVictoryScreen("neutral","Assassin",[ass]), 500);
+    }
+  });
+}
+ 
+/* ============================================================
+   WIN CONDITIONS
+============================================================ */
+function checkWinConditions() {
+  const alive = players.filter(p => p.alive);
+  const wCount = alive.filter(p => isWolf(p)).length;
+  const vCount = alive.filter(p => !isWolf(p)).length;
+
+  // ── Neutrale Einzelsieger zuerst ──
+
+  // Chupacabra: letzter Überlebender
+  const chupa = players.find(p => p.alive && p.role === "Chupacabra");
+  if (chupa && alive.length === 1) { showVictoryScreen("neutral","Chupacabra",[chupa]); return true; }
+
+  // Blind Mary: letzter Überlebender (Nacht-ohne-Kill-Sieg separat behandelt)
+  const blindMary = players.find(p => p.alive && p.role === "Blind Mary");
+  if (blindMary && alive.length === 1) { showVictoryScreen("neutral","Blind Mary",[blindMary]); return true; }
+
+  // Tanner: gewinnt nur durch Hinrichtung (in doExecution)
+  // Master Tanner: gewinnt nur durch Hinrichtung in Phase 2 (in doExecution)
+
+  // Savant: gewinnt wenn alle Wölfe tot sind UND er noch lebt
+  const savant = players.find(p => p.alive && p.role === "Savant");
+  if (savant && wCount === 0) { showVictoryScreen("neutral","Savant",[savant]); return true; }
+
+  // Infected: gewinnt wenn alle Wölfe tot sind UND er noch lebt
+  const infected = players.find(p => p.alive && p.role === "Infected");
+  if (infected && wCount === 0) { showVictoryScreen("neutral","Infected",[infected]); return true; }
+
+  // Auracabra: gewinnt wenn alle Spezialrollen tot sind UND er noch lebt
+  const aura = players.find(p => p.alive && p.role === "Auracabra");
+  if (aura) {
+    const specialsAlive = players.filter(p => p.alive && p.name !== aura.name &&
+      p.role !== "Dorfbewohner" && p.role !== "Villager" && p.role !== "Werwolf").length;
+    if (specialsAlive === 0) { showVictoryScreen("neutral","Auracabra",[aura]); return true; }
+  }
+
+  // Vanillacabra: unter den letzten 3 Überlebenden
+  const van = players.find(p => p.alive && p.role === "Vanillacabra");
+  if (van && alive.length <= 3) { showVictoryScreen("neutral","Vanillacabra",[van]); return true; }
+
+  // Nosferatu: unter den letzten 3 Überlebenden
+  const nosf = players.find(p => p.alive && p.role === "Nosferatu");
+  if (nosf && alive.length <= 3) { showVictoryScreen("neutral","Nosferatu",[nosf]); return true; }
+
+  // Matchmaker: unter den letzten 3 Überlebenden
+  const mm = players.find(p => p.alive && p.role === "Matchmaker");
+  if (mm && alive.length <= 3) { showVictoryScreen("neutral","Matchmaker",[mm]); return true; }
+
+  // Black Cat: gewinnt wenn sie als letzte überlebt (Rache-Sieg — normaler Tod ist kein Sieg)
+  const bc = players.find(p => p.alive && p.role === "Black Cat");
+  if (bc && alive.length === 1) { showVictoryScreen("neutral","Black Cat",[bc]); return true; }
+
+  // Mad Destroyer: gewinnt wenn er als letzter überlebt
+  const mad = players.find(p => p.alive && p.role === "Mad Destroyer");
+  if (mad && alive.length === 1) { showVictoryScreen("neutral","Mad Destroyer",[mad]); return true; }
+
+  // Grave Robber: gewinnt je nach gestohlener Rolle (nach Rollenwechsel prüfen — als Dorf/Wolf)
+  // Nach dem Rollenwechsel wird er normal nach Dorf/Wolf-Sieg gewertet → kein extra Win nötig
+
+  // ── Dorf / Wolf Sieg ──
+
+  // Dorf gewinnt: alle Wölfe tot
+  if (wCount === 0) { showVictoryScreen("village"); return true; }
+
+  // Wölfe gewinnen: Parität
+  if (wCount >= vCount) { showVictoryScreen("wolf"); return true; }
+
+  return false;
+}
+ 
+/* ============================================================
+   VICTORY SCREEN
+============================================================ */
+function showVictoryScreen(team, specialRole, specialPlayers) {
+  const modal = document.getElementById("winModal");
+  const card  = document.getElementById("winCard");
+  const title = document.getElementById("winTitle");
+  const sub   = document.getElementById("winSubtitle");
+  const over  = document.getElementById("winOverview");
+  const btn   = document.getElementById("winBtn");
+  const icon  = document.getElementById("winIcon");
+ 
+  card.className = "modal-card win-card";
+  card.removeAttribute("style");
+ 
+  if (team === "village") {
+    card.classList.add("village-win");
+    title.className = "win-title village";
+    title.textContent = "🌅 SIEG FÜR DAS DORF!";
+    sub.textContent = "Die Werwölfe wurden vernichtet. Düsterwald ist frei!";
+    icon.textContent = "☀️";
+    btn.className = "win-btn village";
+    log("🏆 SIEG: Dorfteam", "action");
+  } else if (team === "wolf") {
+    card.classList.add("wolf-win");
+    title.className = "win-title wolf";
+    title.textContent = "🌑 SIEG FÜR DIE WÖLFE!";
+    sub.textContent = "Die Werwölfe beherrschen das Dorf. Dunkelheit regiert!";
+    icon.textContent = "🐺";
+    btn.className = "win-btn wolf";
+    log("🏆 SIEG: Wolfsteam", "action");
+  } else {
+    card.style.background = "linear-gradient(135deg,#1e1b4b,#4c1d95,#0f172a)";
+    card.style.borderColor = "rgba(168,85,247,0.5)";
+    title.className = "win-title";
+    title.style.color = "#d8b4fe";
+    title.textContent = `🎭 ${(specialRole||"NEUTRAL").toUpperCase()} GEWINNT!`;
+    sub.textContent = "Eine Einzelperson hat alle übertölpelt!";
+    icon.textContent = "🎭";
+    btn.className = "win-btn";
+    btn.style.background = "linear-gradient(135deg,#7c3aed,#a855f7)";
+    btn.style.color = "white";
+    log(`🏆 SIEG: ${specialRole}`, "action");
+  }
+ 
+  over.innerHTML = players.map(p => {
+    const info = ri(p.role);
+    return `<div class="win-row">
+      <span class="wr-name">${p.name}</span>
+      <span class="wr-role">${info.icon} ${p.role}</span>
+      <span class="wr-alive">${p.alive ? "✅":"💀"}</span>
+    </div>`;
+  }).join("");
+ 
+  modal.classList.add("active");
+}
+ 
+/* ============================================================
+   ADMIN MODAL
+============================================================ */
+function showAdminModal() {
+  const alive = players.filter(p => p.alive);
+  const dead = players.filter(p => !p.alive);
+  let html = `<div style="font-family:'Cinzel',serif;font-size:.72rem;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Lebende (${alive.length})</div>`;
+  alive.forEach(p => {
+    html += `<div class="admin-row">
+      <span class="ar-name">${p.name}</span>
+      <span class="ar-role">${ri(p.role).icon} ${p.role}</span>
+      <span class="ar-status alive">LEBT</span>
+    </div>`;
+  });
+  if (dead.length) {
+    html += `<div style="font-family:'Cinzel',serif;font-size:.72rem;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;margin:14px 0 10px;">Gefallene (${dead.length})</div>`;
+    dead.forEach(p => {
+      html += `<div class="admin-row">
+        <span class="ar-name" style="opacity:.5">${p.name}</span>
+        <span class="ar-role" style="opacity:.5">${ri(p.role).icon} ${p.role}</span>
+        <span class="ar-status dead">TOT</span>
+      </div>`;
+    });
+  }
+  html += `<div style="margin-top:14px;padding:10px;background:rgba(255,255,255,.04);border-radius:10px;font-size:.82rem;color:rgba(255,255,255,.5);">
+    🌙 Nacht: <b>${nightCount}</b> | Hexe-Heil: <b>${witchHasHeal?"✅":"❌"}</b> | Gift: <b>${witchHasPoison?"✅":"❌"}</b><br>
+    🔮 Seher invertiert: <b>${seerInverted?"JA":"Nein"}</b>
+    ${mamaWolfLycan ? ` | Lycan: <b>${mamaWolfLycan}</b>` : ""}
+    ${spellcastedToday ? ` | Schweigt: <b>${spellcastedToday}</b>` : ""}
+    ${mummerHypnotized ? ` | Hypnotisiert: <b>${mummerHypnotized}</b>` : ""}
+    ${blindMaryDead ? ` | Blind Mary: <b>TOT – killt jede Nacht</b>` : ""}
+    ${investigatorTeam ? ` | Investigator: <b>${investigatorTeam === "wolf" ? "Wolf-Seite" : "Dorf-Seite"}</b>` : ""}
+    ${infectedKilledByWolves ? ` | <b>🦠 STRAFNACHT aktiv!</b>` : ""}
+    ${masterTannerActivated ? ` | Master Tanner: <b>Phase 2 – muss gehängt werden</b>` : ""}
+  </div>`;
+  showModal("👑","ADMIN","Erzähler-Übersicht", html, null);
+}
+ 
+/* ============================================================
+   GRID & UI HELPERS
+============================================================ */
+function renderGrid(playerList, onClick, showDeadToo, isVoting) {
+  const grid = document.getElementById("playerGrid");
+  grid.innerHTML = "";
+  const toShow = showDeadToo ? players : playerList;
+  toShow.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "player-card";
+    card.dataset.name = p.name;
+    if (!p.alive) card.classList.add("dead");
+    const info = ri(p.role);
+    const initials = p.name.substring(0,2).toUpperCase();
+    card.innerHTML = `
+      <div class="avatar-circle">${initials}</div>
+      <div class="player-name">${p.name}</div>
+      <div class="player-role-hint">${p.alive ? (info.icon || "●") : "💀"}</div>`;
+    if (bodyguardTarget === p.name && p.alive) {
+      const shield = document.createElement("div");
+      shield.className = "shield-badge";
+      shield.textContent = "🛡️";
+      card.appendChild(shield);
+    }
+    if (p.alive && onClick && (!showDeadToo || playerList.includes(p))) {
+      card.onclick = () => onClick(p);
+    } else if (!p.alive || (showDeadToo && !playerList.includes(p))) {
+      card.classList.add("no-click");
+    }
+    grid.appendChild(card);
+  });
+}
+ 
+function makeActionCard(icon, label, color) {
+  const c = document.createElement("div");
+  c.className = "action-card";
+  c.style.borderColor = color + "88";
+  c.style.background = color + "15";
+  c.innerHTML = `<div style="font-size:1.8rem;margin-bottom:8px;">${icon}</div>
+    <div style="font-family:'Cinzel',serif;font-size:.78rem;font-weight:700;color:${color};letter-spacing:.5px;">${label}</div>`;
+  return c;
+}
+ 
+/* ============================================================
+   MODAL HELPERS
+============================================================ */
+function showModal(icon, label, title, body, callback) {
+  const modal = document.getElementById("mainModal");
+  document.getElementById("modalIcon").textContent = icon;
+  document.getElementById("modalLabel").textContent = label;
+  document.getElementById("modalTitle").textContent = title;
+  document.getElementById("modalBody").innerHTML = body;
+  const btn = document.getElementById("modalBtn");
+  const btn2 = document.getElementById("modalBtn2");
+  btn.textContent = callback ? "OK / Weiter ▶" : "Schließen";
+  btn2.style.display = "none";
+  modal.classList.add("active");
+  btn.onclick = () => { modal.classList.remove("active"); if (callback) callback(); };
+}
+ 
+function showConfirmBanner(text, onYes) {
+  const banner = document.getElementById("confirmBanner");
+  document.getElementById("confirmText").textContent = text;
+  banner.style.display = "flex";
+  document.getElementById("btnConfirmYes").onclick = () => { banner.style.display = "none"; onYes(); };
+  document.getElementById("btnConfirmNo").onclick  = () => { banner.style.display = "none"; };
+}
+ 
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") document.getElementById("mainModal").classList.remove("active");
+});
+</script>
+</body>
+</html>
+ 
