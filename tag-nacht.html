@@ -72,7 +72,7 @@ body.day .stars{opacity:0}
 .player-card:hover:not(.dead) .avatar-circle{border-color:var(--gold-light);box-shadow:0 4px 20px rgba(212,168,67,.3)}
 .player-card.selected .avatar-circle{border-color:var(--gold-light);background:linear-gradient(135deg,#2d1b00,#1a1000);box-shadow:0 0 16px rgba(212,168,67,.5)}
 .player-name{font-family:'Cinzel',serif;font-size:.8rem;font-weight:600;letter-spacing:.5px;color:#e2e8f0;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.player-role-hint{font-size:.7rem;color:rgba(255,255,255,.35);font-style:italic}
+.player-role-hint{font-size:1.6rem;color:rgba(255,255,255,.75);line-height:1.2;margin-top:4px}
 .action-card{background:rgba(255,255,255,.05);backdrop-filter:blur(10px);border:1.5px solid rgba(255,255,255,.12);border-radius:18px;padding:18px 12px 14px;text-align:center;cursor:pointer;transition:all .25s cubic-bezier(.175,.885,.32,1.275);min-width:130px;max-width:155px;flex:1 1 130px}
 .action-card:hover{transform:scale(1.06) translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.5)}
  
@@ -298,12 +298,12 @@ const ROLE_INFO = {
   "Gemini":      {"team":"village","icon":"♊","color":"special"},
   "Masons":      {"team":"village","icon":"🤝","color":"special"},
   "Soothsayer":  {"team":"village","icon":"🌟","color":"special"},
-  "Count Lycanthrope":{"team":"village","icon":"🧛","color":"special"},
+  "Count Lycanthrope":{"team":"wolf","icon":"🧛","color":"wolf"},
   "Reviler":     {"team":"village","icon":"😤","color":"special"},
   "Gladys":      {"team":"village","icon":"🪟","color":"special"},
   "Apprentice Exposer":{"team":"village","icon":"📢","color":"special"},
   "Apprentice Illusionist":{"team":"village","icon":"🎭","color":"special"},
-  "The Cloak":   {"team":"village","icon":"🧥","color":"village"},
+  "The Cloak":   {"team":"wolf","icon":"🧥","color":"wolf"},
   "Assassin Wolf":{"team":"wolf","icon":"🗡️","color":"wolf"},
   "Den Mother":  {"team":"wolf","icon":"🐾","color":"wolf"},
   "Kamikaze Wolf":{"team":"wolf","icon":"💥","color":"wolf"},
@@ -344,7 +344,7 @@ const ROLE_INFO = {
   "Blind Mary":  {"team":"neutral","icon":"🙈","color":"neutral"},
   "Gladys":      {"team":"village","icon":"🪟","color":"special"},
   "Investigator":{"team":"village","icon":"🔎","color":"special"},
-  "The Cloak":   {"team":"village","icon":"🧥","color":"special"},
+  "The Cloak":   {"team":"wolf","icon":"🧥","color":"wolf"},
 };
  
 /* ============================================================
@@ -369,6 +369,7 @@ let copycatTarget = null;
 let copycatResolved = false;
 let seerInverted = false;
 let apprenticeIllUsed = false;
+let apprenticeIllTarget = null; // player name targeted by Apprentice Illusionist
 let mamaWolfLycan = null;
 let assassinTargetMap = {};   // assassinName → targetName
 let blightedActive = false;   // Blighted starts killing after first attack
@@ -386,6 +387,7 @@ let infectedKilledByWolves = false;  // Next night wolves can't attack
 let masterTannerPhase = 1;   // 1=must survive, 2=must be hanged; switches after night 3
 let masterTannerActivated = false;
 let blackCatNightKill = false;
+let petWolfOwner = null;  // Name of Pet Wolf's chosen owner
 let reanimatorUsed = false;
 let oracleVillageUsed = false;
 let exposerUsed = false;
@@ -393,7 +395,11 @@ let cutthroatUsed = false;
 let magistrateUsed = false;
 let influencerAlive = false;
 let firstWolfDied = false;
+let oracleWolfActive = false;  // Oracle Wolf gets ability after first wolf dies
+let outcastDied = false;       // Outcast died → next night village roles blocked
+let mysteryWolfLycanNights = 0; // Tracks how many lycans Mystery Wolf has created
 let outsiderWolfJoined = false;
+let outsiderNightVictim = null;  // Outsider Wolf's solo kill this night
 let wiseDayCount = 0;
 let votes = {};
 let gameLog = [];
@@ -441,7 +447,7 @@ const BEGINNER_TIPS = {
   den_mother:    { icon:"🐾", text:'Sag: <b>„Den Mother, öffne die Augen."</b> — Du gibst ihr ein Signal: Hat der Seher diese Nacht einen Wolf erkannt? 👍 Ja / 👎 Nein. Dann: <b>„Schließe die Augen."</b>' },
   devotee:       { icon:"📿", text:'Sag: <b>„Devotee, öffne die Augen."</b> — Zeige ihm nacheinander die Namen der Wölfe (einen mehr pro Nacht). Tippe den entsprechenden Spieler an. Dann: <b>„Schließe die Augen."</b>' },
   empath:        { icon:"💫", text:'Sag: <b>„Empath, öffne die Augen."</b> — Sitz er neben dem Seher? Wenn ja: Ist der Nachbar des Sehers ein Wolf? 👍 Ja / 👎 Nein. Dann: <b>„Schließe die Augen."</b>' },
-  spy:           { icon:"🕵️", text:'Sag: <b>„Spy, öffne die Augen."</b> — Er zeigt auf eine Person. Du sagst: Dorf-Team oder Wolf-Team (👍/👎). Dann: <b>„Schließe die Augen."</b>' },
+  spy:           { icon:"🕵️", text:'Sag: <b>„Spy, öffne die Augen."</b> — Er öffnet die Augen nach dem Seher. Zeige ihm still auf die Person, die der Seher gerade geprüft hat. Nicht das Ergebnis, nur die Person. Dann: <b>„Schließe die Augen."</b>' },
   mystic_wolf:   { icon:"🔮", text:'Sag: <b>„Mystic Wolf, öffne die Augen."</b> — Er zeigt auf eine Person. Du zeigst ihm still deren Rollenkarte. Dann: <b>„Schließe die Augen."</b>' },
   sorcerer_wolf: { icon:"🧙", text:'Sag: <b>„Sorcerer Wolf, öffne die Augen."</b> — Er zeigt auf jemanden: Ist das der Seher? 👍 Ja / 👎 Nein. Dann: <b>„Schließe die Augen."</b>' },
   sorceress:     { icon:"🧙‍♀️", text:'Sag: <b>„Sorceress, öffne die Augen."</b> — Sie zeigt auf jemanden: Ist das der Seher? 👍 Ja / 👎 Nein. Wichtig: Sie kennt die Wölfe NICHT. Dann: <b>„Schließe die Augen."</b>' },
@@ -460,19 +466,20 @@ const BEGINNER_TIPS = {
   exposer:       { icon:"📢", text:'Sag: <b>„Apprentice Exposer, öffne die Augen."</b> — Er wählt eine Person. Du zeigst ALLEN Spielern deren Rollenkarte (einmalig). Dann: <b>„Schließe die Augen."</b>' },
   mama_wolf:     { icon:"🐺", text:'Sag: <b>„Mama Wolf, öffne die Augen."</b> — Sie wählt in Nacht 1 einen Dorfbewohner. Dieser erscheint ab sofort für den Seher als Wolf (ist aber keiner). Dann: <b>„Schließe die Augen."</b>' },
   mountain_wolf: { icon:"🏔️", text:'Sag: <b>„Mountain Wolf, öffne die Augen."</b> — Sie wählt in Nacht 1 eine Gruppe. Du gibst 👍 wenn der Seher darin ist, sonst 👎. Dann: <b>„Schließe die Augen."</b>' },
-  oracle_wolf:   { icon:"🌕", text:'Sag: <b>„Oracle Wolf, öffne die Augen."</b> — Er wählt in Nacht 1 eine Gruppe. Du sagst wie viele Sonderrollen darin sitzen. Dann: <b>„Schließe die Augen."</b>' },
-  outsider_wolf: { icon:"🌲", text:'Sag: <b>„Outsider Wolf, öffne die Augen."</b> — Er kennt die anderen Wölfe nicht. Schläft in Nacht 1. Wird erst aktiv wenn der erste Wolf stirbt.' },
+  oracle_wolf:   { icon:"🌕", text:'Sag: <b>„Oracle Wolf, öffne die Augen."</b> — (Nur aktiv nachdem ein Wolf gestorben ist.) Er zeigt auf eine Person. Du zeigst ihm still deren Rollenkarte. Dann: <b>„Schließe die Augen."</b>' },
+  outsider_wolf: { icon:"🌲", text:'Sag: <b>„Outsider Wolf, öffne die Augen."</b> — Er jagt jede Nacht alleine. Wähle ein Opfer für ihn. ⚠️ Wählt er einen Wolf → beide erkennen sich, niemand stirbt, er tritt dem Rudel bei. Greifen die Wölfe ihn an → er überlebt und tritt bei. Dann: <b>„Schließe die Augen."</b>' },
+  pet_wolf:      { icon:"🦴", text:'Sag: <b>„Pet Wolf, öffne die Augen."</b> — Er wählt EINMALIG einen Dorfbewohner als geheimen Besitzer. Der Besitzer weiß es nicht. Stirbt der Pet Wolf vor dem Besitzer → Besitzer stirbt sofort ebenfalls. Stirbt der Besitzer zuerst → nichts passiert. Dann: <b>„Schließe die Augen."</b>' },
   soothsayer:    { icon:"🌟", text:'Sag: <b>„Soothsayer, öffne die Augen."</b> — Er wählt in Nacht 1 eine Gruppe. Du sagst wie viele Wölfe darin sind (Zahl). Dann: <b>„Schließe die Augen."</b>' },
-  count_lyc:     { icon:"🧛", text:'Sag: <b>„Count Lycanthrope, öffne die Augen."</b> — Er wählt in Nacht 1 eine Person. Diese erscheint ab sofort für den Seher als Wolf (ist aber keiner). Dann: <b>„Schließe die Augen."</b>' },
+  count_lyc:     { icon:"🧛", text:'Sag: <b>„Count Lycanthrope, öffne die Augen."</b> — (Nur Nacht 1.) Zeige ihm zuerst die Grenze der zwei Dorfhälften, dann wie viele Wölfe in jeder Hälfte sind, dann in welcher Hälfte der Seher sitzt. Dann: <b>„Schließe die Augen."</b>' },
   masons:        { icon:"🤝", text:'Sag: <b>„Masons, öffnet die Augen."</b> — Die Freimaurer öffnen die Augen und schauen sich an. Sie kennen jetzt ihre Verbündeten. Dann: <b>„Schließt die Augen."</b>' },
   gemini:        { icon:"♊", text:'Sag: <b>„Gemini, öffnet die Augen."</b> — Die Zwillinge schauen sich an. Stirbt einer, stirbt der andere sofort mit. Dann: <b>„Schließt die Augen."</b>' },
   copycat:       { icon:"🐱", text:'Sag: <b>„Copycat, öffne die Augen."</b> — Er zeigt auf eine Person. Stirbt diese Person später, übernimmt der Copycat ihre Rolle komplett. Dann: <b>„Schließe die Augen."</b>' },
   assassin:      { icon:"🗡️", text:'Sag: <b>„Assassin, öffne die Augen."</b> — Er zeigt in Nacht 1 auf sein Ziel. Stirbt dieses Ziel während er noch lebt → Assassin gewinnt sofort. Dann: <b>„Schließe die Augen."</b>' },
   savant_n1:     { icon:"🧠", text:'Sag: <b>„Savant, öffne die Augen."</b> — Zeige ihm still die Rollenkarten ALLER Spieler (oder flüstere sie). Er kennt ab jetzt alle Rollen. Dann: <b>„Schließe die Augen."</b>' },
   wise_old_man:  { icon:"👴", text:'Sag: <b>„Weiser Alter Mann, öffne die Augen."</b> — Alle Spieler mit Dorf-Sonderrollen heben kurz die Hand. Er sieht wie viele es sind. Dann: <b>„Schließe die Augen."</b>' },
-  insomniac:     { icon:"😴", text:'Sag: <b>„Insomniac, du schläfst nur halb."</b> — Er hält die Augen als Schlitze offen und beobachtet. Du sagst ob diese Nacht jemand die Rolle gewechselt hat (👍/👎). Dann: <b>„Schlaf weiter."</b>' },
+  insomniac:     { icon:"😴", text:'Sag: <b>„Insomniac, öffne die Augen."</b> — Zeige 👍 wenn mindestens einer seiner zwei direkten Sitznachbarn in dieser Nacht aufgewacht ist, sonst 👎. Er erfährt nicht welcher. Dann: <b>„Schließe die Augen."</b>' },
   investigator:  { icon:"🔎", text:'Sag: <b>„Investigator, öffne die Augen."</b> — Er zeigt auf 3 nebeneinander sitzende Spieler. Du gibst 👍 wenn ein Wolf dabei ist, sonst 👎. Dann: <b>„Schließe die Augen."</b>' },
-  cloak:         { icon:"🧥", text:'Sag: <b>„The Cloak, öffne die Augen."</b> — Flüstere ihm die Sonderrolle die du für ihn notiert hast. Ab jetzt kann er seine versteckte Fähigkeit nutzen. Dann: <b>„Schließe die Augen."</b>' },
+  cloak:         { icon:"🧥", text:'The Cloak ist eine passive Schutzrolle – kein Aufwecken nötig. Werwölfe direkt neben The Cloak erscheinen beim Seher automatisch als Dorfbewohner. Kein Handlungsbedarf.' },
   gladys:        { icon:"🪟", text:'Sag: <b>„Gladys, öffne die Augen."</b> — Du gibst ihr ein Signal: Hat ein direkter Sitznachbar diese Nacht eine Aktion ausgeführt? 👍 Ja / 👎 Nein. Dann: <b>„Schließe die Augen."</b>' },
   blind_mary:    { icon:"🙈", text:'<b>Blind Mary ist tot</b> – aber sie darf jetzt jede Nacht noch jemanden töten. Sie zeigt still auf eine Person → tippe sie an.' },
   vote:          { icon:"🗳️", text:"Das Dorf diskutiert. Dann gleichzeitig abstimmen: Jeder zeigt auf den Verdächtigen. Tippe auf die Spieler um Stimmen zu vergeben. Die Person mit den meisten Stimmen wird hingerichtet." },
@@ -501,9 +508,9 @@ function demoPlayers() {
 ============================================================ */
 function ri(role) { return ROLE_INFO[role] || {team:"village",icon:"❓",color:"village"}; }
 function isWolf(p) {
-  const wolfRoles = ["Werwolf","Assassin Wolf","Den Mother","Kamikaze Wolf","Mama Wolf",
+  const wolfRoles = ["Werwolf","Assassin Wolf","Count Lycanthrope","Den Mother","Kamikaze Wolf","Mama Wolf",
     "Mountain Wolf","Mystery Wolf","Mystic Wolf","Oracle Wolf","Outsider Wolf","Pet Wolf",
-    "Sorcerer Wolf","Starving Wolf","Wolf Cub","Sorceress","Warlock","Mummer",
+    "Sorcerer Wolf","Starving Wolf","The Cloak","Wolf Cub","Sorceress","Warlock","Mummer",
     "Eye of the Seer","Illusionist","Spawn","Apprentice Illusionist"];
   if (wolfRoles.includes(p.role)) return true;
   // Investigator who picked a group with no wolf → secretly supports wolves
@@ -580,6 +587,12 @@ function buildNightQueue() {
   // PHASE 1 – NACHT-1-EINMALIG: Rollen die sich nur in Nacht 1
   //           gegenseitig kennenlernen oder ihre Ziele wählen
   // ══════════════════════════════════════════════════════════════
+  // Mystery Wolf: erzeugt Lycans in Nacht 2 und Nacht 3
+  if (nightCount === 2 || nightCount === 3) {
+    const mysteryW = players.find(p => p.alive && p.role === "Mystery Wolf");
+    if (mysteryW) q.push({id:"mystery_wolf_lycan", label:"Mystery Wolf", icon:"❓", fn: () => phase_MysteryWolfLycan(mysteryW)});
+  }
+
   if (nightCount === 1) {
     // Wolf-interne Sonderfälle: Außenseiter & Verstärker kennenlernen
     const outsider = players.find(p => p.alive && p.role === "Outsider Wolf");
@@ -590,6 +603,9 @@ function buildNightQueue() {
     if (mountainW) q.push({id:"mountain_wolf_n1", label:"Mountain Wolf", icon:"🏔️", fn: () => phase_MountainWolfN1(mountainW)});
     const oracleW = players.find(p => p.alive && p.role === "Oracle Wolf");
     if (oracleW) q.push({id:"oracle_wolf_n1", label:"Oracle Wolf", icon:"🌕", fn: () => phase_OracleWolfN1(oracleW)});
+    // Pet Wolf wählt Besitzer in Nacht 1
+    const petWolf = players.find(p => p.alive && p.role === "Pet Wolf");
+    if (petWolf) q.push({id:"pet_wolf_n1", label:"Pet Wolf", icon:"🦴", fn: () => phase_PetWolfN1(petWolf)});
     // Dorf-Bruderschaften kennenlernen
     if (hasAliveRole("Masons"))   q.push({id:"masons_n1",   label:"Masons",      icon:"🤝", fn: () => phase_MasonsN1()});
     if (hasAliveRole("Gemini"))   q.push({id:"gemini_n1",   label:"Gemini",      icon:"♊",  fn: () => phase_GeminiN1()});
@@ -607,6 +623,16 @@ function buildNightQueue() {
 
   // Insomniac: jede Nacht – beobachtet Rollenwechsel
   if (hasAliveRole("Insomniac")) q.push({id:"insomniac", label:"Insomniac", icon:"😴", fn: () => phase_Insomniac()});
+
+  // Blind Mary (lebt): Moderator-Erinnerung – sie darf nicht sprechen
+  const blindMaryAlive = players.find(p => p.alive && p.role === "Blind Mary");
+  if (blindMaryAlive) q.push({id:"blind_mary_alive", label:"Blind Mary", icon:"🙈", fn: () => phase_BlindMaryAlive(blindMaryAlive)});
+
+  // Outsider Wolf jagt alleine (jede Nacht bis er dem Rudel beitritt)
+  const outsiderAlone = players.find(p => p.alive && p.role === "Outsider Wolf" && !outsiderWolfJoined);
+  if (outsiderAlone) q.push({id:"outsider_hunt", label:"Outsider Wolf", icon:"🌲", fn: () => phase_OutsiderWolfHunt(outsiderAlone)});
+
+  // Pet Wolf wählt Besitzer nur in Nacht 1 (einmalig)
 
   // ══════════════════════════════════════════════════════════════
   // PHASE 2 – AUFKLÄRUNG: Dorf-Seher & Info-Rollen schauen zuerst,
@@ -632,9 +658,27 @@ function buildNightQueue() {
   const emp = players.find(p => p.alive && p.role === "Empath");
   if (emp && seerActive) q.push({id:"empath", label:"Empath", icon:"💫", fn: () => phase_Empath(emp)});
 
-  // Spy prüft Team einer Person
-  const spy = players.find(p => p.alive && p.role === "Spy");
-  if (spy) q.push({id:"spy", label:"Spy", icon:"🕵️", fn: () => phase_Spy(spy)});
+  // Outcast-Effekt: wenn aktiv, dürfen Dorfrollen nicht agieren
+  if (outcastDied) {
+    q.push({id:"outcast_block", label:"⚠️ Outcast-Nacht", icon:"🚪", fn: () => {
+      outcastDied = false;
+      showModal("🚪","OUTCAST-EFFEKT","Dorfrollen blockiert!",
+        `<div class="night-report-item nri-gold">🚪 Der Outcast ist gestorben!<br><br>Diese Nacht dürfen <b>alle Dorfrollen ihre Fähigkeiten nicht nutzen</b>.<br>Nur Werwölfe handeln normal.<br><br>Alle Dorfphasen werden übersprungen.</div>`,
+        () => nextNightPhase()
+      );
+    }});
+  } else {
+    // Reviler: jede Nacht eine Person wählen (Dorf-Spezialrolle → stirbt, sonst Reviler stirbt)
+    const reviler = players.find(p => p.alive && p.role === "Reviler");
+    if (reviler) q.push({id:"reviler", label:"Reviler", icon:"😤", fn: () => phase_Reviler(reviler)});
+    // Spy erfährt wen Seher geprüft hat
+    const spy = players.find(p => p.alive && p.role === "Spy");
+    if (spy) q.push({id:"spy", label:"Spy", icon:"🕵️", fn: () => phase_Spy(spy)});
+  }
+
+  // Oracle Wolf: aktiv sobald ein Wolf gestorben ist (Wolfrolle → nicht blockiert)
+  const oracleWPlayer = players.find(p => p.alive && p.role === "Oracle Wolf");
+  if (oracleWPlayer && oracleWolfActive) q.push({id:"oracle_wolf_night", label:"Oracle Wolf", icon:"🌕", fn: () => phase_OracleWolfNight(oracleWPlayer)});
 
   // Einmalige Info-Rollen (Oracle, Apprentice Exposer) – vor dem Angriff
   const oracleV = players.find(p => p.alive && p.role === "Oracle" && ri(p.role).team !== "wolf");
@@ -649,8 +693,10 @@ function buildNightQueue() {
   // ══════════════════════════════════════════════════════════════
   // PHASE 3 – SCHUTZ: Bodyguard schützt bevor Wölfe angreifen
   // ══════════════════════════════════════════════════════════════
-  const bg = players.find(p => p.alive && p.role === "Bodyguard");
-  if (bg) q.push({id:"bodyguard", label:"Bodyguard", icon:"🛡️", fn: () => phase_Bodyguard(bg)});
+  if (!outcastDied) {
+    const bg = players.find(p => p.alive && p.role === "Bodyguard");
+    if (bg) q.push({id:"bodyguard", label:"Bodyguard", icon:"🛡️", fn: () => phase_Bodyguard(bg)});
+  }
 
   // ══════════════════════════════════════════════════════════════
   // PHASE 4 – WOLF-VORBEREITUNG: Sorceress/Warlock suchen Seher,
@@ -664,6 +710,8 @@ function buildNightQueue() {
   if (sorcW && !firstWolfDied) q.push({id:"sorcerer_wolf", label:"Sorcerer Wolf", icon:"🧙", fn: () => phase_SorcererWolf(sorcW)});
   const mystic = players.find(p => p.alive && p.role === "Mystic Wolf");
   if (mystic) q.push({id:"mystic", label:"Mystic Wolf", icon:"🔮", fn: () => phase_MysticWolf(mystic)});
+  const appIll = players.find(p => p.alive && p.role === "Apprentice Illusionist");
+  if (appIll && !apprenticeIllUsed) q.push({id:"apprentice_ill", label:"App. Illusionist", icon:"🎭", fn: () => phase_ApprenticeIllusionist(appIll)});
 
   // ══════════════════════════════════════════════════════════════
   // PHASE 5 – WOLF-ANGRIFF: Alle Wölfe wählen ihr Opfer
@@ -674,13 +722,15 @@ function buildNightQueue() {
   // PHASE 6 – REAKTION AUF ANGRIFF: Hexe weiß wer angegriffen
   //           wurde und kann heilen oder vergiften
   // ══════════════════════════════════════════════════════════════
-  const witch = players.find(p => p.alive && (p.role === "Hexe" || p.role === "Witch"));
-  if (witch && (witchHasHeal || witchHasPoison)) q.push({id:"witch", label:"Hexe", icon:"🧪", fn: () => phase_Witch(witch)});
+  if (!outcastDied) {
+    const witch = players.find(p => p.alive && (p.role === "Hexe" || p.role === "Witch"));
+    if (witch && (witchHasHeal || witchHasPoison)) q.push({id:"witch", label:"Hexe", icon:"🧪", fn: () => phase_Witch(witch)});
 
-  // Blighted ist aktiv nachdem er überlebt hat
-  if (blightedActive) {
-    const bl = players.find(p => p.alive && p.role === "Blighted");
-    if (bl) q.push({id:"blighted", label:"Blighted", icon:"🤢", fn: () => phase_Blighted(bl)});
+    // Blighted ist aktiv nachdem er überlebt hat
+    if (blightedActive) {
+      const bl = players.find(p => p.alive && p.role === "Blighted");
+      if (bl) q.push({id:"blighted", label:"Blighted", icon:"🤢", fn: () => phase_Blighted(bl)});
+    }
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -702,8 +752,10 @@ function buildNightQueue() {
   // PHASE 8 – MANIPULATION & PASSIVE: Beeinflussen den nächsten
   //           Tag ohne direkt zu töten
   // ══════════════════════════════════════════════════════════════
-  const spell = players.find(p => p.alive && p.role === "Spellcaster");
-  if (spell) q.push({id:"spellcaster", label:"Spellcaster", icon:"✨", fn: () => phase_Spellcaster(spell)});
+  if (!outcastDied) {
+    const spell = players.find(p => p.alive && p.role === "Spellcaster");
+    if (spell) q.push({id:"spellcaster", label:"Spellcaster", icon:"✨", fn: () => phase_Spellcaster(spell)});
+  }
   const mum = players.find(p => p.alive && p.role === "Mummer");
   if (mum) q.push({id:"mummer", label:"Mummer", icon:"🎪", fn: () => phase_Mummer(mum)});
   const nosf = players.find(p => p.alive && p.role === "Nosferatu");
@@ -715,13 +767,15 @@ function buildNightQueue() {
   // PHASE 9 – BEOBACHTUNG & EINMALIG: Rollen die das Ergebnis
   //           der Nacht beobachten oder einmalig handeln
   // ══════════════════════════════════════════════════════════════
-  const reani = players.find(p => p.alive && p.role === "Reanimator");
-  if (reani && !reanimatorUsed) q.push({id:"reanimator", label:"Reanimator", icon:"💉", fn: () => phase_Reanimator(reani)});
-  // Gladys beobachtet ob ein Nachbar aktiv war (ganz am Ende wenn alle Aktionen bekannt)
-  const gladys = players.find(p => p.alive && p.role === "Gladys");
-  if (gladys) q.push({id:"gladys", label:"Gladys", icon:"🪟", fn: () => phase_Gladys(gladys)});
-  // The Cloak-Enthüllung ab Nacht 3
-  if (!cloakRevealed && nightCount >= cloakRevealNight) {
+  if (!outcastDied) {
+    const reani = players.find(p => p.alive && p.role === "Reanimator");
+    if (reani && !reanimatorUsed) q.push({id:"reanimator", label:"Reanimator", icon:"💉", fn: () => phase_Reanimator(reani)});
+    // Gladys beobachtet ob ein Nachbar aktiv war (ganz am Ende wenn alle Aktionen bekannt)
+    const gladys = players.find(p => p.alive && p.role === "Gladys");
+    if (gladys) q.push({id:"gladys", label:"Gladys", icon:"🪟", fn: () => phase_Gladys(gladys)});
+  }
+  // The Cloak ist jetzt eine passive Wolfrolle – keine Enthüllung nötig
+  if (false && !cloakRevealed && nightCount >= cloakRevealNight) {
     const cloak = players.find(p => p.alive && p.role === "The Cloak");
     if (cloak) q.push({id:"cloak_reveal", label:"The Cloak", icon:"🧥", fn: () => phase_CloakReveal(cloak)});
   }
@@ -750,6 +804,7 @@ function startNightCycle() {
   witchKilledThisNight = null;
   nightKillCount = 0;
   nightQueueDone = [];
+  outsiderNightVictim = null;
   bodyguardTarget = null;
   spellcastedToday = null;
   mummerHypnotized = null;
@@ -798,10 +853,45 @@ function startNightCycle() {
    NIGHT PHASES – NIGHT 1 SPECIALS
 ============================================================ */
 function phase_OutsiderNote(outsider) {
-  showModal("🌲","OUTSIDER WOLF","Schläft allein",
-    `<div class="night-report-item nri-info">🌲 <b>${outsider.name}</b> ist der Outsider Wolf und wacht in Nacht 1 NICHT mit dem Rudel auf. Er kennt die Wölfe noch nicht.<br><br>Erst wenn der erste andere Wolf stirbt, schließt er sich dem Rudel an.</div>`,
+  showModal("🌲","OUTSIDER WOLF","Jagt alleine – Nacht 1",
+    `<div class="night-report-item nri-info">🌲 <b>${outsider.name}</b> ist der Outsider Wolf.<br><br>Er wacht <b>NICHT</b> mit dem Rudel auf und kennt die Wölfe nicht – sie kennen ihn nicht.<br><br>⚠️ Er jagt <b>jede Nacht alleine</b> und wählt sein eigenes Opfer.<br>👉 Sie erkennen sich erst, wenn einer den anderen angreifen würde:<br>• Outsider wählt einen Wolf → Erkennung, kein Tod, er tritt bei.<br>• Wölfe wählen Outsider → Erkennung, er überlebt, er tritt bei.</div>`,
     () => nextNightPhase()
   );
+}
+
+function phase_BlindMaryAlive(bm) {
+  showModal("🙈","BLIND MARY","Sie lebt – darf nicht sprechen",
+    `<div class="night-report-item nri-info">🙈 <b>${bm.name}</b> (Blind Mary) lebt.<br><br>⚠️ Sie darf weder sprechen noch gestikulieren – weder tagsüber noch nachts.<br><br>🏆 Gewinnt sofort, wenn eine Phase (Tag oder Nacht) endet, ohne dass jemand eliminiert wurde.<br><br>Nach ihrem Tod darf sie jede Nacht jemanden töten.</div>`,
+    () => nextNightPhase()
+  );
+}
+
+function phase_OutsiderWolfHunt(outsider) {
+  showBeginnerTip("outsider_wolf", () => _phase_OutsiderWolfHunt(outsider));
+}
+function _phase_OutsiderWolfHunt(outsider) {
+  setInstruction("🌲 Outsider Wolf – jagt alleine", `${outsider.name} wählt sein Opfer. Wählt er einen Wolf → Erkennung!`, "wolf", "Outsider Wolf");
+  const targets = players.filter(p => p.alive && p.name !== outsider.name);
+  renderGrid(targets, (p) => {
+    if (isWolf(p)) {
+      // Erkennung! Outsider trifft einen Wolf
+      outsiderWolfJoined = true;
+      log(`🌲 Outsider Wolf trifft Wolf ${p.name} – Erkennung! Outsider tritt dem Rudel bei.`, "action");
+      showModal("🌲","OUTSIDER WOLF","⚡ Erkennung!",
+        `<div class="night-report-item nri-gold">🌲 <b>${outsider.name}</b> (Outsider Wolf) hat <b>${p.name}</b> angegriffen – ein Werwolf!<br><br>Sie erkennen sich gegenseitig. <b>Niemand stirbt.</b><br><br>🐺 <b>${outsider.name}</b> schließt sich ab jetzt dem Rudel an!</div>`,
+        () => nextNightPhase()
+      );
+    } else {
+      showConfirmBanner(`🌲 ${p.name} als Outsider-Wolf-Opfer?`, () => {
+        outsiderNightVictim = p.name;
+        log(`🌲 Outsider Wolf wählt ${p.name} als Opfer`, "action");
+        showModal("🌲","OUTSIDER WOLF","Opfer gewählt",
+          `<div class="night-report-item nri-info">🌲 <b>${outsider.name}</b> wählt <b>${p.name}</b> als sein Opfer dieser Nacht.</div>`,
+          () => nextNightPhase()
+        );
+      });
+    }
+  });
 }
  
 function phase_MamaWolfN1(mama) {
@@ -833,12 +923,36 @@ function _phase_MountainWolfN1(mw) {
   );
 }
  
+function phase_PetWolfN1(pw) {
+  showBeginnerTip("pet_wolf", () => _phase_PetWolfN1(pw));
+}
+function _phase_PetWolfN1(pw) {
+  setInstruction("🦴 Pet Wolf – Nacht 1", `${pw.name} wählt einen Besitzer (nur Dorfbewohner).`, "wolf", "Pet Wolf");
+  const targets = players.filter(p => p.alive && p.name !== pw.name && !isWolf(p));
+  if (!targets.length) {
+    showModal("🦴","PET WOLF","Kein Besitzer möglich",
+      `<div class="night-report-item nri-info">🦴 Keine Dorfbewohner verfügbar als Besitzer.</div>`,
+      () => nextNightPhase()
+    );
+    return;
+  }
+  renderGrid(targets, (p) => {
+    petWolfOwner = p.name;
+    log(`🦴 Pet Wolf wählt Besitzer: ${p.name}`, "action");
+    showModal("🦴","PET WOLF","Besitzer gewählt",
+      `<div class="night-report-item nri-info">🦴 <b>${pw.name}</b> (Pet Wolf) wählt <b>${p.name}</b> als Besitzer.<br><br>${p.name} weiß nichts davon.<br><br>⚠️ Stirbt der Pet Wolf vor seinem Besitzer → <b>${p.name}</b> stirbt sofort ebenfalls mit!<br>Stirbt der Besitzer zuerst → nichts passiert, Pet Wolf spielt normal weiter.</div>`,
+      () => nextNightPhase()
+    );
+  });
+}
+
 function phase_OracleWolfN1(ow) {
   showBeginnerTip("oracle_wolf", () => _phase_OracleWolfN1(ow));
 }
 function _phase_OracleWolfN1(ow) {
-  showModal("🌕","ORACLE WOLF","Spezialrollen zählen – Nacht 1",
-    `<div class="night-report-item nri-info">🌕 <b>${ow.name}</b> wählt eine Spielergruppe. Der Spielleiter zählt, wie viele Spezialrollen (mit aktiven Nachtfähigkeiten) sich darin befinden und gibt die Anzahl per Signal.</div>`,
+  // Oracle Wolf has NO special ability in Nacht 1 - ability unlocks after first wolf dies
+  showModal("🌕","ORACLE WOLF","Nacht 1 – noch keine Fähigkeit",
+    `<div class="night-report-item nri-info">🌕 <b>${ow.name}</b> (Oracle Wolf) spielt in Nacht 1 wie ein normaler Werwolf.<br><br>⚠️ Die Spezialfähigkeit wird erst aktiv, <b>sobald ein Werwolf stirbt</b>.</div>`,
     () => nextNightPhase()
   );
 }
@@ -849,17 +963,61 @@ function phase_CountLycanN1() {
 function _phase_CountLycanN1() {
   const cl = players.find(p => p.alive && p.role === "Count Lycanthrope");
   if (!cl) { nextNightPhase(); return; }
-  const wolves = players.filter(p => p.alive && isWolf(p));
-  const seer = players.find(p => p.alive && p.role === "Seher");
-  showModal("🧛","COUNT LYCANTHROPE","Wolfverteilung – Nacht 1",
-    `<div class="night-report-item nri-info">🧛 <b>${cl.name}</b> erhält vom Spielleiter folgende Informationen:<br><br>
-    • Wo die Grenze der zwei Tischhälften liegt<br>
-    • Wie viele Wölfe (inkl. Lycans) in jeder Hälfte sitzen<br>
-    • In welcher Hälfte der Seher sitzt<br><br>
-    <b>Wölfe im Spiel:</b> ${wolves.map(p=>p.name).join(", ") || "–"}<br>
-    <b>Seher:</b> ${seer ? seer.name : "nicht im Spiel"}</div>`,
-    () => nextNightPhase()
-  );
+  const totalWolves = players.filter(p => p.alive && isWolf(p) && p.role !== "Count Lycanthrope").length;
+  // Interactive: Spielleiter gibt die Hälften-Verteilung ein
+  const modal = document.getElementById("modal");
+  const modalBody = document.getElementById("modalBody");
+  modalBody.innerHTML = `
+    <div class="modal-icon">🧛</div>
+    <div class="modal-role-label">COUNT LYCANTHROPE</div>
+    <div class="modal-title">Wolfverteilung – Nacht 1</div>
+    <div class="night-report-item nri-info" style="text-align:left;margin-bottom:16px;">
+      Gib dem Spielleiter die Informationen für <b>${cl.name}</b>.<br>
+      Trage ein, wie viele Wölfe (inkl. Lycans, <b>ohne Count Lycanthrope selbst</b>) in jeder Tischhälfte sitzen,
+      und in welcher Hälfte der Seher sitzt.<br><br>
+      <b>Wölfe gesamt (ohne Count):</b> ${totalWolves}
+    </div>
+    <div style="display:flex;gap:16px;justify-content:center;margin-bottom:16px;">
+      <div style="background:rgba(255,255,255,.08);border-radius:14px;padding:14px 20px;text-align:center;">
+        <div style="font-family:'Cinzel',serif;font-size:.75rem;color:var(--gold);letter-spacing:1px;margin-bottom:8px;">LINKE HÄLFTE</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button onclick="document.getElementById('cl_left').value=Math.max(0,+document.getElementById('cl_left').value-1)" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;font-size:1.2rem;cursor:pointer;">−</button>
+          <input id="cl_left" type="number" min="0" value="0" style="width:44px;text-align:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:white;font-size:1.2rem;padding:4px;">
+          <button onclick="document.getElementById('cl_left').value=+document.getElementById('cl_left').value+1" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;font-size:1.2rem;cursor:pointer;">+</button>
+        </div>
+        <div style="font-size:.7rem;color:rgba(255,255,255,.4);margin-top:4px;">Wölfe</div>
+      </div>
+      <div style="background:rgba(255,255,255,.08);border-radius:14px;padding:14px 20px;text-align:center;">
+        <div style="font-family:'Cinzel',serif;font-size:.75rem;color:var(--gold);letter-spacing:1px;margin-bottom:8px;">RECHTE HÄLFTE</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button onclick="document.getElementById('cl_right').value=Math.max(0,+document.getElementById('cl_right').value-1)" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;font-size:1.2rem;cursor:pointer;">−</button>
+          <input id="cl_right" type="number" min="0" value="0" style="width:44px;text-align:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:white;font-size:1.2rem;padding:4px;">
+          <button onclick="document.getElementById('cl_right').value=+document.getElementById('cl_right').value+1" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;font-size:1.2rem;cursor:pointer;">+</button>
+        </div>
+        <div style="font-size:.7rem;color:rgba(255,255,255,.4);margin-top:4px;">Wölfe</div>
+      </div>
+    </div>
+    <div style="margin-bottom:16px;text-align:center;">
+      <div style="font-family:'Cinzel',serif;font-size:.8rem;color:var(--gold);margin-bottom:8px;letter-spacing:1px;">SEHER sitzt in welcher Hälfte?</div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button id="cl_seer_l" onclick="document.getElementById('cl_seer_l').style.background='rgba(212,168,67,.35)';document.getElementById('cl_seer_r').style.background='rgba(255,255,255,.08)';window._clSeerSide='links'"
+          style="padding:10px 22px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:white;font-family:'Cinzel',serif;font-size:.8rem;cursor:pointer;">Linke Hälfte</button>
+        <button id="cl_seer_r" onclick="document.getElementById('cl_seer_r').style.background='rgba(212,168,67,.35)';document.getElementById('cl_seer_l').style.background='rgba(255,255,255,.08)';window._clSeerSide='rechts'"
+          style="padding:10px 22px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:white;font-family:'Cinzel',serif;font-size:.8rem;cursor:pointer;">Rechte Hälfte</button>
+        <button id="cl_seer_no" onclick="document.getElementById('cl_seer_no').style.background='rgba(212,168,67,.35)';document.getElementById('cl_seer_l').style.background='rgba(255,255,255,.08)';document.getElementById('cl_seer_r').style.background='rgba(255,255,255,.08)';window._clSeerSide='nicht im Spiel'"
+          style="padding:10px 22px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:white;font-family:'Cinzel',serif;font-size:.8rem;cursor:pointer;">Kein Seher</button>
+      </div>
+    </div>
+    <button onclick="
+      const l=document.getElementById('cl_left').value;
+      const r=document.getElementById('cl_right').value;
+      const s=window._clSeerSide||'nicht angegeben';
+      log('🧛 Count Lycanthrope erfährt: Links '+l+' Wölfe, Rechts '+r+' Wölfe, Seher: '+s,'action');
+      document.getElementById('modal').style.display='none';
+      nextNightPhase();
+    " class="btn-modal-ok">Weitergegeben ✓</button>
+  `;
+  modal.style.display = "flex";
 }
  
 function phase_SoothsayerN1() {
@@ -968,14 +1126,18 @@ function phase_Insomniac() {
 function _phase_Insomniac() {
   const ins = players.find(p => p.alive && p.role === "Insomniac");
   if (!ins) { nextNightPhase(); return; }
-  const roleChanges = [];
-  if (copycatResolved) roleChanges.push("Copycat hat eine neue Rolle angenommen");
-  if (outsiderWolfJoined) roleChanges.push("Outsider Wolf ist dem Rudel beigetreten");
-  const msg = roleChanges.length > 0
-    ? `😴 <b>${ins.name}</b> beobachtet: Es gab einen Rollenwechsel!<br><br>🔔 <b>${roleChanges.join("<br>")}</b><br><br><em>(Spielleiter gibt nur ein Ja/Nein-Signal – keine Details)</em>`
-    : `😴 <b>${ins.name}</b> beobachtet: <b>Kein Rollenwechsel</b> diese Nacht.`;
-  showModal("😴","INSOMNIAC",`Nacht ${nightCount} – Beobachtung`,
-    `<div class="night-report-item nri-info">${msg}</div>`,
+  // Find direct neighbors of Insomniac
+  const alivePlayers = players.filter(p => p.alive);
+  const idx = alivePlayers.findIndex(p => p.name === ins.name);
+  const leftNeighbor  = idx > 0 ? alivePlayers[idx - 1] : alivePlayers[alivePlayers.length - 1];
+  const rightNeighbor = idx < alivePlayers.length - 1 ? alivePlayers[idx + 1] : alivePlayers[0];
+  showModal("😴","INSOMNIAC",`Nacht ${nightCount} – Nachbar-Aktivität`,
+    `<div class="night-report-item nri-info">😴 <b>${ins.name}</b> wartet auf das Spielleiter-Signal:<br><br>
+    <b>Nachbarn:</b> ${leftNeighbor.name} (links) &amp; ${rightNeighbor.name} (rechts)<br><br>
+    Hat mindestens einer der beiden Nachbarn diese Nacht eine Nachtaktion gehabt?<br><br>
+    👍 Ja – mindestens einer war aktiv<br>
+    👎 Nein – keiner hatte eine Nachtaktion<br><br>
+    <em>Spielleiter gibt nur 👍/👎 – keine Namen!</em></div>`,
     () => nextNightPhase()
   );
 }
@@ -1027,26 +1189,21 @@ function _phase_InvestigatorN1() {
 function phase_CloakN1() {
   const cloak = players.find(p => p.alive && p.role === "The Cloak");
   if (!cloak) { nextNightPhase(); return; }
-  showModal("🧥","THE CLOAK","Verborgene Macht – Nacht 1",
+  showModal("🧥","THE CLOAK","Passive Schutzrolle – Spielleiter-Info",
     `<div class="night-report-item nri-info">🧥 <b>${cloak.name}</b> ist The Cloak.<br><br>
-    Der Spielleiter wählt <b>heimlich</b> eine Sonderrolle (die nicht im Spiel ist) für den Cloak aus und notiert sie.<br><br>
-    Nach Nacht ${cloakRevealNight} (oder nach Bedingungserfüllung) erfährt der Cloak seine echte Fähigkeit.<br><br>
-    <b>Bis dahin:</b> Seher sieht ihn als normalen Dorfbewohner. Der Cloak selbst kennt seine Fähigkeit noch nicht.</div>`,
+    <b>Kein Aufwecken nötig!</b> The Cloak ist eine passive Rolle.<br><br>
+    Werwölfe, die direkt links oder rechts neben <b>${cloak.name}</b> sitzen, erscheinen beim Seher automatisch als <b>Dorfbewohner</b>.<br><br>
+    Spielleiter-Notiz: Prüfe bei Seherchecks, ob das Ziel ein direkter Nachbar von ${cloak.name} und ein Wolf ist.</div>`,
     () => nextNightPhase()
   );
 }
 
 function phase_CloakReveal(cloak) {
-  showBeginnerTip("cloak", () => _phase_CloakReveal(cloak));
+  // The Cloak reveal no longer needed - passive role, no special reveal
+  nextNightPhase();
 }
 function _phase_CloakReveal(cloak) {
-  cloakRevealed = true;
-  log(`🧥 The Cloak ${cloak.name} erfährt seine wahre Rolle!`, "action");
-  showModal("🧥","THE CLOAK","Enthüllung!",
-    `<div class="night-report-item nri-gold">🧥 <b>${cloak.name}</b> erfährt jetzt die Sonderrolle, die der Spielleiter in Nacht 1 für ihn notiert hat!<br><br>
-    Spielleiter: Zeige dem Cloak seine geheime Fähigkeit und erkläre sie flüstern.</div>`,
-    () => nextNightPhase()
-  );
+  nextNightPhase();
 }
 
 function phase_Gladys(gladys) {
@@ -1075,7 +1232,7 @@ function _phase_BlindMaryKill() {
       log(`🙈 Blind Mary (tot) tötet: ${p.name}`, "death");
       showModal("🙈","BLIND MARY","Rache-Kill",
         `<div class="night-report-item nri-death">🙈 Die tote Blind Mary tötet <b>${p.name}</b> aus dem Jenseits!</div>`,
-        () => { updateTopBar(); nextNightPhase(); }
+        () => afterKill(p, () => nextNightPhase())
       );
     });
   });
@@ -1121,10 +1278,9 @@ function _phase_Wolves() {
   // Sonderhinweise für bestimmte Wolfrollen
   const hints = [];
   if (allWolves.find(p => p.role === "Kamikaze Wolf")) hints.push("💥 Kamikaze Wolf: Seher-Check = beide tot");
-  if (allWolves.find(p => p.role === "Mystery Wolf")) hints.push("🎭 Mystery Wolf: immer Dorf beim Seher");
+  if (allWolves.find(p => p.role === "Mystery Wolf")) hints.push("❓ Mystery Wolf: erstellt Lycan in N2 & N3");
   if (allWolves.find(p => p.role === "Pet Wolf")) {
-    const otherW = players.filter(p => p.alive && isWolf(p) && p.role !== "Pet Wolf").length;
-    hints.push(`🐾 Pet Wolf: ${otherW >= 2 ? "tarnt als Dorf" : "⚠️ Tarnung weg!"}`);
+    hints.push(`🦴 Pet Wolf: Besitzer = ${petWolfOwner || "?"} – stirbt Pet Wolf zuerst, stirbt Besitzer mit!`);
   }
   if (allWolves.find(p => p.role === "Wolf Cub")) hints.push("🐶 Wolf Cub: Tod = nächste Nacht 2×");
   if (allWolves.find(p => p.role === "Starving Wolf") && allWolves.length === 1) hints.push("🐺 Starving Wolf: allein = 2 Opfer heute!");
@@ -1164,6 +1320,16 @@ function _phase_Wolves() {
  
 function wolfKill(p, allTargets) {
   showConfirmBanner(`🐺 ${p.name} als Opfer wählen?`, () => {
+    // Bodyguard protection → nobody dies, no re-selection
+    if (bodyguardTarget === p.name) {
+      log(`🛡️ ${p.name} geschützt – das Dorf hat Glück!`, "action");
+      showModal("🛡️","BODYGUARD","Das Dorf hat Glück!",
+        `<div class="night-report-item nri-safe">🛡️ <b>${p.name}</b> ist durch den Bodyguard geschützt!<br><br>☀️ <b>Das Dorf hat Glück – heute Nacht stirbt niemand!</b></div>`,
+        () => nextNightPhase()
+      );
+      return;
+    }
+
     if (nightKillCount === 0) {
       victimThisNight = p.name;
     } else {
@@ -1171,29 +1337,80 @@ function wolfKill(p, allTargets) {
     }
     nightKillCount++;
     log(`🐺 Wölfe wählen: ${p.name}`, "action");
- 
+
+    // Gemini: sofort Hinweis dass Zwilling stirbt
+    const twin = p.role === "Gemini"
+      ? players.find(x => x.alive && x.role === "Gemini" && x.name !== p.name)
+      : null;
+
     if (nightKillCount < maxNightKills) {
       const remaining = players.filter(x => x.alive && !isWolf(x) && x.name !== victimThisNight);
       if (remaining.length > 0) {
-        setInstruction("🐺 Werwölfe – 2. Opfer", "Wählt ein zweites Opfer.", "wolf", "Wolfsteam");
-        renderGrid(remaining, (q) => {
-          showConfirmBanner(`🐺 ${q.name} als 2. Opfer?`, () => {
-            secondVictimThisNight = q.name;
-            nightKillCount++;
-            log(`🐺 Wölfe wählen 2. Opfer: ${q.name}`, "action");
-            nextNightPhase();
+        const afterFirst = () => {
+          setInstruction("🐺 Werwölfe – 2. Opfer", "Wählt ein zweites Opfer.", "wolf", "Wolfsteam");
+          renderGrid(remaining, (q) => {
+            showConfirmBanner(`🐺 ${q.name} als 2. Opfer?`, () => {
+              if (bodyguardTarget === q.name) {
+                log(`🛡️ 2. Opfer ${q.name} geschützt – kein zweiter Kill`, "action");
+                nightKillCount++;
+                nextNightPhase();
+                return;
+              }
+              secondVictimThisNight = q.name;
+              nightKillCount++;
+              log(`🐺 Wölfe wählen 2. Opfer: ${q.name}`, "action");
+              nextNightPhase();
+            });
           });
-        });
+        };
+        if (twin) {
+          showModal("♊","GEMINI","Zwilling stirbt mit!",
+            `<div class="night-report-item nri-death">♊ Achtung: <b>${p.name}</b> ist Gemini – sein Zwilling <b>${twin.name}</b> stirbt heute Nacht ebenfalls mit!</div>`,
+            afterFirst
+          );
+        } else {
+          afterFirst();
+        }
         return;
       }
     }
-    nextNightPhase();
+
+    if (twin) {
+      showModal("♊","GEMINI","Zwilling stirbt mit!",
+        `<div class="night-report-item nri-death">♊ Achtung: <b>${p.name}</b> ist Gemini – sein Zwilling <b>${twin.name}</b> stirbt heute Nacht ebenfalls mit!</div>`,
+        () => nextNightPhase()
+      );
+    } else {
+      nextNightPhase();
+    }
   });
 }
  
 /* ============================================================
    NIGHT PHASES – WOLF SPECIALS
 ============================================================ */
+function phase_ApprenticeIllusionist(ai) {
+  showModal("🎭","APPRENTICE ILLUSIONIST","Täuschung wählen",
+    `<div class="night-report-item nri-info">🎭 <b>${ai.name}</b> (Apprentice Illusionist) ist am Zug.<br><br>
+    Er wählt eine Person. Wenn der <b>Seher</b> heute Nacht genau diese Person überprüft, wird das Ergebnis <b>invertiert</b> (Wolf erscheint als Dorf, Dorf als Wolf).<br><br>
+    Diese Fähigkeit ist <b>einmalig</b> – nach Einsatz verbraucht.</div>`,
+    () => {
+      const targets = players.filter(p => p.alive && p.name !== ai.name);
+      setInstruction("🎭 App. Illusionist", "Wähle die Person, die beim Seher falsch erscheint.", "wolf", "Apprentice Illusionist");
+      renderGrid(targets, (p) => {
+        apprenticeIllTarget = p.name;
+        apprenticeIllUsed = false; // mark as ready to trigger on seer check of this target
+        log(\`🎭 Apprentice Illusionist markiert ${p.name} – Sehercheck invertiert falls geprüft\`, "action");
+        showModal("🎭","APPRENTICE ILLUSIONIST","Ziel gewählt",
+          \`<div class="night-report-item nri-gold">🎭 <b>\${p.name}</b> ist markiert.<br>Wenn der Seher heute Nacht <b>\${p.name}</b> prüft, erhält er das <b>falsche Ergebnis</b>.<br><em>(Einmalige Fähigkeit – danach verbraucht)</em></div>\`,
+          () => nextNightPhase()
+        );
+      });
+    }
+  );
+}
+
+
 function phase_MysticWolf(mw) {
   showBeginnerTip("mystic_wolf", () => _phase_MysticWolf(mw));
 }
@@ -1282,13 +1499,20 @@ function seerCheck(seer, target) {
   let actuallyWolf = isWolf(target) || (target.isLycan);
   let showAsWolf = actuallyWolf;
  
-  // Pet Wolf: shows as village if 2+ other wolves alive
-  if (target.role === "Pet Wolf") {
-    const otherWolves = players.filter(p => p.alive && isWolf(p) && p.name !== target.name).length;
-    if (otherWolves >= 2) showAsWolf = false;
+  // Pet Wolf: no seer disguise – appears as wolf like any other wolf
+  // Mystery Wolf: no longer disguised - appears normally as wolf
+  // The Cloak: protects direct wolf neighbors - appears as village
+  const cloakPlayer = players.find(p => p.alive && p.role === "The Cloak");
+  if (cloakPlayer && showAsWolf) {
+    const alivePlayers = players.filter(p => p.alive);
+    const cloakIdx = alivePlayers.findIndex(p => p.name === cloakPlayer.name);
+    const leftNeighbor  = cloakIdx > 0 ? alivePlayers[cloakIdx - 1] : alivePlayers[alivePlayers.length - 1];
+    const rightNeighbor = cloakIdx < alivePlayers.length - 1 ? alivePlayers[cloakIdx + 1] : alivePlayers[0];
+    if (target.name === leftNeighbor.name || target.name === rightNeighbor.name) {
+      showAsWolf = false;
+      log(`🧥 The Cloak schützt Nachbar ${target.name} – erscheint als Dorfbewohner`, "action");
+    }
   }
-  // Mystery Wolf: always shows as village
-  if (target.role === "Mystery Wolf") showAsWolf = false;
   // Spawn: shows as village while other wolves alive
   if (target.role === "Spawn") {
     const otherWolves = players.filter(p => p.alive && isWolf(p) && p.role !== "Spawn").length;
@@ -1297,11 +1521,12 @@ function seerCheck(seer, target) {
   // Outsider Wolf: shows as village until he joins the pack
   if (target.role === "Outsider Wolf" && !outsiderWolfJoined) showAsWolf = false;
  
-  // Apprentice Illusionist: one-time false result
-  if (!apprenticeIllUsed && hasAliveRole("Apprentice Illusionist")) {
+  // Apprentice Illusionist: inverts result only for their chosen target
+  if (apprenticeIllTarget && target.name === apprenticeIllTarget && !apprenticeIllUsed) {
     apprenticeIllUsed = true;
+    apprenticeIllTarget = null;
     showAsWolf = !showAsWolf;
-    log(`🎭 Apprentice Illusionist fälscht Seherergebnis einmalig!`, "action");
+    log(`🎭 Apprentice Illusionist: Seherergebnis für ${target.name} invertiert!`, "action");
   }
  
   // Kamikaze Wolf: both die
@@ -1405,13 +1630,6 @@ function _phase_Bodyguard(bg) {
   renderGrid(targets, (p) => {
     bodyguardTarget = p.name;
     bodyguardLastTarget = p.name;
-    if (victimThisNight === p.name) {
-      victimThisNight = null;
-      log(`🛡️ Bodyguard rettet ${p.name}!`, "action");
-    }
-    if (secondVictimThisNight === p.name) {
-      secondVictimThisNight = null;
-    }
     log(`🛡️ Bodyguard schützt: ${p.name}`, "action");
     showModal("🛡️","BODYGUARD","Schutz aktiviert",
       `<div class="night-report-item nri-safe">✅ ${p.name} ist diese Nacht geschützt.</div>`,
@@ -1420,17 +1638,93 @@ function _phase_Bodyguard(bg) {
   });
 }
  
+function phase_MysteryWolfLycan(mw) {
+  showModal("❓","MYSTERY WOLF",`Nacht ${nightCount} – Lycan erzeugen`,
+    `<div class="night-report-item nri-info">❓ <b>${mw.name}</b> (Mystery Wolf) wählt eine Person.<br><br>Diese Person wird zum <b>Lycan</b>: bleibt Dorfbewohner, erscheint aber für den Seher als Werwolf.</div>`,
+    () => {
+      const targets = players.filter(p => p.alive && p.name !== mw.name && !isWolf(p) && !p.isLycan);
+      if (!targets.length) { nextNightPhase(); return; }
+      setInstruction("❓ Mystery Wolf", `Nacht ${nightCount}: Wähle die Person, die Lycan wird.`, "wolf", "Mystery Wolf");
+      renderGrid(targets, (p) => {
+        p.isLycan = true;
+        log(`❓ Mystery Wolf macht ${p.name} zum Lycan!`, "action");
+        showModal("❓","MYSTERY WOLF","Lycan erzeugt!",
+          `<div class="night-report-item nri-gold">❓ <b>${p.name}</b> ist ab jetzt ein Lycan.<br>Erscheint für den Seher als Werwolf – ist aber Dorfbewohner.</div>`,
+          () => nextNightPhase()
+        );
+      });
+    }
+  );
+}
+
+
+function phase_OracleWolfNight(ow) {
+  showModal("🌕","ORACLE WOLF","Rollenkenntnis",
+    `<div class="night-report-item nri-info">🌕 <b>${ow.name}</b> darf eine Person wählen – der Spielleiter zeigt ihm still deren exakte Rollenkarte.</div>`,
+    () => {
+      const targets = players.filter(p => p.alive && p.name !== ow.name);
+      renderGrid(targets, (p) => {
+        log(`🌕 Oracle Wolf prüft ${p.name} → ${p.role}`, "action");
+        showModal("🌕","ORACLE WOLF","Rolle erkannt",
+          `<div class="night-report-item nri-gold">🌕 <b>${p.name}</b> hat die Rolle: <b>${p.role}</b><br><em>(Spielleiter zeigt dem Oracle Wolf still die Rollenkarte)</em></div>`,
+          () => nextNightPhase()
+        );
+      });
+    }
+  );
+}
+
+function phase_Reviler(rev) {
+  showModal("😤","REVILER","Nacht – Ziel wählen",
+    `<div class="night-report-item nri-info">😤 <b>${rev.name}</b> (Reviler) wacht auf und wählt eine Person.<br><br>
+    ✅ Ziel ist eine <b>Dorf-Spezialrolle</b> → diese Person stirbt sofort, Reviler überlebt.<br>
+    ❌ Ziel ist kein Dorf-Spezialist (normaler Dorfbewohner, Wolf, neutral) → <b>Reviler stirbt selbst</b>.</div>`,
+    () => {
+      const targets = players.filter(p => p.alive && p.name !== rev.name);
+      setInstruction("😤 Reviler", "Wähle das Ziel des Revilers", "special", "Reviler");
+      renderGrid(targets, (p) => {
+        const isVillageSpecial = ri(p.role) && ri(p.role).team === "village" && ri(p.role).color === "special";
+        if (isVillageSpecial) {
+          p.alive = false;
+          log(`😤 Reviler trifft Dorf-Spezialrolle ${p.name} (${p.role}) → ${p.name} stirbt!`, "death");
+          showModal("😤","REVILER","Spezialrolle erwischt!",
+            `<div class="night-report-item nri-death">✅ <b>${p.name}</b> ist ${p.role} – eine Dorf-Spezialrolle!<br>${p.name} stirbt sofort. <b>${rev.name}</b> überlebt.</div>`,
+            () => afterKill(p, () => nextNightPhase())
+          );
+        } else {
+          rev.alive = false;
+          log(`😤 Reviler wählt kein Dorf-Spezialist (${p.name} / ${p.role}) → Reviler ${rev.name} stirbt!`, "death");
+          showModal("😤","REVILER","Kein Dorf-Spezialist!",
+            `<div class="night-report-item nri-death">❌ <b>${p.name}</b> (${p.role}) ist kein Dorf-Spezialist.<br><b>${rev.name}</b> (Reviler) stirbt stattdessen!</div>`,
+            () => afterKill(rev, () => nextNightPhase())
+          );
+        }
+      });
+    }
+  );
+}
+
+
 function phase_Spy(spy) {
   showBeginnerTip("spy", () => _phase_Spy(spy));
 }
 function _phase_Spy(spy) {
-  setInstruction("🕵️ Spy", `${spy.name} prüft die Teamzugehörigkeit einer Person.`, "special", "Spy");
-  const targets = players.filter(p => p.alive && p.name !== spy.name);
+  // Spy wacht nach dem Seher auf und erfährt, WEN der Seher geprüft hat (nicht das Ergebnis)
+  const seer = players.find(p => p.alive && (p.role === "Seher" || p.role === "Reactive Seer"));
+  if (!seer) {
+    log(`🕵️ Spy: Seher nicht mehr aktiv – kein Ergebnis`, "action");
+    showModal("🕵️","SPY","Kein aktiver Seher",
+      `<div class="night-report-item nri-info">🕵️ <b>${spy.name}</b> schaut nach dem Seher – aber der Seher ist nicht mehr im Spiel.<br><em>Kein Signal vom Spielleiter.</em></div>`,
+      () => nextNightPhase()
+    );
+    return;
+  }
+  setInstruction("🕵️ Spy", `Wen hat der Seher (${seer.name}) gerade geprüft? Wähle die Person.`, "special", "Spy");
+  const targets = players.filter(p => p.alive && p.name !== spy.name && p.name !== seer.name);
   renderGrid(targets, (p) => {
-    const isWolfTeam = isWolf(p);
-    log(`🕵️ Spy prüft ${p.name} → ${isWolfTeam ? "WOLFTEAM" : "DORFTEAM"}`, "action");
-    showModal("🕵️","SPY","Team erkannt",
-      `<div class="night-report-item ${isWolfTeam ? "nri-death" : "nri-safe"}"><b>${p.name}</b> gehört zum: ${isWolfTeam ? "🐺 WOLFTEAM" : "🏘️ DORFTEAM"}</div>`,
+    log(`🕵️ Spy erfährt: Seher hat ${p.name} geprüft`, "action");
+    showModal("🕵️","SPY","Seher-Ziel erkannt",
+      `<div class="night-report-item nri-gold">🕵️ <b>${spy.name}</b> sieht:<br><br>Der Seher (<b>${seer.name}</b>) hat in dieser Nacht <b>${p.name}</b> überprüft.<br><em>(Ergebnis unbekannt – nur die geprüfte Person)</em></div>`,
       () => nextNightPhase()
     );
   });
@@ -1496,19 +1790,29 @@ function phase_Chupacabra(chupa) {
 }
 function _phase_Chupacabra(chupa) {
   const wolvesAlive = players.filter(p => p.alive && isWolf(p));
-  const label = wolvesAlive.length > 0 ? "Jagt einen Werwolf!" : "Alle Wölfe tot – jagt jeden Spieler!";
+  const label = wolvesAlive.length > 0
+    ? "Wählt ein Ziel – Wölfe sterben, Dorfbewohner überleben!"
+    : "Alle Wölfe tot – jetzt stirbt jeder!";
   setInstruction("🦎 Chupacabra", `${chupa.name} wählt: ${label}`, "neutral", "Chupacabra");
-  const targets = wolvesAlive.length > 0
-    ? wolvesAlive
-    : players.filter(p => p.alive && p.name !== chupa.name);
+  const targets = players.filter(p => p.alive && p.name !== chupa.name);
   renderGrid(targets, (p) => {
-    showConfirmBanner(`🦎 ${p.name} jagen?`, () => {
-      p.alive = false;
-      log(`🦎 Chupacabra tötet: ${p.name}`, "death");
-      showModal("🦎","CHUPACABRA","Gejagt!",
-        `<div class="night-report-item nri-death">🦎 <b>${p.name}</b> wurde vom Chupacabra getötet!</div>`,
-        () => { updateTopBar(); nextNightPhase(); }
-      );
+    const isWolfTarget = isWolf(p);
+    const dies = wolvesAlive.length === 0 || isWolfTarget;
+    showConfirmBanner(`🦎 ${p.name} angreifen?`, () => {
+      if (dies) {
+        p.alive = false;
+        log(`🦎 Chupacabra tötet: ${p.name} (${p.role})`, "death");
+        showModal("🦎","CHUPACABRA","Gejagt!",
+          `<div class="night-report-item nri-death">🦎 <b>${p.name}</b> (${p.role}) wurde vom Chupacabra getötet!</div>`,
+          () => afterKill(p, () => nextNightPhase())
+        );
+      } else {
+        log(`🦎 Chupacabra greift ${p.name} an – überlebt (kein Wolf)`, "action");
+        showModal("🦎","CHUPACABRA","Kein Treffer",
+          `<div class="night-report-item nri-safe">🦎 <b>${p.name}</b> ist kein Wolf und überlebt den Angriff!</div>`,
+          () => nextNightPhase()
+        );
+      }
     });
   });
 }
@@ -1525,10 +1829,17 @@ function _phase_Auracabra(aura) {
       if (hasSpecial) {
         p.alive = false;
         log(`👁️ Auracabra tötet Spezialrolle: ${p.name} (${p.role})`, "death");
-        showModal("👁️","AURACABRA","Spezialrolle eliminiert",
-          `<div class="night-report-item nri-death">👁️ <b>${p.name}</b> hatte eine Spezialrolle (${p.role}) und stirbt!</div>`,
-          () => { updateTopBar(); nextNightPhase(); }
-        );
+        if (p.role === "Hunter") {
+          showModal("👁️","AURACABRA","Spezialrolle eliminiert",
+            `<div class="night-report-item nri-death">👁️ <b>${p.name}</b> (Hunter) wurde vom Auracabra getötet!</div>`,
+            () => { updateTopBar(); handleHunterNightShot(p); }
+          );
+        } else {
+          showModal("👁️","AURACABRA","Spezialrolle eliminiert",
+            `<div class="night-report-item nri-death">👁️ <b>${p.name}</b> hatte eine Spezialrolle (${p.role}) und stirbt!</div>`,
+            () => { updateTopBar(); nextNightPhase(); }
+          );
+        }
       } else {
         log(`👁️ Auracabra: ${p.name} hat keine Spezialrolle – überlebt`, "action");
         showModal("👁️","AURACABRA","Kein Treffer",
@@ -1565,7 +1876,7 @@ function _phase_Blighted(bl) {
       log(`🤢 Blighted tötet: ${p.name}`, "death");
       showModal("🤢","BLIGHTED","Opfer gewählt",
         `<div class="night-report-item nri-death">🤢 <b>${p.name}</b> wurde vom Blighted getötet!</div>`,
-        () => { updateTopBar(); nextNightPhase(); }
+        () => afterKill(p, () => nextNightPhase())
       );
     });
   });
@@ -1789,6 +2100,25 @@ function processNightEnd() {
     }
   }
  
+  // Pet Wolf: stirbt → Besitzer stirbt sofort mit (wenn noch alive)
+  deaths.forEach(d => {
+    if (d.role === "Pet Wolf" && petWolfOwner) {
+      const owner = players.find(p => p.alive && p.name === petWolfOwner);
+      if (owner) {
+        owner.alive = false;
+        deaths.push(owner);
+        messages.push(`<div class="night-report-item nri-death">🦴 Pet Wolf ist tot – Besitzer <b>${owner.name}</b> erkennt ihn und stirbt ebenfalls!</div>`);
+        log(`💀 Pet Wolf tot – Besitzer ${owner.name} stirbt mit`, "death");
+      }
+      petWolfOwner = null;
+    }
+    // Wenn Besitzer zuerst stirbt: nichts passiert, Pet Wolf spielt normal weiter
+    if (petWolfOwner && d.name === petWolfOwner) {
+      petWolfOwner = null;
+      log(`🦴 Pet Wolf Besitzer ${d.name} gestorben – Pet Wolf spielt normal weiter`, "action");
+    }
+  });
+
   // Black Cat: wenn Wölfe sie nachts töten → zieht einen Wolf mit
   deaths.forEach(d => {
     if (d.role === "Black Cat") {
@@ -1817,16 +2147,40 @@ function processNightEnd() {
     log(`🦠 Infected von Wölfen getötet – Strafnacht aktiv`, "action");
   }
 
+  // Outsider Wolf: wenn Wölfe ihn angreifen → Erkennung → er überlebt und tritt dem Rudel bei
+  const outsiderAloneP = players.find(p => p.alive && p.role === "Outsider Wolf" && !outsiderWolfJoined);
+  if (outsiderAloneP && (victimThisNight === outsiderAloneP.name || secondVictimThisNight === outsiderAloneP.name)) {
+    outsiderWolfJoined = true;
+    if (victimThisNight === outsiderAloneP.name) victimThisNight = null;
+    if (secondVictimThisNight === outsiderAloneP.name) secondVictimThisNight = null;
+    messages.push(`<div class="night-report-item nri-gold">🌲 Die Wölfe griffen den Outsider Wolf an – sie erkennen sich! <b>${outsiderAloneP.name}</b> überlebt und schließt sich dem Rudel an.</div>`);
+    log(`🌲 Outsider Wolf ${outsiderAloneP.name} erkannt von Wölfen – tritt Rudel bei`, "action");
+  }
+
+  // Outsider Wolf Soloopfer dieser Nacht verarbeiten
+  if (outsiderNightVictim) {
+    const ov = players.find(p => p.alive && p.name === outsiderNightVictim);
+    if (ov && ov.name !== victimThisNight && ov.name !== secondVictimThisNight) {
+      if (ov.role === "Tough Girl" && !toughGirlInjured) {
+        toughGirlInjured = ov.name;
+        messages.push(`<div class="night-report-item nri-info">💪 ${ov.name} überlebt den Angriff des Outsider Wolf! (Tough Girl – stirbt erst morgen Nacht)</div>`);
+      } else if (!ov.alive) {
+        // already dead by wolves
+      } else {
+        ov.alive = false;
+        deaths.push(ov);
+        messages.push(`<div class="night-report-item nri-death">🌲 ${ov.name} wurde vom Outsider Wolf gejagt und getötet.</div>`);
+        log(`💀 ${ov.name} vom Outsider Wolf getötet`, "death");
+      }
+    }
+    outsiderNightVictim = null;
+  }
+
   // Outsider Wolf joining after first wolf death
   deaths.forEach(d => {
     if (isWolf(d) && !firstWolfDied) {
       firstWolfDied = true;
-      const outsider = players.find(p => p.alive && p.role === "Outsider Wolf" && !outsiderWolfJoined);
-      if (outsider) {
-        outsiderWolfJoined = true;
-        messages.push(`<div class="night-report-item nri-info">🌲 Outsider Wolf <b>${outsider.name}</b> schließt sich ab jetzt dem Rudel an!</div>`);
-        log(`🌲 Outsider Wolf ${outsider.name} schließt sich dem Rudel an`, "action");
-      }
+      oracleWolfActive = true;  // Oracle Wolf ability unlocked
     }
   });
  
@@ -1891,12 +2245,7 @@ function processNightEnd() {
   // Matchmaker linked death
   deaths.forEach(d => checkMatchmakerDeath(d, messages));
  
-  // Reviler on death
-  deaths.forEach(d => {
-    if (d.role === "Reviler") {
-      messages.push(`<div class="night-report-item nri-info">😤 <b>${d.name}</b> (Reviler) darf sterbend jemanden verfluchen. Spielleiter fragt den Reviler.</div>`);
-    }
-  });
+  // Reviler night death - the Reviler's action happened earlier this night (before wolves)
  
   // Mad Destroyer on death
   deaths.forEach(d => {
@@ -1971,6 +2320,31 @@ function processNightEnd() {
       if (!checkWinConditions()) renderDayPhase();
     }
   );
+}
+
+function handleHunterDayShot(hunterP, callback) {
+  showModal("🏹","HUNTER","Letzter Schuss!",
+    `<div class="night-report-item nri-info">🏹 <b>${hunterP.name}</b> (Hunter) wurde getötet! Er darf noch jemanden mit in den Tod reißen.</div>`,
+    () => {
+      const targets = players.filter(t => t.alive);
+      setInstruction("🏹 Hunter", `${hunterP.name} wählt sein letztes Opfer.`, "special", "Hunter");
+      renderGrid(targets, (t) => {
+        t.alive = false;
+        log(`🏹 Hunter reißt ${t.name} mit`, "death");
+        showModal("🏹","HUNTER","Mitgerissen!",
+          `<div class="night-report-item nri-death">🏹 <b>${hunterP.name}</b> reißt <b>${t.name}</b> mit in den Tod!</div>`,
+          () => { updateTopBar(); callback(); }
+        );
+      });
+    }
+  );
+}
+
+
+function afterKill(p, fallbackFn) {
+  updateTopBar();
+  if (p.role === "Hunter") { handleHunterNightShot(p); }
+  else { fallbackFn(); }
 }
 
 function handleHunterNightShot(hunterDeath) {
@@ -2080,21 +2454,33 @@ function buildDayActionsBar() {
  
 function useCutthroat(cutthroat) {
   if (cutthroatUsed) return;
-  setInstruction("⚔️ Cutthroat", `${cutthroat.name} eliminiert sofort jemanden. Der Tag läuft danach weiter!`, "special","Cutthroat");
-  const alive = players.filter(p => p.alive && p.name !== cutthroat.name);
-  renderGrid(alive, (p) => {
-    showConfirmBanner(`⚔️ ${p.name} sofort hinrichten?`, () => {
-      p.alive = false;
-      cutthroatUsed = true;
-      log(`⚔️ Cutthroat eliminiert: ${p.name} (${p.role})`, "death");
-      checkAssassinWin(p);
-      updateTopBar();
-      showModal("⚔️","CUTTHROAT","Sofort-Hinrichtung!",
-        `<div class="night-report-item nri-death">⚔️ <b>${p.name}</b> war: <b>${p.role}</b> ${ri(p.role).icon}<br>Der Tag läuft weiter – normale Abstimmung folgt noch!</div>`,
-        () => { if (!checkWinConditions()) renderDayPhase(); }
-      );
-    });
-  });
+  showModal("⚔️","CUTTHROAT","Sofort-Eliminierung!",
+    `<div class="night-report-item nri-info">⚔️ <b>${cutthroat.name}</b> (Cutthroat) setzt seine Fähigkeit ein!<br><br>Er eliminiert sofort eine Person seiner Wahl.<br>Der Tag endet <b>NICHT</b> – danach kann das Dorf noch normal abstimmen.<br><br>👉 Wähle die Zielperson im nächsten Schritt.</div>`,
+    () => {
+      setInstruction("⚔️ Cutthroat – Zielperson wählen", `${cutthroat.name} wählt jetzt sein sofortiges Opfer.`, "special", "Cutthroat");
+      const alive = players.filter(p => p.alive && p.name !== cutthroat.name);
+      renderGrid(alive, (p) => {
+        showConfirmBanner(`⚔️ ${p.name} sofort hinrichten?`, () => {
+          p.alive = false;
+          cutthroatUsed = true;
+          log(`⚔️ Cutthroat eliminiert: ${p.name} (${p.role})`, "death");
+          checkAssassinWin(p);
+          updateTopBar();
+          if (p.role === "Hunter") {
+            showModal("⚔️","CUTTHROAT","Hunter getötet!",
+              `<div class="night-report-item nri-death">⚔️ <b>${p.name}</b> war: Hunter 🏹 – er darf noch jemanden mit in den Tod reißen!</div>`,
+              () => handleHunterDayShot(p, () => { if (!checkWinConditions()) renderDayPhase(); })
+            );
+          } else {
+            showModal("⚔️","CUTTHROAT","Sofort-Hinrichtung!",
+              `<div class="night-report-item nri-death">⚔️ <b>${p.name}</b> war: <b>${p.role}</b> ${ri(p.role).icon}<br><br>Der Tag läuft weiter – normale Abstimmung folgt noch!</div>`,
+              () => { if (!checkWinConditions()) renderDayPhase(); }
+            );
+          }
+        });
+      });
+    }
+  );
 }
  
 function useMagistrate() {
@@ -2231,14 +2617,12 @@ function doExecution(name) {
     if (twin) { twin.alive = false; log(`💀 Gemini ${twin.name} stirbt mit`, "death"); }
   }
  
-  // Outcast: switches sides
+  // Outcast: blocks all village night abilities next night
   if (p.role === "Outcast") {
-    p.role = "Werwolf";
-    p.alive = true;
-    lastExecWasVillage = false;
-    log(`🚪 ${p.name} wird verstoßen – wechselt zu den Wölfen!`, "action");
-    showModal("🚪","OUTCAST","Verbannung!",
-      `<div class="night-report-item nri-info">🚪 <b>${p.name}</b> wird verstoßen und schließt sich den Werwölfen an! Er ist ab jetzt ein Werwolf.</div>`,
+    outcastDied = true;
+    log(`🚪 ${p.name} (Outcast) stirbt – nächste Nacht keine Dorffähigkeiten!`, "action");
+    showModal("🚪","OUTCAST","Outcast gestorben!",
+      `<div class="night-report-item nri-gold">🚪 <b>${p.name}</b> (Outcast) ist gestorben.<br><br>⚠️ In der <b>nächsten Nacht</b> dürfen alle Dorfrollen ihre Fähigkeiten <b>nicht nutzen</b>.<br>Nur Werwölfe handeln normal.</div>`,
       () => { updateTopBar(); if (!checkWinConditions()) { nightCount++; startNightCycle(); } }
     );
     return;
@@ -2344,14 +2728,8 @@ function doExecution(name) {
     return;
   }
  
-  // Reviler on execution
-  if (p.role === "Reviler") {
-    showModal("😤","REVILER","Sterbender Fluch",
-      `<div class="night-report-item nri-info">😤 <b>${p.name}</b> (Reviler) stirbt und verflucht jemanden. Die verfluchte Person verliert Abstimmungsrecht und Nachtfähigkeiten. Spielleiter fragt ${p.name}.</div>`,
-      () => { updateTopBar(); showExecutionResult(p, [], () => { if (!checkWinConditions()) { nightCount++; startNightCycle(); } }); }
-    );
-    return;
-  }
+  // Reviler execution - normal death (night action was used before this)
+  // No special execution effect
  
   // Grave Robber on execution
   if (p.role === "Grave Robber") {
@@ -2381,7 +2759,71 @@ function doExecution(name) {
     return;
   }
  
+  // Pet Wolf selbst hingerichtet → Besitzer stirbt sofort mit
+  if (p.role === "Pet Wolf" && petWolfOwner) {
+    const owner = players.find(q => q.alive && q.name === petWolfOwner);
+    if (owner) {
+      owner.alive = false;
+      petWolfOwner = null;
+      log(`💀 Pet Wolf hingerichtet – Besitzer ${owner.name} stirbt mit`, "death");
+      showModal("🦴","PET WOLF","Besitzer stirbt mit!",
+        `<div class="night-report-item nri-death">🦴 <b>${p.name}</b> (Pet Wolf) wurde hingerichtet! Sein Besitzer <b>${owner.name}</b> erkennt ihn – und stirbt ebenfalls sofort!</div>`,
+        () => { updateTopBar(); showExecutionResult(p, [owner], () => { if (!checkWinConditions()) { nightCount++; startNightCycle(); } }); }
+      );
+      return;
+    }
+    petWolfOwner = null;
+  }
+  // Besitzer des Pet Wolf zuerst hingerichtet → nichts passiert
+  if (petWolfOwner === p.name) {
+    petWolfOwner = null;
+    log(`🦴 Pet Wolf Besitzer ${p.name} hingerichtet – Pet Wolf spielt normal weiter`, "action");
+  }
+
+  // Innocent: triggers "Tag der verlorenen Unschuld" next day
+  if (p.role === "Innocent") {
+    const aliveWolves = players.filter(x => x.alive && isWolf(x)).length;
+    if (aliveWolves <= 1) {
+      showModal("😇","INNOCENT","Hinrichtung des Innocent",
+        `<div class="night-report-item nri-info">😇 <b>${p.name}</b> ist der <b>Innocent</b>!<br><br>⚠️ Normalerweise würde der „Tag der verlorenen Unschuld" folgen – aber da nur noch 1 Wolf übrig ist, <b>findet er NICHT statt</b> (Sonderregel).</div>`,
+        () => { updateTopBar(); showExecutionResult(p, [], () => { if (!checkWinConditions()) { nightCount++; startNightCycle(); } }); }
+      );
+    } else {
+      showModal("😇","INNOCENT","Tag der verlorenen Unschuld!",
+        `<div class="night-report-item nri-gold">😇 <b>${p.name}</b> ist der <b>Innocent</b>!<br><br>🔔 Morgen findet der <b>„Tag der verlorenen Unschuld"</b> statt:<br><ul><li>Das Dorf hängt wie üblich eine Person.</li><li>Ist sie kein Wolf: sie wählt in 3 Sek. jemand anderen → auch tot.</li><li>Kettenreaktion bis ein Wolf getroffen wird.</li><li>Todesfähigkeiten anderer Rollen sind deaktiviert.</li></ul></div>`,
+        () => { updateTopBar(); showExecutionResult(p, [], () => { if (!checkWinConditions()) { nightCount++; startNightCycle(); } }); }
+      );
+    }
+    return;
+  }
+
+  // Eye of the Seer execution → seer inverted from next night
+  if (p.role === "Eye of the Seer" && !seerInverted) {
+    seerInverted = true;
+    log(`👁️ Eye of the Seer hingerichtet – Seher invertiert ab jetzt!`, "action");
+    showModal("👁️","EYE OF THE SEER","Seher verflucht!",
+      `<div class="night-report-item nri-death">👁️ <b>${p.name}</b> (Eye of the Seer) wurde hingerichtet!<br><br>Ab sofort erhält der Seher nur noch <b>falsche (invertierte) Visionen</b>!</div>`,
+      () => { updateTopBar(); showExecutionResult(p, [], () => { if (!checkWinConditions()) { nightCount++; startNightCycle(); } }); }
+    );
+    return;
+  }
+
   updateTopBar();
+
+  // Gemini: twin dies too
+  if (p.role === "Gemini") {
+    const twin = players.find(q => q.alive && q.role === "Gemini");
+    if (twin) {
+      twin.alive = false;
+      log(`💀 Gemini ${twin.name} stirbt mit (Hinrichtung)`, "death");
+      showModal("♊","GEMINI","Zwilling stirbt mit!",
+        `<div class="night-report-item nri-death">♊ <b>${twin.name}</b> stirbt vor Kummer – sein Zwilling <b>${p.name}</b> wurde hingerichtet!</div>`,
+        () => { updateTopBar(); showExecutionResult(p, [twin], () => { if (!checkWinConditions()) { nightCount++; startNightCycle(); } }); }
+      );
+      return;
+    }
+  }
+
   showExecutionResult(p, [], () => { if (!checkWinConditions()) { nightCount++; startNightCycle(); } });
 }
  
@@ -2464,8 +2906,9 @@ function checkWinConditions() {
 
   // ── Dorf / Wolf Sieg ──
 
-  // Dorf gewinnt: alle Wölfe tot
-  if (wCount === 0) { showVictoryScreen("village"); return true; }
+  // Dorf gewinnt: alle Wölfe tot UND kein Chupacabra mehr am Leben
+  const chupAlive = players.find(p => p.alive && p.role === "Chupacabra");
+  if (wCount === 0 && !chupAlive) { showVictoryScreen("village"); return true; }
 
   // Wölfe gewinnen: Parität
   if (wCount >= vCount) { showVictoryScreen("wolf"); return true; }

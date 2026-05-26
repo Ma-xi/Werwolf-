@@ -735,16 +735,18 @@ footer p span { color: var(--gold); opacity: 0.6; }
   </details>
  </div>
 
- <div class="role-card" data-team="village">
+ <div class="role-card wolf-card" data-team="wolf">
   <div class="role-header">
     <div class="role-title">Count Lycanthrope</div>
-    <span class="village-badge">Dorf</span>
+    <span class="wolf-badge">Wolf</span>
   </div>
-  <div class="short-desc">Ein Informations-Spezialist, der die Verteilung der Wölfe im Dorf kennt.</div>
+  <div class="short-desc">Ein Wolfsteam-Informant, der die Verteilung der Werwölfe im Dorf kennt.</div>
   <details>
     <summary>Mehr anzeigen</summary>
     <div class="full-content">
-      <h4>Wissen zu Spielbeginn</h4>
+      <h4>Team</h4>
+      Gehört zum Wolfsteam und gewinnt mit den Werwölfen.
+      <h4>Wissen (Nacht 1)</h4>
       Erfährt in der ersten Nacht:
       <ul>
         <li>Wo die Grenze der zwei Dorfhälften verläuft.</li>
@@ -752,7 +754,7 @@ footer p span { color: var(--gold); opacity: 0.6; }
         <li>In welcher Hälfte die Seherin sitzt.</li>
       </ul>
       <h4>Einschränkung</h4>
-      Er kennt keine konkreten Namen, nur die Anzahl pro Seite. Er ist ein normaler Dorfbewohner.
+      Er kennt keine konkreten Namen, nur die Anzahl pro Seite.
     </div>
   </details>
  </div>
@@ -995,14 +997,16 @@ footer p span { color: var(--gold); opacity: 0.6; }
     <div class="role-title">Innocent</div>
     <span class="village-badge">Dorf</span>
   </div>
-  <div class="short-desc">Ein Dorfbewohner, dessen Unschuld für die Seherin absolut offensichtlich ist.</div>
+  <div class="short-desc">Ein Dorfbewohner, der nach seinem Tod den „Tag der verlorenen Unschuld" auslöst.</div>
   <details>
     <summary>Mehr anzeigen</summary>
     <div class="full-content">
-      <h4>Besonderheit</h4>
-      Wenn die Seherin den Innocent überprüft, erhält sie nicht nur „Kein Werwolf", sondern der Moderator gibt ihr ein spezielles Zeichen, das bestätigt: „Dies ist der Innocent".
-      <h4>Strategie</h4>
-      Der Innocent ist für die Seherin die sicherste Vertrauensperson im Spiel, da er niemals durch Effekte wie den Illusionisten oder Lycanthropie verfälscht werden kann.
+      <h4>Fähigkeit (nach dem Tod)</h4>
+      Wenn der Innocent eliminiert wird, findet am nächsten Tag der <b>„Tag der verlorenen Unschuld"</b> statt.
+      <h4>Ablauf</h4>
+      Das Dorf eliminiert eine Person wie üblich. Ist diese kein Wolf, darf sie innerhalb von 3 Sekunden eine weitere Person wählen, die sofort ebenfalls eliminiert wird. Diese Kettenreaktion setzt sich fort, bis eine Person aus dem Wolfsteam erwischt wird.
+      <h4>Einschränkung</h4>
+      Todesfähigkeiten anderer Rollen sind an diesem Tag deaktiviert. Der Tag findet nicht statt, wenn nur noch ein Wolf übrig ist.
     </div>
   </details>
  </div>
@@ -1012,16 +1016,16 @@ footer p span { color: var(--gold); opacity: 0.6; }
     <div class="role-title">Insomniac</div>
     <span class="village-badge">Dorf</span>
   </div>
-  <div class="short-desc">Ein schlafloser Beobachter, der nachts die Augen einen Spalt offen hält.</div>
+  <div class="short-desc">Eine Informationsrolle, die jede Nacht erfährt, ob ein Sitznachbar aktiv war.</div>
   <details>
     <summary>Mehr anzeigen</summary>
     <div class="full-content">
       <h4>Fähigkeit</h4>
-      Der Insomniac darf in jeder Nacht die Augen ganz leicht öffnen (Schlitze), während die Werwölfe oder andere Rollen aktiv sind.
+      Der Moderator weckt den Insomniac jede Nacht auf und zeigt ihm: <b>Ja</b> (mindestens einer der zwei direkten Sitznachbarn hatte eine Nachtaktion) oder <b>Nein</b> (keiner hatte eine Nachtaktion).
       <h4>Einschränkung</h4>
-      Er darf den Kopf nicht bewegen und nicht auffallen. Er muss versuchen, Bewegungen oder Lichtveränderungen im Raum wahrzunehmen.
-      <h4>Risiko</h4>
-      Wird er dabei von den aktiven Rollen oder dem Moderator bemerkt, kann dies Konsequenzen haben (je nach Hausregel oft der sofortige Tod).
+      Er erfährt nicht, welche der beiden Nachbarpersonen aktiv war – nur ob mindestens eine es war.
+      <h4>Sonderregel</h4>
+      Stirbt ein Nachbar in der Nacht, verschiebt sich die Betrachtung auf den nächsten lebenden Nachbarn.
     </div>
   </details>
  </div>
@@ -1217,14 +1221,16 @@ footer p span { color: var(--gold); opacity: 0.6; }
     <div class="role-title">Mystery Wolf</div>
     <span class="wolf-badge">Wolf</span>
   </div>
-  <div class="short-desc">Ein getarnter Werwolf, der für den Seher als einfacher Dorfbewohner erscheint.</div>
+  <div class="short-desc">Ein Werwolf, der in Nacht 2 und 3 je eine Person in einen Lycan verwandelt.</div>
   <details>
     <summary>Mehr anzeigen</summary>
     <div class="full-content">
-      <h4>Besonderheit</h4>
-      Der Mystery Wolf wacht nachts mit den anderen Wölfen auf und hilft bei der Opferwahl. Er ist jedoch immun gegen die Untersuchung des Sehers.
-      <h4>Wirkung</h4>
-      Wenn der Seher den Mystery Wolf überprüft, zeigt der Moderator „Kein Werwolf" (Daumen runter). Er ist somit der perfekte Spion innerhalb des Dorfes.
+      <h4>Normale Wolf-Aktion</h4>
+      Wacht nachts mit den anderen Wölfen auf und hilft bei der Opferwahl.
+      <h4>Spezialfähigkeit</h4>
+      Darf zusätzlich in <b>Nacht 2</b> und <b>Nacht 3</b> je eine Person auswählen – diese wird zum Lycan.
+      <h4>Was ist ein Lycan?</h4>
+      Ein Lycan bleibt Dorfbewohner (gehört nicht zum Wolfteam), erscheint aber für alle Rollen mit Werwolf-Erkennung (z. B. den Seher) als Werwolf.
     </div>
   </details>
  </div>
@@ -1291,16 +1297,16 @@ footer p span { color: var(--gold); opacity: 0.6; }
     <div class="role-title">Oracle Wolf</div>
     <span class="wolf-badge">Wolf</span>
   </div>
-  <div class="short-desc">Ein seherischer Werwolf, der die Rollenverteilung im Dorf analysiert.</div>
+  <div class="short-desc">Ein Werwolf, der nach dem Tod eines Wolfes die exakte Rolle jeder Person erfahren kann.</div>
   <details>
     <summary>Mehr anzeigen</summary>
     <div class="full-content">
-      <h4>Fähigkeit</h4>
-      Wacht jede Nacht mit den Wölfen auf. Zusätzlich darf er in der ersten Nacht eine Gruppe von Spielern wählen.
-      <h4>Information</h4>
-      Der Moderator gibt ihm ein Zeichen, wie viele Spezialrollen (Rollen mit aktiven Nachtfähigkeiten) sich in dieser Gruppe befinden.
+      <h4>Normale Wolf-Aktion</h4>
+      Spielt zunächst wie ein normaler Werwolf – wacht auf und hilft bei der Opferwahl.
+      <h4>Spezialfähigkeit</h4>
+      Sobald ein Werwolf eliminiert wurde, erhält der Oracle Wolf seine Zusatzfähigkeit: Ab dann wacht er jede Nacht nach der Wolfphase auf und darf eine Person wählen. Der Moderator zeigt ihm deren exakte Rollenkarte.
       <h4>Strategie</h4>
-      Hilft dem Wolfsteam dabei, Gebiete im Dorf zu identifizieren, in denen sich gefährliche Gegner wie die Hexe oder der Bodyguard verstecken.
+      Wird besonders stark, wenn das Wolfsteam bereits Verluste erlitten hat – gleicht den Verlust durch präzise Informationen aus.
     </div>
   </details>
  </div>
@@ -1310,16 +1316,16 @@ footer p span { color: var(--gold); opacity: 0.6; }
     <div class="role-title">Outcast</div>
     <span class="village-badge">Dorf</span>
   </div>
-  <div class="short-desc">Ein verstoßener Dorfbewohner, der nach seinem Tod das Team wechselt.</div>
+  <div class="short-desc">Ein Dorfbewohner, dessen Tod alle Dorf-Nachtfähigkeiten für eine Runde blockiert.</div>
   <details>
     <summary>Mehr anzeigen</summary>
     <div class="full-content">
-      <h4>Ablauf</h4>
-      Beginnt als normaler Dorfbewohner. Wenn der Outcast vom Dorf hingerichtet wird, stirbt er nicht sofort im herkömmlichen Sinne.
-      <h4>Der Verrat</h4>
-      Er wird aus dem Dorf verstoßen und schließt sich ab der nächsten Nacht dem Wolfsteam an. Er erfährt nun, wer die Wölfe sind, und gewinnt ab sofort nur noch mit den Werwölfen.
-      <h4>Wichtig</h4>
-      Wird er nachts von den Wölfen gefressen, stirbt er ganz normal und bleibt im Dorfteam. Nur die Hinrichtung durch das Dorf löst den Teamwechsel aus.
+      <h4>Fähigkeit</h4>
+      Der Outcast hat keine aktive Nachtfähigkeit. Seine Wirkung tritt bei seiner Eliminierung ein.
+      <h4>Effekt bei Eliminierung</h4>
+      Wenn der Outcast stirbt (durch Abstimmung oder nachts durch Wölfe): In der folgenden Nacht dürfen alle Dorfrollen ihre Fähigkeiten nicht nutzen.
+      <h4>Was trotzdem passiert</h4>
+      Werwölfe handeln in dieser Nacht ganz normal und können weiterhin ein Opfer wählen. Nur die Dorf-Unterstützungsrollen werden übersprungen.
     </div>
   </details>
  </div>
@@ -1329,14 +1335,22 @@ footer p span { color: var(--gold); opacity: 0.6; }
     <div class="role-title">Outsider Wolf</div>
     <span class="wolf-badge">Wolf</span>
   </div>
-  <div class="short-desc">Ein einsamer Werwolf, der erst später zum Rudel findet.</div>
+  <div class="short-desc">Jagt jede Nacht alleine. Schließt sich dem Rudel an, wenn er und die Wölfe sich gegenseitig angreifen würden.</div>
   <details>
     <summary>Mehr anzeigen</summary>
     <div class="full-content">
       <h4>Besonderheit</h4>
-      In der ersten Nacht wacht der Outsider Wolf nicht mit den anderen Werwölfen auf. Er kennt sie nicht und sie kennen ihn nicht.
-      <h4>Ablauf</h4>
-      Er wird erst in der Nacht aktiv, in der der erste andere Werwolf stirbt. Ab diesem Moment wird er vom Moderator geweckt, erfährt wer die restlichen Wölfe sind und agiert als vollwertiges Mitglied des Rudels.
+      Der Outsider Wolf wacht nie mit den anderen Werwölfen auf. Er kennt sie nicht und sie kennen ihn nicht.
+      <h4>Ablauf – jede Nacht</h4>
+      Er jagt eigenständig und wählt jede Nacht sein eigenes Opfer – unabhängig vom Rudel.
+      <h4>Erkennung (Beitritt zum Rudel)</h4>
+      Sie erkennen sich erst, wenn sie sich gegenseitig angreifen würden:
+      <ul>
+        <li>Outsider Wolf wählt einen Werwolf als Ziel → Erkennung. Niemand stirbt. Er tritt dem Rudel bei.</li>
+        <li>Die Wölfe wählen den Outsider Wolf als Ziel → Erkennung. Er überlebt und tritt dem Rudel bei.</li>
+      </ul>
+      <h4>Nach dem Beitritt</h4>
+      Ab dann wacht er mit dem Rudel auf und jagt gemeinsam mit ihnen.
     </div>
   </details>
  </div>
@@ -1346,14 +1360,20 @@ footer p span { color: var(--gold); opacity: 0.6; }
     <div class="role-title">Pet Wolf</div>
     <span class="wolf-badge">Wolf</span>
   </div>
-  <div class="short-desc">Der loyale „Haustier-Wolf", der seine Identität erst spät preisgibt.</div>
+  <div class="short-desc">Wählt in Nacht 1 heimlich einen Besitzer. Stirbt der Pet Wolf zuerst, stirbt der Besitzer sofort mit.</div>
   <details>
     <summary>Mehr anzeigen</summary>
     <div class="full-content">
-      <h4>Tarnung</h4>
-      Solange mindestens zwei andere Werwölfe am Leben sind, wird der Pet Wolf vom Seher als „Dorfbewohner" erkannt.
-      <h4>Erwachen</h4>
-      Er wacht jede Nacht mit den Wölfen auf und kennt sein Team von Anfang an. Sobald jedoch nur noch ein oder kein anderer Wolf mehr lebt, verliert er seine Tarnung und wird für den Seher als Werwolf sichtbar.
+      <h4>Team</h4>
+      Werwölfe. Ziel ist es, gemeinsam mit den anderen Wölfen das Dorf zu besiegen.
+      <h4>Nachtphase</h4>
+      Der Pet Wolf wacht jede Nacht mit den anderen Werwölfen auf und wählt gemeinsam ein Opfer – wie ein normaler Werwolf.
+      <h4>Besitzer wählen (Nacht 1)</h4>
+      In der ersten Nacht wählt der Pet Wolf heimlich einen Dorfbewohner als seinen Besitzer. Diese Person weiß nichts davon.
+      <h4>Wenn der Pet Wolf stirbt</h4>
+      Wird der Pet Wolf eliminiert, bevor sein Besitzer stirbt: Der Besitzer erkennt den Pet Wolf – und stirbt sofort ebenfalls. Es werden zwei Spieler gleichzeitig eliminiert.
+      <h4>Wenn der Besitzer zuerst stirbt</h4>
+      Stirbt der Besitzer vor dem Pet Wolf, passiert nichts Besonderes. Der Pet Wolf spielt normal weiter.
     </div>
   </details>
  </div>
@@ -1401,14 +1421,17 @@ footer p span { color: var(--gold); opacity: 0.6; }
     <div class="role-title">Reviler</div>
     <span class="village-badge">Dorf</span>
   </div>
-  <div class="short-desc">Ein rachsüchtiger Dorfbewohner, der nach seinem Tod jemanden verstummen lässt.</div>
+  <div class="short-desc">Eine risikoreiche Rolle: trifft er eine Dorf-Spezialrolle, stirbt sie – sonst er.</div>
   <details>
     <summary>Mehr anzeigen</summary>
     <div class="full-content">
-      <h4>Fähigkeit (nach dem Tod)</h4>
-      Sobald der Reviler eliminiert wird, darf er eine Person bestimmen.
-      <h4>Wirkung</h4>
-      Die gewählte Person ist für den Rest des Spiels „verflucht": Sie darf bei Abstimmungen nicht mehr mitzählen und keine aktiven Nachtfähigkeiten mehr einsetzen. Der Reviler nimmt so auch nach seinem Ausscheiden Einfluss auf die Dynamik.
+      <h4>Nachtaktion</h4>
+      Der Reviler wacht jede Nacht auf und wählt eine Person. Der Moderator überprüft deren Rolle.
+      <h4>Ergebnis</h4>
+      <ul>
+        <li><b>Ziel ist eine Dorf-Spezialrolle</b> (Seher, Hexe, Bodyguard …): Diese Person wird sofort eliminiert, der Reviler überlebt.</li>
+        <li><b>Ziel ist kein Dorf-Spezialist</b> (normaler Dorfbewohner, Wolf, neutral): Der Reviler selbst stirbt sofort.</li>
+      </ul>
     </div>
   </details>
  </div>
@@ -1599,19 +1622,23 @@ footer p span { color: var(--gold); opacity: 0.6; }
   </details>
  </div>
 
- <div class="role-card" data-team="village">
+ <div class="role-card wolf-card" data-team="wolf">
   <div class="role-header">
     <div class="role-title">The Cloak</div>
-    <span class="village-badge">Dorf</span>
+    <span class="wolf-badge">Wolf</span>
   </div>
-  <div class="short-desc">Ein getarnter Dorfbewohner, dessen wahre Rolle erst spät enthüllt wird.</div>
+  <div class="short-desc">Eine passive Schutzrolle für Werwölfe: Nachbar-Wölfe erscheinen beim Seher als Dorfbewohner.</div>
   <details>
     <summary>Mehr anzeigen</summary>
     <div class="full-content">
-      <h4>Besonderheit</h4>
-      Wenn der Cloak stirbt oder vom Seher überprüft wird, erscheint er immer nur als einfacher „Dorfbewohner" (Villager).
-      <h4>Ablauf</h4>
-      In der ersten Nacht wählt der Moderator eine andere, nicht im Spiel befindliche Spezialrolle für den Cloak aus. Der Cloak erfährt diese Rolle erst, wenn eine bestimmte Bedingung erfüllt ist (z. B. nach drei Nächten oder wenn eine bestimmte Person stirbt). Bis dahin bleibt er völlig im Dunkeln über seine eigentliche Macht.
+      <h4>Fähigkeit</h4>
+      The Cloak verändert keine Aktionen aktiv. Wenn ein Werwolf direkt links oder rechts neben The Cloak sitzt und vom Seher überprüft wird, erscheint dieser als Dorfbewohner statt als Werwolf.
+      <h4>Wichtige Regeln</h4>
+      <ul>
+        <li>Der Effekt gilt nur für die <b>direkten Sitznachbarn</b> (links und rechts).</li>
+        <li>Wird The Cloak in der Nacht eliminiert, gilt der Schutz noch für diese Nacht.</li>
+        <li>Ist The Cloak selbst ein Lycan, erscheint er beim Seher ebenfalls als Dorfbewohner.</li>
+      </ul>
     </div>
   </details>
  </div>
