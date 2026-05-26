@@ -1400,9 +1400,9 @@ function phase_ApprenticeIllusionist(ai) {
       renderGrid(targets, (p) => {
         apprenticeIllTarget = p.name;
         apprenticeIllUsed = false; // mark as ready to trigger on seer check of this target
-        log(\`🎭 Apprentice Illusionist markiert ${p.name} – Sehercheck invertiert falls geprüft\`, "action");
+        log(`🎭 Apprentice Illusionist markiert ${p.name} – Sehercheck invertiert falls geprüft`, "action");
         showModal("🎭","APPRENTICE ILLUSIONIST","Ziel gewählt",
-          \`<div class="night-report-item nri-gold">🎭 <b>\${p.name}</b> ist markiert.<br>Wenn der Seher heute Nacht <b>\${p.name}</b> prüft, erhält er das <b>falsche Ergebnis</b>.<br><em>(Einmalige Fähigkeit – danach verbraucht)</em></div>\`,
+          `<div class="night-report-item nri-gold">🎭 <b>\${p.name}</b> ist markiert.<br>Wenn der Seher heute Nacht <b>\${p.name}</b> prüft, erhält er das <b>falsche Ergebnis</b>.<br><em>(Einmalige Fähigkeit – danach verbraucht)</em></div>`,
           () => nextNightPhase()
         );
       });
