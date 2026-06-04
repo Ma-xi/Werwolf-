@@ -1,0 +1,765 @@
+// ===== ROLE DATA =====
+// team: 'wolf' | 'team_wolf' | 'village' | 'neutral'
+const roleData = {
+    // Wolf Rollen
+    'assassin_wolf':  { name:'Assassin Wolf',  emoji:'🗡️',  team:'wolf',    short:'Reißt beim Hängen eine Person mit in den Tod.',         info:'Werwolf. Wird er gehängt, wählt er sofort eine Person aus, die direkt nach ihm stirbt.' },
+    'den_mother':     { name:'Den Mother',      emoji:'🐾',  team:'team_wolf', short:'Spioniert die Seherin aus – weiß ob sie Erfolg hatte.', info:'Werwolf. Erfährt jede Nacht, ob die Seherin einen Wolf gefunden hat (👍/👎).' },
+    'kamikaze_wolf':  { name:'Kamikaze Wolf',   emoji:'💥',  team:'wolf',    short:'Tötet den Seher wenn er untersucht wird.',              info:'Werwolf. Prüft ihn der Seher, sterben beide sofort.' },
+    'mama_wolf':      { name:'Mama Wolf',       emoji:'🐺',  team:'wolf',    short:'Verwandelt einen Dorfbewohner in einen "Lycan".',       info:'Werwolf. Wählt in Nacht 1 jemanden, der für den Seher als Wolf erscheint, aber keiner ist.' },
+    'mountain_wolf':  { name:'Mountain Wolf',   emoji:'🏔️', team:'wolf',    short:'Kann in Nacht 1 prüfen ob der Seher in einer Gruppe ist.', info:'Werwolf. Wählt eine Gruppe – Moderator sagt ob Seher darin ist (👍/👎).' },
+    'mystery_wolf':   { name:'Mystery Wolf',    emoji:'❓',  team:'wolf',    short:'Verwandelt in Nacht 2 und 3 je eine Person in einen Lycan.', info:'Wolf. Spielt wie normaler Wolf. Wählt zusätzl. in Nacht 2 und 3 je eine Person → wird Lycan (bleibt Dorf, erscheint aber als Wolf für den Seher).' },
+    'mystic_wolf':    { name:'Mystic Wolf',     emoji:'🔮',  team:'wolf',    short:'Seherischer Wolf – sieht jede Nacht eine exakte Rolle.', info:'Werwolf. Wacht zusätzlich allein auf und erfährt die genaue Rollenkarte einer Person.' },
+    'oracle_wolf':    { name:'Oracle Wolf',     emoji:'🌕',  team:'wolf',    short:'Erhält Rollenkenntnis, sobald ein Wolf stirbt.',        info:'Wolf. Spielt wie normaler Wolf. Sobald ein Wolf eliminiert wird: kann ab dann jede Nacht die exakte Rolle einer Person erfahren.' },
+    'outsider_wolf':  { name:'Outsider Wolf',   emoji:'🌲',  team:'wolf',    short:'Jagt jede Nacht alleine. Tritt dem Rudel bei, wenn sie sich gegenseitig angreifen würden.',             info:'Werwolf. Jagt eigenständig jede Nacht. Erkennung: wählt er einen Wolf oder wählen Wölfe ihn → niemand stirbt, er tritt dem Rudel bei.' },
+    'pet_wolf':       { name:'Pet Wolf',        emoji:'🦴',  team:'wolf',    short:'Wählt in Nacht 1 einen Besitzer. Stirbt Pet Wolf zuerst, stirbt der Besitzer sofort mit.',             info:'Werwolf. Wählt in Nacht 1 heimlich einen Besitzer. Wird der Pet Wolf eliminiert bevor sein Besitzer stirbt, sterben beide.' },
+    'sorcerer_wolf':  { name:'Sorcerer Wolf',   emoji:'🧙',  team:'wolf',    short:'Sucht den Seher – solange kein Wolf gestorben ist.',    info:'Werwolf. Solange kein Wolf tot ist, sucht er zusätzlich jede Nacht den Seher (Ja/Nein).' },
+    'starving_wolf':  { name:'Starving Wolf',   emoji:'💀',  team:'wolf',    short:'Als letzter Wolf darf er zwei Opfer pro Nacht wählen.',  info:'Werwolf. Ist er der einzige verbleibende Wolf, tötet er jede Nacht 2 Personen.' },
+    'wolf_cub':       { name:'Wolf Cub',        emoji:'🐶',  team:'wolf',    short:'Stirbt er, dürfen die Wölfe in der nächsten Nacht 2 töten.', info:'Werwolf. Bei seinem Tod töten die restlichen Wölfe in der Folgenacht 2 statt 1 Person.' },
+
+    // Dorf Rollen
+    'apprentice_exposer':    { name:'Apprentice Exposer',    emoji:'🔍',  team:'village', short:'Einmalig: Zeigt die Rolle einer Person allen Spielern.',      info:'Dorf. Einmalig: Wähle nachts eine Person – der Moderator zeigt allen deren Rollenkarte.' },
+    'apprentice_illusionist':{ name:'Apprentice Illusionist',emoji:'🎭',  team:'village', short:'Einmalig: Gibt der Seherin ein falsches Ergebnis.',           info:'Dorf. Einmalig: Wenn die Seherin jemanden prüft, erhält sie einmal ein falsches Ergebnis.' },
+    'bodyguard':             { name:'Bodyguard',             emoji:'🛡️', team:'village', short:'Schützt jede Nacht eine Person vor nächtlichen Angriffen.',   info:'Dorf. Jede Nacht: Schütze eine Person (nicht dich selbst, nicht 2x dieselbe).' },
+    'count_lycanthrope':     { name:'Count Lycanthrope',     emoji:'🧛',  team:'team_wolf', short:'Wolfsteam-Informant: kennt die Wolfverteilung in beiden Dorfhälften.', info:'Wolf. Erfährt in Nacht 1 wie viele Wölfe in jeder Tischhälfte sitzen und in welcher Hälfte der Seher sitzt.' },
+    'cutthroat':             { name:'Cutthroat',             emoji:'⚔️',  team:'village', short:'Einmalig: Eliminiert am Tag sofort jemanden.',                info:'Dorf. Einmalig am Tag: Eliminiere sofort eine Person. Die Tagesrunde läuft danach weiter.' },
+    'devotee':               { name:'Devotee',               emoji:'📿',  team:'village', short:'Erfährt schrittweise über mehrere Nächte Wolfnamen.',         info:'Dorf. Nacht 1: Nächster Wolf. Nacht 2: Zweitnächster Wolf. Usw.' },
+    'empath':                { name:'Empath',                emoji:'💫',  team:'village', short:'Erfährt ob der Seher neben einem Wolf sitzt.',                info:'Dorf. Jede Nacht: Ja/Nein ob mindestens ein Nachbar des Sehers ein Wolf ist.' },
+    'eye_of_the_seer':       { name:'Eye of the Seer',       emoji:'🧿',  team:'team_wolf', short:'Nach seinem Tod erhält die Seherin nur noch falsche Infos.',  info:'Dorf. Solange er lebt: Seher normal. Sobald er stirbt: Seher bekommt invertierte Ergebnisse.' },
+    'gemini':                { name:'Gemini',                emoji:'♊',  team:'village', short:'Zwillinge: Stirbt einer, stirbt der andere sofort mit.',       info:'Dorf. Zwei Spieler kennen sich als sicher. Stirbt einer, stirbt der andere sofort.' },
+    'gladys':                { name:'Gladys',                emoji:'🪟',  team:'village', short:'Spürt ob ein Nachbar nachts aktiv war.',                      info:'Dorf. Wird geweckt wenn ein Nachbar stirbt/wechselt. Erfährt ob Nachbarn Nachtaktion hatten.' },
+    'hunter':                { name:'Hunter',                emoji:'🏹',  team:'village', short:'Reißt beim Sterben eine Person mit.',                         info:'Dorf. Wird er eliminiert (Tag oder Nacht), nimmt er sofort eine frei gewählte Person mit.' },
+    'influencer':            { name:'Influencer',            emoji:'📣',  team:'village', short:'Führende Stimme bei Abstimmungen bekommt immer +1.',           info:'Dorf. Solange er lebt: Wer bei einer Abstimmung vorne liegt, bekommt +1 virtuelle Stimme.' },
+    'innocent':              { name:'Innocent',              emoji:'😇',  team:'village', short:'Löst nach seinem Tod den "Tag der verlorenen Unschuld" aus.', info:'Dorf. Wenn eliminiert: nächster Tag = Kettenreaktion – nicht-Wölfe wählen je eine neue Person, bis ein Wolf trifft.' },
+    'insomniac':             { name:'Insomniac',             emoji:'😴',  team:'village', short:'Erfährt jede Nacht: War mindestens eine Nachbarperson aktiv?', info:'Dorf. Wacht jede Nacht auf. Erfährt Ja/Nein, ob mindestens einer der zwei direkten Sitznachbarn eine Nachtaktion hatte.' },
+    'investigator':          { name:'Investigator',          emoji:'🕵️', team:'village', short:'Wählt in Nacht 1 drei Nachbarn – Team hängt vom Ergebnis ab.', info:'Dorf oder Wolf: Ist ein Wolf unter den 3? → Dorfteam. Kein Wolf? → Heimlicher Wolfunterstützer.' },
+    'magistrate':            { name:'Magistrate',            emoji:'⚖️',  team:'village', short:'Einmalig: Kann eine Hinrichtung am Tag stoppen.',             info:'Dorf. Einmalig: Nach der Abstimmung greife ein – das Opfer lebt, der Tag endet sofort.' },
+    'masons':                { name:'Masons',                emoji:'🤝',  team:'village', short:'Bruderschaft: Kennen sich gegenseitig als sicher.',            info:'Dorf. ≥2 Spieler. In Nacht 1 erkennen sie sich. Wissen sicher: Diese Personen sind kein Wolf.' },
+    'reactive_seer':         { name:'Reactive Seer',         emoji:'⚡',  team:'village', short:'Seher-Kraft nur aktiv nach einer Fehlhinrichtung.',            info:'Dorf. Nur aktiv wenn kein anderer Seher im Spiel. Darf nach Fehlhinrichtung nachts prüfen.' },
+    'reanimator':            { name:'Reanimator',            emoji:'💉',  team:'village', short:'Einmalig: Holt eine eliminierte Person ins Spiel zurück.',    info:'Dorf. Einmalig: Wähle nachts einen Toten – er kehrt mit seiner Rolle zurück.' },
+    'reviler':               { name:'Reviler',               emoji:'😤',  team:'village', short:'Prüft jede Nacht eine Person – Spezialrolle stirbt, sonst er.', info:'Dorf. Jede Nacht: wählt eine Person. Ist es eine Dorf-Spezialrolle → diese stirbt. Ist es kein Dorf-Spezialist → Reviler stirbt selbst.' },
+    'seher':                 { name:'Seher',                 emoji:'🔮',  team:'village', short:'Die wichtigste Rolle: Prüft jede Nacht eine Person (Wolf?).',  info:'Dorf. Jede Nacht: Wähle eine Person. Moderator: 👍 = Wolf, 👎 = kein Wolf.' },
+    'soothsayer':            { name:'Soothsayer',            emoji:'🌟',  team:'village', short:'Prüft in Nacht 1 ob zwei Spieler im gleichen Team sind.',      info:'Dorf. Nacht 1: Wähle 2 Spieler. Ja = gleiches Team. Nein = verschiedene Teams.' },
+    'spellcaster':           { name:'Spellcaster',           emoji:'✨',  team:'village', short:'Belegt jede Nacht jemanden mit Schweigezauber.',               info:'Dorf. Jede Nacht: Gewählte Person darf am nächsten Tag kein Wort sprechen.' },
+    'spy':                   { name:'Spy',                   emoji:'🕵️‍♂️', team:'village', short:'Erfährt jede Nacht, wen der Seher überprüft hat.',         info:'Dorf. Wacht nach dem Seher auf. Moderator zeigt dem Spy welche Person der Seher geprüft hat – aber nicht das Ergebnis.' },
+    'the_cloak':             { name:'The Cloak',             emoji:'🧥',  team:'team_wolf', short:'Werwolf-Schutz: Nachbar-Wölfe erscheinen beim Seher als Dorf.', info:'Wolf. Passive Schutzrolle. Werwölfe, die direkt links/rechts neben The Cloak sitzen, erscheinen beim Sehercheck als Dorfbewohner.' },
+    'tough_girl':            { name:'Tough Girl',            emoji:'💪',  team:'village', short:'Überlebt einen Wolfsangriff – stirbt erst in der Folgenacht.', info:'Dorf. Wird sie nachts angegriffen, überlebt sie die Nacht + den Tag. Stirbt dann in Nacht 2.' },
+    'village_idiot':         { name:'Village Idiot',         emoji:'🃏',  team:'village', short:'Sein Votum entscheidet bei Gleichstand.',                     info:'Dorf. Bei Stimmengleichstand wird die Person hingerichtet, für die er gestimmt hat.' },
+    'wise_old_man':          { name:'Wise Old Man',          emoji:'👴',  team:'village', short:'Kennt in Nacht 1 alle Dorf-Spezialrollen. Stirbt nach Tag 2.', info:'Dorf. Nacht 1: Sieht alle Spieler mit Dorf-Spezialrolle. Stirbt automatisch am Ende von Nacht 2.' },
+    'witch':                 { name:'Witch',                 emoji:'🧪',  team:'village', short:'Einmal retten + einmal töten – jede Kraft nur je 1x.',         info:'Dorf. Erfährt jedes Opfer. Kann einmalig heilen ODER einmalig eine Person töten.' },
+
+    // Neutrale Rollen
+    'assassin':      { name:'Assassin',      emoji:'🗡️',  team:'neutral', short:'Gewinnt wenn sein Ziel stirbt, solange er lebt.',         info:'Neutral. Wählt in Nacht 1 ein Ziel. Gewinnt sofort wenn das Ziel stirbt und er noch lebt.' },
+    'auracabra':     { name:'Auracabra',      emoji:'👁️',  team:'neutral', short:'Eliminiert Sonderrollen. Gewinnt wenn alle tot sind.',    info:'Neutral. Wählt jede Nacht jemanden. Nur Sonderrollen sterben. Ziel: alle Sonderrollen eliminieren.' },
+    'black_cat':     { name:'Black Cat',      emoji:'🐈‍⬛', team:'neutral', short:'Reißt beim Tod ein Mitglied des Killer-Teams mit.',       info:'Neutral. Stirbt sie, zeigt Moderator ihr das Killer-Team. Sie wählt eine Person daraus.' },
+    'blighted':      { name:'Blighted',       emoji:'🤢',  team:'neutral', short:'Überlebt Wolfsangriff – tötet danach jede Nacht.',         info:'Neutral. Wölfe töten ihn nicht sofort. Folgenacht: Kann selbst jede Nacht eliminieren.' },
+    'blind_mary':    { name:'Blind Mary',     emoji:'🙈',  team:'neutral', short:'Darf nicht sprechen. Gewinnt wenn niemand eliminiert wird.', info:'Neutral. Kein Sprechen/Gestikulieren. Gewinnt wenn eine Phase ohne Eliminierung endet. Nach Tod: tötet selbst.' },
+    'chupacabra':    { name:'Chupacabra',     emoji:'🦎',  team:'neutral', short:'Jagt Wölfe – danach alle anderen. Letzter Überlebender.',  info:'Neutral. Tötet jede Nacht: erst Wölfe, dann alle. Gewinnt als letzter Überlebender.' },
+    'copycat':       { name:'Copycat',        emoji:'🐱',  team:'neutral', short:'Übernimmt die Rolle eines Spielers wenn dieser stirbt.',   info:'Neutral. Wählt Nacht 1 eine Person. Wenn sie stirbt, wird er zu ihr (Rolle + Team).' },
+    'grave_robber':  { name:'Grave Robber',   emoji:'⚰️',  team:'neutral', short:'Beim Sterben stiehlt er die Rolle einer lebenden Person.', info:'Neutral. Wenn er stirbt, wählt er eine lebende Person. Diese stirbt, er übernimmt deren Rolle.' },
+    'illusionist':   { name:'Illusionist',    emoji:'🪄',  team:'team_wolf', short:'Ab seiner Entdeckung durch den Seher: invertierte Infos.', info:'Neutral. Sobald Seher ihn prüft, erhält er für immer falsche (invertierte) Ergebnisse.' },
+    'infected':      { name:'Infected',       emoji:'🦠',  team:'neutral', short:'Muss gehängt werden bevor alle Wölfe tot sind.',           info:'Neutral. Überlebt er bis alle Wölfe tot sind: Dorf verliert. Wölfe töten ihn → Strafnacht.' },
+    'mad_destroyer': { name:'Mad Destroyer',  emoji:'💣',  team:'neutral', short:'Beim Tod: Löscht (WolfAnzahl-1) Nachbarn aus.',            info:'Neutral. Stirbt er, tötet er in einer Richtung so viele Nachbarn wie Wölfe leben minus 1.' },
+    'master_tanner': { name:'Master Tanner',  emoji:'🪦',  team:'neutral', short:'Muss eine Weile überleben, dann vom Dorf gehängt werden.', info:'Neutral. Phase 1: X Tage überleben. Phase 2: Danach vom Dorf hängen lassen = Sieg.' },
+    'matchmaker':    { name:'Matchmaker',     emoji:'💘',  team:'neutral', short:'Verknüpft Schicksale – verhindert Spielende.',             info:'Neutral. Verknüpft Spieler: Stirbt einer, sterben alle verknüpften. Gewinnt unter letzten 3.' },
+    'mummer':        { name:'Mummer',         emoji:'🎪',  team:'neutral', short:'Hypnotisiert jede Nacht jemanden (Zwangsstimme).',         info:'Neutral. Jede Nacht: Gewählte Person muss am nächsten Tag genau so abstimmen wie der Mummer.' },
+    'nosferatu':     { name:'Nosferatu',       emoji:'🧛',  team:'neutral', short:'Markiert Spieler – bei 2. Nominierung sofortiger Tod.',    info:'Neutral. Markiert jede Nacht (Wolfanzahl-1) Spieler. Werden sie nochmal nominiert: sofort tot.' },
+    'oracle':        { name:'Oracle',         emoji:'🌙',  team:'neutral', short:'Einmalig: Sieht die exakte Rolle einer Person.',           info:'Neutral (Dorfunterstützer). Einmalig: Sieht die komplette Rollenkarte einer Person.' },
+    'outcast':       { name:'Outcast',        emoji:'🚪',  team:'village', short:'Wenn er stirbt, können Dorfrollen nächste Nacht nicht agieren.', info:'Dorf. Hat keine Nachtfähigkeit. Wird er eliminiert (Tag oder Nacht): nächste Nacht dürfen alle Dorfrollen keine Fähigkeiten nutzen.' },
+    'savant':        { name:'Savant',         emoji:'🧠',  team:'neutral', short:'Kennt alle Rollen und tötet jede Nacht Dorfbewohner.',    info:'Neutral. Nacht 1: Sieht alle Rollen. Tötet jede Nacht (Wolfanzahl-2) Dorfbewohner.' },
+    'sorceress':     { name:'Sorceress',       emoji:'🧙‍♀️', team:'team_wolf', short:'Wolfverbündete: Sucht jede Nacht nach dem Seher.',       info:'Wolfteam (getrennt). Sucht jede Nacht den Seher (Ja/Nein). Kennt die Wölfe nicht.' },
+    'spawn':         { name:'Spawn',           emoji:'🥚',  team:'team_wolf', short:'Schlafender Wolf – wird aktiv wenn alle echten Wölfe tot sind.', info:'Wolfteam. Erscheint als Dorfbewohner solange Wölfe leben. Wenn alle Wölfe tot: wird Wolf.' },
+    'tanner':        { name:'Tanner',          emoji:'🪤',  team:'neutral', short:'Gewinnt nur wenn er vom Dorf gehängt wird.',              info:'Neutral. Will unbedingt hingerichtet werden. Stirbt er nachts, verliert er.' },
+    'vanillacabra':  { name:'Vanillacabra',    emoji:'🦌',  team:'neutral', short:'Eliminiert Spieler OHNE Sonderrollen.',                   info:'Neutral. Wählt jede Nacht (Wolfanzahl-1) Spieler. Nur Spieler ohne Sonderrolle sterben.' },
+    'warlock':       { name:'Warlock',         emoji:'🧙‍♂️', team:'village', short:'Wolfverbündeter: Verflucht den Seher wenn er ihn trifft.', info:'Wolfteam. Sucht jede Nacht. Trifft er den Seher, erhält dieser falsche Infos für immer.' },
+};
+
+// IDs aller Wolf-Rollen
+const wolfRoleIds = Object.keys(roleData).filter(id => roleData[id].team === 'wolf');
+
+// ===== STATE =====
+let players = [];
+let revealIndex = 0;
+
+// ===== HELPERS =====
+function val(id){ return parseInt(document.getElementById(id)?.value) || 0; }
+function checked(id){ let el = document.getElementById(id); return el ? el.checked : false; }
+
+function getCheckedWolfSpecials(){
+    return wolfRoleIds.filter(id => checked(id));
+}
+// Rollen die mehrere Spieler brauchen (id → Minimum-Anzahl)
+const multiRoles = { masons: 2, gemini: 2 };
+
+function toggleGemini() {
+    let inp = document.getElementById('gemini');
+    let n = parseInt(inp.value) || 0;
+    adjustMulti('gemini', n > 0 ? -99 : 2, 2);
+}
+
+function adjustMulti(id, delta, minVal) {
+    let inp = document.getElementById(id);
+    let n = parseInt(inp.value) || 0;
+    n += delta;
+    if (n <= 0 || n < minVal) n = (delta > 0) ? minVal : 0;
+    inp.value = n;
+    let badge = document.getElementById(id + '_badge');
+    let wrap  = document.getElementById(id + '_wrap');
+    if (badge) badge.textContent = n > 0 ? n + 'x' : '—';
+    if (wrap)  wrap.classList.toggle('active', n > 0);
+    updateSummary();
+}
+
+function getCheckedNonWolfSpecials(){
+    let result = [];
+    Object.keys(roleData).forEach(id => {
+        if (wolfRoleIds.includes(id)) return;
+        if (multiRoles[id] !== undefined) {
+            let n = parseInt(document.getElementById(id)?.value || 0);
+            for (let i = 0; i < n; i++) result.push(id);
+        } else if (checked(id)) {
+            result.push(id);
+        }
+    });
+    return result;
+}
+
+// ===== SUMMARY =====
+function updateSummary(){
+    let count = val("count");
+    let wolves = val("wolves");
+    let summaryDiv = document.getElementById("summary");
+
+    if(count === 0){ summaryDiv.innerHTML = "Warte auf Spieleranzahl..."; return; }
+
+    let wolfSpecials = getCheckedWolfSpecials();
+    let normalWolves = Math.max(0, wolves - wolfSpecials.length);
+    let nonWolfSpecials = getCheckedNonWolfSpecials();
+    let villagers = count - wolves - nonWolfSpecials.length;
+
+    let html = '';
+
+    // Wölfe
+    if(normalWolves > 0)
+        html += `<div class="summary-row"><span>🐺 Werwolf</span><span>${normalWolves}x</span></div>`;
+    wolfSpecials.forEach(id => {
+        let r = roleData[id];
+        html += `<div class="summary-row"><span>${r.emoji} ${r.name}</span><span>1x</span></div>`;
+    });
+
+    // Dorf-Spezialrollen (multi-player Rollen gruppiert anzeigen)
+    const roleCounts = {};
+    nonWolfSpecials.forEach(id => { roleCounts[id] = (roleCounts[id] || 0) + 1; });
+    Object.entries(roleCounts).forEach(([id, cnt]) => {
+        let r = roleData[id];
+        html += `<div class="summary-row"><span>${r.emoji} ${r.name}</span><span>${cnt}x</span></div>`;
+    });
+
+    // Dorfbewohner
+    if(villagers > 0)
+        html += `<div class="summary-row"><span>👤 Dorfbewohner</span><span>${villagers}x</span></div>`;
+
+    // Warnungen
+    if(villagers < 0)
+        html += `<div style="color:#f87171; font-family:'Cinzel',serif; font-size:0.75rem; margin-top:10px; letter-spacing:0.5px;">⚠️ Zu viele Rollen für ${count} Spieler!</div>`;
+    if(wolfSpecials.length > wolves)
+        html += `<div style="color:#f87171; font-family:'Cinzel',serif; font-size:0.75rem; margin-top:6px; letter-spacing:0.5px;">⚠️ Mehr Wolf-Spezialrollen als Wölfe!</div>`;
+
+    // Rollenabhängigkeits-Warnungen
+    const hasSeer = document.getElementById('seher')?.checked;
+    const needsSeer = ['empath','eye_of_the_seer','illusionist','apprentice_illusionist'].filter(id => document.getElementById(id)?.checked);
+    if (!hasSeer && needsSeer.length > 0) {
+        const names = needsSeer.map(id => roleData[id]?.name || id).join(', ');
+        html += `<div style="color:#fbbf24; font-family:'Cinzel',serif; font-size:0.75rem; margin-top:6px; letter-spacing:0.5px;">⚠️ ${names} ${needsSeer.length > 1 ? 'brauchen' : 'braucht'} den Seher!</div>`;
+    }
+
+    summaryDiv.innerHTML = html || "Keine Rollen ausgewählt.";
+}
+
+// ===== NAMEN EINGEBEN =====
+function goNames(){
+    let count = val("count");
+    if(count < 3){ alert("Mindestens 3 Spieler!"); return; }
+
+    let wolves = val("wolves");
+    let wolfSpecials = getCheckedWolfSpecials();
+    let nonWolfSpecials = getCheckedNonWolfSpecials();
+    let villagers = count - wolves - nonWolfSpecials.length;
+
+    if(villagers < 0){ alert("Zu viele Rollen für die Spieleranzahl!"); return; }
+    if(wolfSpecials.length > wolves){ alert("Mehr Wolf-Spezialrollen als Wölfe!"); return; }
+
+    // Gemini muss genau 2 sein (oder 0)
+    let geminiCount = parseInt(document.getElementById('gemini')?.value || 0);
+    if (geminiCount === 1) { alert("Gemini braucht genau 2 Spieler!"); return; }
+
+    document.getElementById("setup").style.display = "none";
+    let nDiv = document.getElementById("names");
+    nDiv.style.display = "block";
+
+    let html = '<div class="card"><h3>✏️ Wer spielt mit?</h3>';
+    html += "<p style='color:var(--text-muted); font-style:italic; font-size:0.9rem; margin-bottom:18px;'>Gib die Namen der Teilnehmer ein:</p>";
+
+    // Gruppen-Bar
+    html += `<div class="groups-bar">
+      <h4>👥 Gespeicherte Gruppen</h4>
+      <div class="group-chips" id="groupChips"></div>
+      <div class="group-actions">
+        <button class="group-btn save" onclick="saveCurrentGroup()">💾 Aktuelle Namen als Gruppe speichern</button>
+        <button class="group-btn" onclick="openGroupManager()">⚙️ Gruppen verwalten</button>
+      </div>
+    </div>`;
+
+    for(let i = 0; i < count; i++){
+        html += `<input type="text" id="p${i}" placeholder="Name für Spieler ${i+1}" autocomplete="off">`;
+    }
+    html += `<button onclick="generateRoles()" style="margin-top:20px;">Rollen verteilen →</button>`;
+    html += '</div>';
+    nDiv.innerHTML = html;
+    renderGroupChips();
+}
+
+// ===== ROLLEN GENERIEREN =====
+function generateRoles(){
+    let count = val("count");
+    let wolves = val("wolves");
+    players = [];
+
+    for(let i = 0; i < count; i++){
+        let nameVal = document.getElementById("p"+i)?.value || `Spieler ${i+1}`;
+        players.push({ name: nameVal, alive: true });
+    }
+
+    // Wolf-Pool aufbauen
+    let wolfSpecials = getCheckedWolfSpecials();
+    let wolfPool = wolfSpecials.map(id => roleData[id].name);
+    // Restliche Wolf-Slots mit normalen Werwölfen füllen
+    while(wolfPool.length < wolves) wolfPool.push("Werwolf");
+
+    // Dorf/Neutral-Pool aufbauen
+    let nonWolfSpecials = getCheckedNonWolfSpecials();
+    let villagePool = nonWolfSpecials.map(id => roleData[id].name);
+    // Restliche Slots mit Dorfbewohnern füllen
+    let villagers = count - wolves - nonWolfSpecials.length;
+    for(let i = 0; i < villagers; i++) villagePool.push("Dorfbewohner");
+
+    // Alles mischen
+    let rolesPool = [...wolfPool, ...villagePool];
+    rolesPool.sort(() => Math.random() - 0.5);
+    players.forEach((p, i) => p.role = rolesPool[i]);
+
+    document.getElementById("names").style.display = "none";
+    revealIndex = 0;
+    nextPlayer();
+}
+
+// ===== VOLLSTÄNDIGE ROLLENBESCHREIBUNGEN (aus dem Kompendium) =====
+const roleFullDesc = {
+    'Werwolf':               { short:'Du bist ein Werwolf. Töte nachts gemeinsam mit deinem Rudel einen Dorfbewohner.', full:`<h4>Team</h4>Werwölfe.<h4>Ablauf</h4>Wacht jede Nacht gemeinsam mit den anderen Werwölfen auf. Das Rudel einigt sich lautlos auf einen Spieler, der eliminiert werden soll.<h4>Ziel</h4>Gewinnt wenn Parität erreicht wird (gleich viele oder mehr Wölfe wie Dorfbewohner). Tagsüber als normaler Dorfbewohner tarnen und Verdacht von sich ablenken.` },
+    'Dorfbewohner':          { short:'Du hast keine Sonderfähigkeit. Finde die Werwölfe durch Beobachtung und Diskussion.', full:`<h4>Team</h4>Dorfteam.<h4>Aufgabe</h4>Der Dorfbewohner hat keine Nachtaktion. Stärke liegt in Diskussion und Abstimmung am Tag.<h4>Bedeutung</h4>Durch logisches Kombinieren und Beobachten des Verhaltens anderer Werwölfe entlarven. Ein geschickter Dorfbewohner kann für die Wölfe gefährlicher sein als eine unvorsichtige Spezialrolle.` },
+    'Seher':                 { short:'Prüfe jede Nacht eine Person – Werwolf oder kein Werwolf?', full:`<h4>Fähigkeit</h4>Wacht jede Nacht auf und überprüft eine Person.<h4>Information</h4>Der Moderator zeigt Daumen hoch für einen Werwolf oder Daumen runter für kein Werwolf.<h4>Einschränkung</h4>Kann nicht zwischen normalen Dorfbewohnern und neutralen oder Spezialrollen unterscheiden – alle erscheinen als kein Werwolf.` },
+    'Hexe':                  { short:'Du hast einen Heiltrank und einen Gifttrank – je einmal nutzbar.', full:`<h4>Fähigkeit</h4>Erfährt jede Nacht wer das Opfer der Werwölfe ist. Hat dann zwei Optionen:<ul><li><b>Retten:</b> Heilt das Opfer – in dieser Nacht stirbt niemand.</li><li><b>Töten:</b> Bestimmt eine zusätzliche Person die sofort eliminiert wird.</li></ul><h4>Einschränkung</h4>Sobald eine Aktion genutzt wurde verliert sie ihre Zauberkraft und erfährt nachts nicht mehr wer angegriffen wird. Jede Aktion nur einmal pro Spiel.` },
+    'Hunter':                { short:'Wenn du stirbst, reißt du sofort eine Person deiner Wahl mit in den Tod.', full:`<h4>Fähigkeit (passiv)</h4>Wenn der Hunter eliminiert wird (Tag oder Nacht) darf er sofort eine andere Person bestimmen die mit ihm stirbt.<h4>Besonderheit</h4>Entscheidung muss sofort getroffen werden und ist unwiderruflich. Kann strategisch eingesetzt werden um einen Werwolf mitzureißen.<div class="example"><b>Beispiel:</b> Das Dorf hängt dich. Bevor du gehst reißt du den Spieler mit den du am meisten für einen Wolf hältst.</div>` },
+    'Bodyguard':             { short:'Schütze jede Nacht eine Person vor Wolfsangriffen.', full:`<h4>Fähigkeit</h4>Wählt jede Nacht eine Person (außer sich selbst) die vor Wolfsangriffen und nächtlichen Eliminierungen geschützt ist.<h4>Regeln</h4><ul><li>Darf nicht zweimal hintereinander dieselbe Person wählen.</li><li>Kann sich nicht selbst schützen.</li><li>Schützt nicht vor der Hinrichtung am Tag.</li></ul><div class="example"><b>Beispiel:</b> Du schützt den Seher in Nacht 2. Die Wölfe greifen ihn an – er überlebt dank dir.</div>` },
+    'Magistrate':            { short:'Einmalig: Stoppe eine Tageshinrichtung.', full:`<h4>Fähigkeit (einmal pro Spiel)</h4>Darf einmal die Abstimmung am Tag komplett umkehren. Direkt nach der Stimmenauszählung kann er eingreifen.<h4>Wirkung</h4>Die gewählte Person bleibt am Leben und der Tag endet sofort ohne Hinrichtung. Besonders wertvoll um geoutete Schlüsselrollen wie den Seher zu retten.` },
+    'Reanimator':            { short:'Einmalig: Bringe eine tote Person zurück ins Spiel.', full:`<h4>Fähigkeit (einmal pro Spiel)</h4>Darf in einer beliebigen Nacht eine bereits eliminierte Person auswählen.<h4>Wirkung</h4>Diese Person wird reanimiert und kehrt mit ihrer ursprünglichen Rolle und noch nicht verbrauchten Fähigkeiten ins Spiel zurück. Kann das Blatt wenden wenn Seher oder Hexe wiederkehrt.` },
+    'Spellcaster':           { short:'Belege jede Nacht eine Person mit Schweigezauber für den nächsten Tag.', full:`<h4>Fähigkeit</h4>Wacht jede Nacht auf und wählt einen Spieler der mit einem Zauber belegt wird.<h4>Wirkung</h4>Die gewählte Person darf am gesamten folgenden Tag kein einziges Wort sprechen. Sie darf an der Abstimmung teilnehmen, sich aber nicht verteidigen oder andere beschuldigen.<h4>Einschränkung</h4>Darf nicht zweimal hintereinander dieselbe Person wählen.` },
+    'Cutthroat':             { short:'Einmalig: Eliminiere am Tag sofort jemanden – die Diskussion läuft danach weiter!', full:`<h4>Fähigkeit (einmal pro Spiel)</h4>Darf einmal am Tag während der Diskussion eine Person sofort eliminieren. Moderator deckt die Rolle sofort auf.<h4>Besonderheit</h4>Der Tag endet danach NICHT! Die Diskussion geht weiter und das Dorf kann am selben Tag noch eine zweite Person per Abstimmung hängen.` },
+    'Copycat':               { short:'Wähle in Nacht 1 jemanden – wenn er stirbt wirst du zu ihm.', full:`<h4>Ablauf</h4>Wählt in der allerersten Nacht eine Person. Sobald diese im Laufe des Spiels eliminiert wird übernimmt der Copycat sofort deren Rolle und Teamzugehörigkeit.<h4>Wichtig</h4><ul><li>Bis zur Übernahme zählt er als normaler Dorfbewohner ohne Fähigkeit.</li><li>Erhält nur Fähigkeiten die noch nicht verbraucht wurden.</li></ul><div class="example"><b>Beispiel:</b> Du wählst in Nacht 1 Max. Max ist die Hexe. Wenn Max an Tag 3 stirbt wirst du zur neuen Hexe.</div>` },
+    'Devotee':               { short:'Erfahre jede Nacht schrittweise die Wölfe – den nächsten zuerst.', full:`<h4>Fähigkeit</h4>In der ersten Nacht zeigt der Moderator den Werwolf der am nächsten sitzt. In folgenden Nächten schrittweise weitere Wölfe (zweitnächster usw.).<h4>Besonderheit</h4>Erhält Informationen nicht alle auf einmal sondern über mehrere Nächte verteilt.` },
+    'Empath':                { short:'Spüre jede Nacht ob der Seher neben einem Wolf sitzt.', full:`<h4>Fähigkeit</h4>Erfährt jede Nacht ob der Seher neben einem Werwolf oder Lycan sitzt.<h4>Ablauf</h4>Moderator gibt ein Zeichen: Ja = mindestens ein Nachbar des Sehers ist Wolf. Nein = nicht.<h4>Einschränkung</h4>Erfährt weder wer der Seher ist noch welcher Nachbar der Wolf ist. Information ist indirekt und muss über Sitzordnung kombiniert werden.` },
+    'Gemini':                { short:'Ihr seid Zwillinge – stirbt einer stirbt der andere sofort mit.', full:`<h4>Ablauf</h4>Immer zwei Spieler. Wachen in der ersten Nacht gemeinsam auf und kennen sich gegenseitig als sicher unschuldig.<h4>Die Verbindung</h4>Stirbt einer der beiden Gemini stirbt der andere sofort mit.<h4>Strategie</h4>Müssen sich gegenseitig schützen – der Verlust eines Geminis nimmt automatisch zwei Dorfbewohner aus dem Spiel.` },
+    'Gladys':                { short:'Spüre ob ein Nachbar in dieser Nacht eine Aktion durchgeführt hat.', full:`<h4>Fähigkeit</h4>Wird jede Nacht geweckt nachdem eine Nachbarperson eliminiert wurde oder die Sitzordnung sich änderte. Erfährt ob mindestens eine neue Nachbarperson eine Nachtaktion durchführte.<h4>Einschränkung</h4>Erfährt weder Namen noch die Art der Aktion – nur dass etwas passiert ist.` },
+    'Masons':                { short:'Ihr seid eine Bruderschaft – ihr kennt euch und wisst ihr seid unschuldig.', full:`<h4>Ablauf</h4>Mindestens zwei Spieler. In der ersten Nacht gemeinsam geweckt und erkennen sich.<h4>Vorteil</h4>Wissen sicher dass die anderen Masons keine Werwölfe sind. Können im Dorf eine vertrauenswürdige Allianz bilden und Informationen sicher austauschen.` },
+    'Influencer':            { short:'Solange du lebst erhält die Führungsstimme bei Abstimmungen +1.', full:`<h4>Fähigkeit</h4>Solange der Influencer lebt gibt es bei jeder Tagesabstimmung eine zusätzliche virtuelle Stimme für die Person mit den meisten Stimmen.<h4>Wirkung</h4>Macht Mehrheiten einfacher und Unentschieden seltener. Stirbt er erlischt der Effekt.` },
+    'Innocent':              { short:'Nach deinem Tod: Tag der verlorenen Unschuld.', full:`<h4>Fähigkeit (nach dem Tod)</h4>Wenn der Innocent eliminiert wird, findet am nächsten Tag der <b>„Tag der verlorenen Unschuld"</b> statt.<h4>Ablauf</h4>Das Dorf eliminiert wie üblich eine Person. Ist diese kein Wolf: hat sie 3 Sekunden um jemand anderen zu wählen, der sofort auch stirbt. Kettenreaktion bis ein Wolf erwischt wird.<h4>Einschränkung</h4>Todes-Spezialfähigkeiten anderer Rollen sind an diesem Tag deaktiviert. Findet nicht statt, wenn nur noch ein Wolf übrig ist.` },
+    'Insomniac':             { short:'Du erfährst jede Nacht, ob ein direkter Sitznachbar aktiv war.', full:`<h4>Fähigkeit</h4>Der Moderator weckt den Insomniac jede Nacht auf und zeigt: <b>Ja</b> (mindestens eine Nachbarperson hatte eine Nachtaktion) oder <b>Nein</b> (keine).<h4>Einschränkung</h4>Er erfährt nicht welche der beiden Nachbarpersonen aktiv war, nur ob mindestens eine es war.<h4>Sonderregel</h4>Stirbt ein Nachbar in der Nacht, verschiebt sich die Betrachtung auf den nächsten lebenden Nachbarn.` },
+    'Investigator':          { short:'Wähle 3 Nachbarn – bist du Dorf oder Wolf hängt vom Ergebnis ab!', full:`<h4>Ablauf</h4>Wählt in der ersten Nacht drei nebeneinander sitzende Spieler.<h4>Team-Zugehörigkeit</h4><ul><li><b>Dorfteam:</b> Wenn sich unter den drei mindestens ein Werwolf befindet.</li><li><b>Wolfteam:</b> Wenn keiner ein Werwolf ist (geheimer Unterstützer – wacht nicht mit Wölfen auf).</li></ul><h4>Wichtig</h4>Niemand erfährt welchem Team er beitrat.` },
+    'Count Lycanthrope':     { short:'Wolfteam-Informant: erfahre Wolfverteilung und Seherlage.', full:`<h4>Team</h4>Werwölfe. Gewinnt mit dem Wolfsteam.<h4>Wissen (Nacht 1)</h4>Erfährt in der ersten Nacht:<ul><li>Wo die Grenze der zwei Dorfhälften verläuft.</li><li>Wie viele Werwölfe (inkl. Lycans) in jeder Hälfte sind.</li><li>In welcher Hälfte die Seherin sitzt.</li></ul><h4>Einschränkung</h4>Keine konkreten Namen – nur Anzahl pro Seite.` },
+    'Spy':                   { short:'Erfähre jede Nacht, welche Person der Seher geprüft hat.', full:`<h4>Fähigkeit</h4>Wacht jede Nacht unmittelbar nach dem Seher auf.<h4>Information</h4>Der Moderator zeigt dem Spy, welche Person der Seher in dieser Nacht überprüft hat. Nicht das Ergebnis (Wolf/kein Wolf) – nur wer geprüft wurde.<h4>Sonderregel</h4>Ist der Seher bereits eliminiert, zeigt der Moderator niemanden – der Spy erkennt dadurch indirekt, dass der Seher nicht mehr aktiv ist.` },
+    'Oracle':                { short:'Einmalig: Sieh die exakte Rollenkarte einer Person.', full:`<h4>Fähigkeit (einmal pro Spiel)</h4>Darf in einer beliebigen Nacht eine Person auswählen. Moderator zeigt die exakte Rollenkarte (nicht nur Wolf oder Mensch).<h4>Strategie</h4>Da nur einmal nutzbar – perfekten Moment abwarten um eine Schlüsselrolle zu bestätigen.` },
+    'Soothsayer':            { short:'Prüfe in Nacht 1 ob zwei Spieler im selben Team sind.', full:`<h4>Fähigkeit (Erste Nacht)</h4>Wacht in der ersten Nacht auf und wählt zwei beliebige Mitspieler. Ja = gleiches Team. Nein = verschiedene Teams.<h4>Besonderheiten</h4>Darf sich nicht selbst wählen. Lycan gilt als Wolfteam was die Information verfälschen kann.` },
+    'Reactive Seer':         { short:'Seher-Kraft nur aktiv nach einer Fehlhinrichtung.', full:`<h4>Bedingung</h4>Nur wenn kein anderer Seher im Spiel ist. Ansonsten normaler Dorfbewohner.<h4>Fähigkeit</h4>Seherkraft wird nur in der Nacht nach einer Fehlentscheidung aktiviert (wenn am Tag ein Dorfmitglied hingerichtet wurde).<h4>Information</h4>Daumen hoch = Wolf, Daumen runter = kein Wolf.` },
+    'Tough Girl':            { short:'Du überlebst einen Wolfsangriff – stirbst erst in der darauf folgenden Nacht.', full:`<h4>Fähigkeit</h4>Wenn nachts von Werwölfen angegriffen stirbt sie nicht sofort.<h4>Ablauf</h4>Überlebt die Nacht des Angriffs und den folgenden Tag. Erst in der darauffolgenden Nacht erliegt sie den Verletzungen.<h4>Vorteil</h4>Ein zusätzlicher Tag um Beobachtungen mit dem Dorf zu teilen.` },
+    'Reviler':               { short:'Jede Nacht: Triffst du eine Dorf-Spezialrolle, stirbt sie – sonst du.', full:`<h4>Nachtaktion</h4>Wacht jede Nacht auf und wählt eine Person.<h4>Ergebnis</h4><ul><li><b>Ziel ist eine Dorf-Spezialrolle</b> (Seher, Hexe, Bodyguard …) → diese Person wird sofort eliminiert, Reviler überlebt.</li><li><b>Ziel ist kein Dorf-Spezialist</b> (normaler Dorfbewohner, Wolf, neutral) → der Reviler selbst stirbt sofort.</li></ul>` },
+    'Wise Old Man':          { short:'Sieh in Nacht 1 alle Dorf-Spezialrollen – stirbst aber nach Tag 2.', full:`<h4>Fähigkeit (Erste Nacht)</h4>Moderator zeigt alle Spieler mit Dorf-Spezialrolle (Seher, Hexe, Bodyguard…) – aber nicht wer welche hat.<h4>Der Fluch der Zeit</h4>Stirbt automatisch nach dem zweiten Tag (Ende Nacht 2).<h4>Vermächtnis</h4>Töten Wölfe ihn vor seinem natürlichen Tod erhält der Seher eine Bonusuntersuchung.` },
+    'Apprentice Exposer':    { short:'Einmalig: Zeige allen Spielern die Rollenkarte einer Person.', full:`<h4>Fähigkeit (einmalig)</h4>Darf in einer Nacht eine Person wählen. Moderator zeigt ALLEN Spielern offen die Rollenkarte.<h4>Besonderheiten</h4><ul><li>Enthüllung passiert immer auch wenn Exposer oder Ziel in der Nacht sterben.</li><li><b>Lycan-Ausnahme:</b> Lycan wird als Dorfbewohner angezeigt.</li></ul><div class="example"><b>Beispiel:</b> Tag 3 alle verdächtigen Max. Du wählst ihn. Moderator zeigt: Max ist Werwolf.</div>` },
+    'Blighted':              { short:'Überlebst du einen Wolfsangriff, kannst du selbst jede Nacht töten.', full:`<h4>Besonderheit</h4>Wählen Wölfe ihn stirbt er nicht sofort – wird in der Folgenacht aktiv.<h4>Fähigkeit</h4>Darf dann jede Nacht eine Person eliminieren. Kennt die Wölfe nicht und kann auch diese töten.<h4>Regel</h4>Zählt nicht für die Paritätsregel (Siegbedingung der Wölfe).` },
+    'Outcast':               { short:'Wenn du stirbst, dürfen Dorfrollen die nächste Nacht nicht agieren.', full:`<h4>Fähigkeit</h4>Der Outcast hat keine aktive Nachtfähigkeit. Seine Wirkung tritt bei seiner Eliminierung ein.<h4>Effekt</h4>Wenn der Outcast stirbt (durch Abstimmung oder nachts): In der folgenden Nacht dürfen alle Dorfrollen ihre Fähigkeiten nicht nutzen.<h4>Was trotzdem passiert</h4>Werwölfe handeln in dieser Nacht ganz normal – nur Dorf-Unterstützungsrollen werden übersprungen.` },
+    'Village Idiot':         { short:'Bei Stimmengleichstand entscheidet deine Stimme.', full:`<h4>Fähigkeit</h4>Bei Gleichstand bei einer Abstimmung wird die Person hingerichtet für die der Village Idiot gestimmt hat.<h4>Wirkung</h4>Stimme zählt als Tie-Breaker. Sorgt dafür dass das Dorf immer eine Entscheidung trifft.` },
+    // Wolf-Rollen
+    'Mystery Wolf':          { short:'Erzeuge in Nacht 2 und 3 je einen Lycan.', full:`<h4>Team</h4>Werwölfe.<h4>Normale Wolf-Aktion</h4>Wacht mit den anderen Wölfen auf und hilft bei der Opferwahl.<h4>Spezialfähigkeit</h4>Darf zusätzlich in <b>Nacht 2</b> und <b>Nacht 3</b> je eine Person auswählen – diese wird zum Lycan.<h4>Was ist ein Lycan?</h4>Bleibt Dorfbewohner (gehört nicht zum Wolfteam), erscheint aber für alle Rollen mit Werwolf-Erkennung (z. B. Seher) als Wolf.` },
+    'Mystic Wolf':           { short:'Du siehst jede Nacht die exakte Rolle einer Person.', full:`<h4>Team</h4>Werwölfe.<h4>Fähigkeit</h4>Wacht jede Nacht zusätzlich alleine auf. Moderator zeigt exakte Rollenkarte der gewählten Person.<h4>Strategie</h4>Volle Information über Spezialrollen (Hexe, Bodyguard, Hunter) macht ihn extrem gefährlich.` },
+    'Kamikaze Wolf':         { short:'Prüft der Seher dich – sterbt ihr beide sofort.', full:`<h4>Team</h4>Werwölfe.<h4>Fähigkeit</h4>Wenn Seher ihn in der Nacht überprüft stirbt der Kamikaze Wolf sofort – reißt aber den Seher automatisch mit.<h4>Besonderheit</h4>Beide werden am nächsten Morgen als Opfer verkündet. Wölfe verlieren ein Mitglied schalten aber Seher aus.` },
+    'Sorceress':             { short:'Du suchst jede Nacht nach dem Seher – für das Wolfteam.', full:`<h4>Team</h4>Wolfteam (getrennt).<h4>Fähigkeit</h4>Wacht jede Nacht auf. Daumen hoch = Person ist der Seher. Daumen runter = nicht der Seher.<h4>Besonderheit</h4>Kennt die Werwölfe nicht und die Wölfe kennen sie nicht. Arbeitet verdeckt.` },
+    'Sorcerer Wolf':         { short:'Solange kein Wolf gestorben ist suchst du jede Nacht den Seher.', full:`<h4>Team</h4>Werwölfe.<h4>Fähigkeit</h4>Solange noch kein Werwolf gestorben ist wacht er jede Nacht zusätzlich allein auf und sucht den Seher (Ja/Nein-Signal).<h4>Besonderheit</h4>Sobald erster Wolf eliminiert wird verliert er diese Fähigkeit und wird normaler Wolf.` },
+    'Mama Wolf':             { short:'Du machst in Nacht 1 einen Dorfbewohner zum Lycan – er sieht aus wie Wolf.', full:`<h4>Team</h4>Werwölfe.<h4>Fähigkeit</h4>Wählt in der ersten Nacht eine Person die zum Lycan wird.<h4>Wirkung</h4>Bleibt normaler Dorfbewohner wird aber für alle Rollen die Wölfe erkennen als Werwolf angezeigt. Mama Wolf weiß als Einzige wer der Lycan ist.` },
+    'Den Mother':            { short:'Du erfährst jede Nacht ob die Seherin einen Wolf gefunden hat.', full:`<h4>Team</h4>Werwölfe.<h4>Fähigkeit</h4>Wird jede Nacht nach der Seherin aufgerufen. Daumen hoch = Seherin fand einen Werwolf. Daumen runter = keine gefunden. Hals-Geste = Seherin tot oder hat nicht geprüft.<h4>Wichtig</h4>Erfährt NICHT wen die Seherin geprüft hat.` },
+    'Mountain Wolf':         { short:'Prüfe in Nacht 1 ob der Seher in einer Gruppe sitzt.', full:`<h4>Team</h4>Werwölfe.<h4>Fähigkeit (Erste Nacht)</h4>Darf eine Gruppe wählen. Daumen hoch = Seher in der Gruppe. Daumen runter = nicht dabei.<h4>Wichtig</h4>Erfährt nicht wer genau der Seher ist – nur ob er in der gewählten Gruppe ist.` },
+    'Oracle Wolf':           { short:'Erhält Rollenkenntnis, sobald ein Wolf stirbt.', full:`<h4>Team</h4>Werwölfe.<h4>Normale Wolf-Aktion</h4>Spielt zunächst wie ein normaler Werwolf – wacht auf, wählt Opfer.<h4>Spezialfähigkeit (nach Wolf-Tod)</h4>Sobald ein Werwolf eliminiert wurde: Wacht der Oracle Wolf ab dann jede Nacht zusätzlich auf und darf eine Person wählen – der Moderator zeigt ihm deren exakte Rolle.` },
+    'Starving Wolf':         { short:'Als letzter Wolf darfst du zwei Opfer pro Nacht wählen.', full:`<h4>Team</h4>Werwölfe.<h4>Spezialfähigkeit</h4>Wenn der Starving Wolf der einzige verbliebene Werwolf ist darf er jede Nacht zwei Opfer statt einem wählen.<h4>Gefahr</h4>Kann Parität doppelt so schnell erzwingen.` },
+    'Wolf Cub':              { short:'Stirbst du – dürfen die anderen Wölfe nächste Nacht 2 töten.', full:`<h4>Team</h4>Werwölfe.<h4>Besonderheit</h4>Agiert nachts wie normaler Werwolf.<h4>Rache-Effekt</h4>Wenn der Wolf Cub stirbt dürfen verbliebene Wölfe in der Folgenacht zwei Opfer statt einem wählen. Kann das Dorf extrem schwächen.` },
+    'Assassin Wolf':         { short:'Wirst du gehängt, reißt du eine Person deiner Wahl mit in den Tod.', full:`<h4>Team</h4>Werwölfe.<h4>Fähigkeit</h4>Wird er vom Dorf gehängt darf er sofort eine Person wählen die direkt nach ihm stirbt.<h4>Nachtphase</h4>Wacht mit Wölfen auf und hilft bei Opferwahl.<div class="example"><b>Beispiel:</b> Dorf hängt den Assassin Wolf. Er wählt im Sterben den Seher. Beide sterben.</div>` },
+    'Outsider Wolf':         { short:'Du jagst jede Nacht alleine. Tritt dem Rudel bei wenn ihr euch gegenseitig angreifen würdet.', full:`<h4>Team</h4>Werwölfe.<h4>Besonderheit</h4>Du wachst nie mit dem Rudel auf. Kennt sie nicht, sie kennen dich nicht.<h4>Jede Nacht</h4>Du jagst eigenständig und wählst dein eigenes Opfer.<h4>Erkennung</h4>Wählst du einen Wolf → Erkennung, niemand stirbt, du trittst dem Rudel bei. Wählen die Wölfe dich → du überlebst, trittst dem Rudel bei.<h4>Nach dem Beitritt</h4>Du wachst mit dem Rudel auf und jagst gemeinsam mit ihnen.` },
+    'Pet Wolf':              { short:'Du wählst in Nacht 1 heimlich einen Besitzer. Stirbst du vor deinem Besitzer, stirbt er sofort mit dir.', full:`<h4>Team</h4>Werwölfe.<h4>Nachtphase</h4>Du wachst jede Nacht mit den anderen Werwölfen auf und wählt gemeinsam ein Opfer.<h4>Besitzer wählen (Nacht 1)</h4>In der ersten Nacht wählst du heimlich eine Person als deinen Besitzer. Diese Person weiß nichts davon.<h4>Wenn du stirbst</h4>Wirst du eliminiert bevor dein Besitzer stirbt, erkennt dein Besitzer dich – und stirbt sofort ebenfalls mit.<h4>Wenn der Besitzer zuerst stirbt</h4>Passiert nichts Besonderes. Du spielst normal weiter.` },
+    'Spawn':                 { short:'Du schläfst – wenn alle echten Wölfe tot sind transformierst du dich.', full:`<h4>Team</h4>Wolfteam (zählt anfangs nicht als Werwolf).<h4>Besonderheit</h4>Seher erkennt ihn als kein Werwolf. Wacht nicht mit ihnen auf.<h4>Transformation</h4>Sobald alle echten Werwölfe eliminiert wurden verwandelt er sich sofort in vollwertigen Werwolf.` },
+    'Warlock':               { short:'Triffst du den Seher mit deiner nächtlichen Suche – erhält er falsche Infos für immer.', full:`<h4>Team</h4>Wolfteam.<h4>Fähigkeit</h4>Wählt jede Nacht eine Person. Wenn er den Seher trifft wird er verflucht.<h4>Effekt</h4>Verfluchter Seher erhält ab nächster Nacht nur noch invertierte Informationen. Seher merkt die Verfälschung nicht.` },
+    'Mummer':                { short:'Hypnotisiere jede Nacht jemanden – er muss morgen so abstimmen wie du.', full:`<h4>Fähigkeit</h4>Wählt jede Nacht eine Person die hypnotisiert wird.<h4>Wirkung</h4>Diese muss am nächsten Tag genau so stimmen wie der Mummer. Weicht sie ab korrigiert Moderator öffentlich.<h4>Einschränkung</h4>Nicht zweimal hintereinander dieselbe Person.` },
+    'Eye of the Seer':       { short:'Solange du lebst sieht der Seher normal – stirbst du: invertierte Infos.', full:`<h4>Wirkung</h4>Solange Eye of the Seer lebt arbeitet Seherin normal. Sobald eliminiert erhält die Seherin ab nächster Nacht nur noch falsche Informationen.<h4>Besonderheit</h4>Die Seherin erfährt nicht dass ihre Visionen verfälscht sind.` },
+    'Illusionist':           { short:'Sobald der Seher dich prüft erhält er dauerhaft falsche Visionen.', full:`<h4>Fähigkeit</h4>Keine aktive Nachtaktion. Wirkung aktiviert sobald Seherin ihn überprüft.<h4>Effekt</h4>Ab diesem Moment erhält sie dauerhaft invertierte Informationen (Wolf = Dorf, Dorf = Wolf).<h4>Wichtig</h4>Informationen von vor der Entdeckung bleiben korrekt.` },
+    'Apprentice Illusionist':{ short:'Einmalig: Gib der Seherin ein falsches Ergebnis.', full:`<h4>Fähigkeit (passiv)</h4>Moderator zeigt dir wer die Seherin ist. Wenn sie jemanden überprüft erhält sie einmalig ein falsches Ergebnis (Wolf → Dorf, Dorf → Wolf).<h4>Wichtig</h4>Die Seherin weiß nicht dass sie getäuscht wurde. Danach arbeitet sie wieder normal.` },
+    // Neutrale
+    'Assassin':              { short:'Wähle ein Ziel – stirbt es (und du lebst noch), gewinnst du sofort.', full:`<h4>Ziel & Gewinnbedingung</h4>Wählt zu Beginn ein Ziel. Gewinnt sofort wenn das Ziel stirbt solange er selbst lebt.<h4>Ablauf</h4>Spielleiter weckt ihn nachts auf – er zeigt lautlos auf sein Ziel.<h4>Strategie</h4>Nicht auffallen. Manipuliert Dorf oder Wölfe das Ziel auszuschalten.<div class="example"><b>Beispiel:</b> Ziel = Anna. Anna wird Tag 3 gehängt → Assassin gewinnt sofort.</div>` },
+    'Tanner':                { short:'Du willst sterben! Gewinnst NUR wenn das Dorf dich hängt.', full:`<h4>Team</h4>Neutral (Einzelgänger).<h4>Gewinnbedingung</h4>Gewinnt nur wenn vom Dorf am Tag hingerichtet. Stirbt er nachts oder durch Fähigkeit – hat er verloren.<h4>Strategie</h4>So verdächtig verhalten dass Dorf ihn für Wolf hält – aber nicht so offensichtlich dass sie den Plan durchschauen. Wenn Tanner gewinnt verlieren alle anderen Teams.` },
+    'Master Tanner':         { short:'Überlebst du bis Tag 4 – gewinnst du nur noch durch Hinrichtung.', full:`<h4>Phase 1: Überleben</h4>Muss eine Anzahl Tage überleben um Master zu werden. Spielt unauffällig.<h4>Phase 2: Gewinnbedingung</h4>Danach gewinnt er nur noch wenn vom Dorf hingerichtet.<h4>Besonderheit (Apprentice)</h4>Stirbt er zu früh darf er einen Dorfbewohner zum Apprentice Tanner ernennen. Stirbt dieser nach der Frist: beide gewinnen.` },
+    'Chupacabra':            { short:'Töte erst Wölfe, dann alle. Gewinne als letzter Überlebender.', full:`<h4>Gewinnbedingung</h4>Gewinnt wenn er als letzter Spieler überlebt.<h4>Fähigkeit</h4>Wählt jede Nacht eine Person. Ist es ein Wolf stirbt dieser sofort. Sind alle Wölfe tot – jede Nacht irgendjemanden.<h4>Besonderheit</h4>Kein Team kann gewinnen solange er lebt.` },
+    'Auracabra':             { short:'Eliminiere alle Sonderrollen – Dorfbewohner und Wölfe bleiben verschont.', full:`<h4>Gewinnbedingung</h4>Alle Sonderrollen tot und Auracabra lebt.<h4>Fähigkeit</h4>Wählt jede Nacht eine Person. Nur Personen mit Spezialrollen werden eliminiert.<h4>Einschränkung</h4>Darf nicht letzten Werwolf eliminieren.` },
+    'Vanillacabra':          { short:'Eliminiere Spieler OHNE Sonderrollen. Ziel: unter den letzten 3.', full:`<h4>Gewinnbedingung</h4>Unter den letzten drei Spielern.<h4>Fähigkeit</h4>Wählt jede Nacht (Wolfanzahl-1) Spieler. Nur Spieler OHNE Spezialfähigkeiten sterben. Sonderrollen überleben unbeschadet.<h4>Besonderheit</h4>Wählt sie letzten Wolf passiert nichts.` },
+    'Nosferatu':             { short:'Markiere Spieler – beim zweiten Nominieren sterben sie sofort.', full:`<h4>Gewinnbedingung</h4>Unter den letzten drei Spielern.<h4>Fähigkeit</h4>Wählt jede Nacht (Wolfanzahl-1) Spieler – diese werden heimlich markiert.<h4>Der Effekt</h4>Wenn markierte Person am nächsten Tag zum zweiten Mal nominiert wird stirbt sie sofort automatisch.<h4>Besonderheit</h4>Kann von Werwölfen eliminiert werden.` },
+    'Infected':              { short:'Überlebe bis zum Ende – dann verliert das Dorf automatisch!', full:`<h4>Gewinnbedingung</h4>Überlebt er bis alle Wölfe tot sind – Dorfteam verliert automatisch.<h4>Regeln für Wölfe</h4>Töten Wölfe ihn nachts dürfen sie nächste Nacht niemanden eliminieren (Strafnacht).<h4>Regeln für das Dorf</h4>Dorf muss ihn finden und hängen bevor alle Wölfe tot sind.` },
+    'Grave Robber':          { short:'Beim Sterben: Wähle jemanden – er stirbt, du übernimmst seine Rolle.', full:`<h4>Ablauf</h4>Startet ohne Team und Fähigkeit. Wenn eliminiert wird seine Rolle aufgedeckt.<h4>Der Raub</h4>Wählt sofort eine lebende Person. Diese stirbt (Todesfähigkeiten unterdrückt). Er übernimmt deren komplette Rolle.<h4>Strategie</h4>So lange wie möglich überleben um am Ende eine mächtige Rolle zu übernehmen.` },
+    'Black Cat':             { short:'Beim Tod: Reißt ein Mitglied des Killer-Teams mit in den Tod.', full:`<h4>Ablauf bei Tod</h4>Wenn sie stirbt zeigt Moderator ihr die Rollen des Teams das sie getötet hat. Sie wählt eine Person aus diesem Team – sofortiger Tod.<h4>Beispiel</h4>Werden Wölfe durch sie getötet zeigt Moderator alle Wölfe – sie nimmt einen mit.` },
+    'Mad Destroyer':         { short:'Beim Tod: Du reißt (Wolfanzahl-1) Nachbarn mit – wähle eine Richtung.', full:`<h4>Fähigkeit</h4>Sobald eliminiert wählt er eine Richtung (links oder rechts).<h4>Wirkung</h4>Es sterben so viele Personen in dieser Richtung wie Werwölfe im Spiel sind minus eins.<div class="example"><b>Beispiel:</b> 3 Wölfe leben. Du stirbst und wählst rechts – nächste 2 Spieler rechts sterben sofort.</div>` },
+    'Savant':                { short:'Du kennst alle Rollen – töte jede Nacht Dorfbewohner um zu gewinnen.', full:`<h4>Wissen</h4>In erster Nacht erfährt er exakte Rollen aller Mitspieler.<h4>Fähigkeit</h4>Jede Nacht darf er (Wolfanzahl-2) normale Dorfbewohner eliminieren.<h4>Gewinnbedingung</h4>Neutral. Gewinnt wenn er bis Ende überlebt oder nur noch 3 Spieler übrig sind.` },
+    'Blind Mary':            { short:'Du darfst nicht sprechen. Gewinne wenn eine Phase ohne Tod endet.', full:`<h4>Strenge Regeln</h4>Weder sprechen noch gestikulieren (Tag und Nacht).<h4>Gewinnbedingung</h4>Gewinnt sofort wenn eine Phase ohne Eliminierung endet.<h4>Nach dem Tod</h4>Wird sie getötet darf sie ab dann jede Nacht eine Person eliminieren.` },
+    'Matchmaker':            { short:'Verknüpfe Schicksale – stirbt einer sterben alle verbundenen.', full:`<h4>Fähigkeit</h4>Wählt jede Nacht eine Anzahl Spieler die miteinander verbunden werden.<h4>Wirkung</h4>Stirbt eine verbundene Person sterben alle verknüpften sofort mit.<h4>Gewinnbedingung</h4>Unter den letzten drei Spielern. Kein Team kann gewinnen solange er lebt.` },
+};
+
+// ===== OVERLAY – HANDY WEITERGEBEN =====
+function nextPlayer(){
+    let ov = document.getElementById("overlay");
+    if(revealIndex >= players.length){
+        ov.style.display = "none";
+        showFinalOverview();
+        return;
+    }
+    let p = players[revealIndex];
+    ov.style.display = "flex";
+    ov.innerHTML = `
+        <div class="overlay-inner">
+            <p style="font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Handy weitergeben an</p>
+            <div style="font-size:3rem; margin:8px 0;">📱</div>
+            <h1 style="font-size:2.4rem; margin:0 0 24px 0; letter-spacing:2px;">${p.name}</h1>
+            <button onclick="showRole()">🌙 Rolle ansehen</button>
+        </div>
+    `;
+}
+
+function showRole(){
+    let p = players[revealIndex];
+    let ov = document.getElementById("overlay");
+
+    // Rolle in roleData suchen (Name → ID)
+    let roleId = Object.keys(roleData).find(id => roleData[id].name === p.role);
+    let r = roleId ? roleData[roleId] : null;
+    let fd = roleFullDesc[p.role] || null;
+
+    let teamBadge = '';
+    if(p.role === 'Werwolf') teamBadge = '<span class="wolf-badge">🐺 Werwolf-Team</span>';
+    else if(p.role === 'Dorfbewohner') teamBadge = '<span class="village-badge">🏘️ Dorf-Team</span>';
+    else if(r) {
+        if(r.team === 'wolf') teamBadge = '<span class="wolf-badge">🐺 Werwolf-Team</span>';
+        else if(r.team === 'village') teamBadge = '<span class="village-badge">🏘️ Dorf-Team</span>';
+        else teamBadge = '<span class="neutral-badge">🎭 Neutral</span>';
+    }
+
+    let emoji = r ? r.emoji : '👤';
+    let short = fd ? fd.short : (r ? r.short : (p.role === 'Dorfbewohner' ? 'Du hast keine Sonderfähigkeit. Finde die Wölfe durch Beobachtung und Diskussion.' : ''));
+    let fullHtml = fd ? fd.full : (r ? r.info : '');
+
+    // Letzter Spieler → Button führt zu Spielleiter-Rückgabe-Screen
+    // Alle anderen → direkt zum nächsten
+    let isLast = (revealIndex === players.length - 1);
+
+    ov.innerHTML = `
+        <div class="overlay-inner">
+            <p style="font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Deine Rolle ist:</p>
+            <div style="font-size:3rem; margin:6px 0;">${emoji}</div>
+            <h1 style="font-size:2rem; margin:6px 0 10px 0;">${p.role}</h1>
+            ${teamBadge}
+            <div class="role-card" style="margin:16px auto; text-align:left;">
+                <div class="short-desc" style="margin-bottom:12px;">${short}</div>
+                ${fullHtml ? `<details>
+                    <summary>Mehr anzeigen</summary>
+                    <div class="full-content" style="margin-top:8px; font-size:0.9rem; line-height:1.6;">${fullHtml}</div>
+                </details>` : ''}
+            </div>
+            <button onclick="${isLast ? 'showHandback()' : 'revealIndex++; nextPlayer()'}">Verstanden ✓</button>
+        </div>
+    `;
+}
+
+// ===== ZWISCHENSCREEN: HANDY AN SPIELLEITER – nur nach dem letzten Spieler =====
+function showHandback(){
+    let ov = document.getElementById("overlay");
+    ov.innerHTML = `
+        <div class="overlay-inner" style="gap:0;">
+
+            <div style="font-size:4rem; margin-bottom:10px; filter:drop-shadow(0 0 20px rgba(212,168,67,0.5));">🔒</div>
+
+            <h1 style="font-family:'Cinzel Decorative',serif; font-size:1.6rem; margin:0 0 6px 0; letter-spacing:2px; color:var(--gold-light); text-shadow:0 0 30px rgba(212,168,67,0.4);">
+                Gut gemacht!
+            </h1>
+            <p style="font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:20px;">
+                Alle Spieler haben ihre Rolle gesehen
+            </p>
+
+            <div style="
+                background:rgba(212,168,67,0.08);
+                border:1px solid rgba(212,168,67,0.3);
+                border-radius:18px;
+                padding:20px 22px;
+                margin-bottom:24px;
+                max-width:340px;
+                width:100%;
+            ">
+                <div style="font-size:2.2rem; margin-bottom:10px;">📱➡️👑</div>
+                <p style="font-family:'Cinzel',serif; font-size:0.78rem; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:6px;">Bitte Handy übergeben an</p>
+                <p style="font-family:'Cinzel Decorative',serif; font-size:1.4rem; color:var(--gold-light); text-shadow:0 0 20px rgba(212,168,67,0.4); margin:0;">den Spielleiter</p>
+            </div>
+
+            <p style="font-size:0.9rem; color:var(--text-muted); font-style:italic; margin-bottom:24px; line-height:1.5; max-width:300px; text-align:center;">
+                Der Spielleiter sieht jetzt die Rollenübersicht und startet das Spiel.
+            </p>
+
+            <button onclick="revealIndex++; nextPlayer()" style="
+                background: linear-gradient(135deg, #b8860b, #d4a843, #f0c96a);
+                color: #0a0600;
+                font-size: 0.9rem;
+                letter-spacing: 2px;
+                padding: 16px 32px;
+                box-shadow: 0 8px 24px rgba(212,168,67,0.35);
+            ">👑 Spielleiter-Übersicht öffnen</button>
+        </div>
+    `;
+}
+
+// ===== ERZÄHLER ÜBERSICHT =====
+function showFinalOverview() {
+    // Overlay ausblenden
+    let ov = document.getElementById("overlay");
+    if (ov) ov.style.display = "none";
+
+    // Reveal-Bereich einblenden
+    let rDiv = document.getElementById("reveal");
+    rDiv.style.display = "block";
+    rDiv.innerHTML = "";
+
+    // Team-Farben ermitteln
+    function teamStyle(roleName) {
+        const id = Object.keys(roleData).find(k => roleData[k].name === roleName);
+        const r = id ? roleData[id] : null;
+        if (roleName === 'Werwolf' || (r && r.team === 'wolf'))
+            return { bg:'rgba(220,38,38,0.15)', border:'rgba(220,38,38,0.4)', col:'#fca5a5' };
+        if (r && r.team === 'neutral')
+            return { bg:'rgba(168,85,247,0.15)', border:'rgba(168,85,247,0.4)', col:'#d8b4fe' };
+        return { bg:'rgba(34,197,94,0.1)', border:'rgba(34,197,94,0.3)', col:'#86efac' };
+    }
+
+    // Zähler
+    let wolfCount = 0, villageCount = 0, neutralCount = 0;
+    players.forEach(p => {
+        const id = Object.keys(roleData).find(k => roleData[k].name === p.role);
+        const r = id ? roleData[id] : null;
+        if (p.role === 'Werwolf' || (r && r.team === 'wolf')) wolfCount++;
+        else if (r && r.team === 'neutral') neutralCount++;
+        else villageCount++;
+    });
+
+    // Spielerliste als HTML aufbauen
+    let playerRows = '';
+    players.forEach((p, i) => {
+        const roleId = Object.keys(roleData).find(id => roleData[id].name === p.role);
+        const emoji = roleId ? roleData[roleId].emoji : (p.role === 'Dorfbewohner' ? '👤' : '🐺');
+        const t = teamStyle(p.role);
+        const initials = p.name.substring(0, 2).toUpperCase();
+        playerRows += `
+        <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;margin-bottom:8px;border-radius:14px;background:${t.bg};border:1px solid ${t.border};animation:cardAppear .35s ease both;animation-delay:${i * 0.06}s;">
+            <div style="width:38px;height:38px;border-radius:50%;flex-shrink:0;background:rgba(0,0,0,0.35);border:1.5px solid ${t.border};display:flex;align-items:center;justify-content:center;font-family:'Cinzel Decorative',serif;font-size:0.8rem;font-weight:700;color:${t.col};">${initials}</div>
+            <div style="flex:1;min-width:0;"><div style="font-family:'Cinzel',serif;font-size:0.9rem;font-weight:700;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div></div>
+            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+                <span style="font-size:1.1rem;">${emoji}</span>
+                <span style="font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;color:${t.col};max-width:110px;text-align:right;line-height:1.2;">${p.role}</span>
+            </div>
+        </div>`;
+    });
+
+    // Alles in einem Schritt rendern
+    rDiv.innerHTML = `<div class="card" style="padding:0;overflow:hidden;display:block;">
+        <div style="background:linear-gradient(135deg,rgba(15,10,30,0.95),rgba(30,20,60,0.95));border-bottom:1px solid rgba(212,168,67,0.25);padding:24px 24px 20px;text-align:center;position:relative;">
+            <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.7;"></div>
+            <div style="font-size:2.2rem;margin-bottom:8px;">👑</div>
+            <div style="font-family:'Cinzel Decorative',serif;font-size:1.2rem;font-weight:900;color:var(--gold-light);text-shadow:0 0 20px rgba(212,168,67,0.4);letter-spacing:2px;margin-bottom:4px;">Erzähler-Übersicht</div>
+            <div style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.35);">Nur für den Spielleiter sichtbar</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid rgba(255,255,255,0.07);">
+            <div style="text-align:center;padding:14px 8px;border-right:1px solid rgba(255,255,255,0.07);">
+                <div style="font-family:'Cinzel Decorative',serif;font-size:1.6rem;font-weight:700;color:#fca5a5;line-height:1;">${wolfCount}</div>
+                <div style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-top:4px;">🐺 Wölfe</div>
+            </div>
+            <div style="text-align:center;padding:14px 8px;border-right:1px solid rgba(255,255,255,0.07);">
+                <div style="font-family:'Cinzel Decorative',serif;font-size:1.6rem;font-weight:700;color:#86efac;line-height:1;">${villageCount}</div>
+                <div style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-top:4px;">🏘️ Dorf</div>
+            </div>
+            <div style="text-align:center;padding:14px 8px;">
+                <div style="font-family:'Cinzel Decorative',serif;font-size:1.6rem;font-weight:700;color:#94a3b8;line-height:1;">${players.length}</div>
+                <div style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-top:4px;">👥 Gesamt</div>
+            </div>
+        </div>
+        <div style="padding:16px 16px 0;">${playerRows}</div>
+        <div style="padding:16px;">
+            <div class="mode-toggle" onclick="toggleBeginnerMode()" id="beginnerToggle">
+              <div class="toggle-icon">🎓</div>
+              <div class="toggle-text">
+                <strong>Anfänger-Modus</strong>
+                <span id="beginnerDesc">Jede Aktion wird Schritt für Schritt erklärt</span>
+              </div>
+              <div class="toggle-switch" id="beginnerSwitch"></div>
+            </div>
+            <button onclick="startGameNow()" style="width:100%;padding:17px;background:linear-gradient(135deg,#052e16,#059669,#34d399);color:#fff;border:none;border-radius:15px;font-family:'Cinzel Decorative',serif;font-size:0.95rem;font-weight:700;letter-spacing:2px;cursor:pointer;box-shadow:0 10px 28px rgba(52,211,153,0.35);transition:all .25s;margin-bottom:10px;">
+                🐺 Spiel starten!
+            </button>
+            <button onclick="location.reload()" style="width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:12px;color:rgba(255,255,255,0.45);font-family:'Cinzel',serif;font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s;">
+                🔄 Neues Spiel konfigurieren
+            </button>
+        </div>
+    </div>`;
+    updateBeginnerToggleUI();
+}
+
+function startGameNow(){
+    localStorage.setItem("werwolf_players", JSON.stringify(players));
+    // beginnerMode already saved in localStorage as "werwolf_beginner"
+    window.location.href = "tag-nacht.html";
+}
+
+// ===== ANFÄNGER-MODUS =====
+let beginnerMode = localStorage.getItem("werwolf_beginner") === "1";
+
+function toggleBeginnerMode() {
+    beginnerMode = !beginnerMode;
+    localStorage.setItem("werwolf_beginner", beginnerMode ? "1" : "0");
+    updateBeginnerToggleUI();
+}
+
+function updateBeginnerToggleUI() {
+    const sw = document.getElementById("beginnerSwitch");
+    const desc = document.getElementById("beginnerDesc");
+    if (!sw) return;
+    sw.className = "toggle-switch" + (beginnerMode ? " on" : "");
+    if (desc) desc.textContent = beginnerMode
+        ? "✅ Aktiv – jede Aktion wird erklärt"
+        : "Jede Aktion wird Schritt für Schritt erklärt";
+}
+
+// ===== GRUPPEN MANAGER =====
+function getGroups() {
+    try { return JSON.parse(localStorage.getItem("werwolf_groups") || "{}"); }
+    catch { return {}; }
+}
+function saveGroups(g) {
+    localStorage.setItem("werwolf_groups", JSON.stringify(g));
+}
+
+// Escape für Anzeige als HTML-Text (verhindert kaputtes Layout bei < & ")
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+// Escape für einen JS-String innerhalb eines doppelt-gequoteten onclick-Attributs
+// (damit Namen mit Apostroph/Backslash/Anführungszeichen nicht den Handler zerstören)
+function escJs(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+}
+
+function renderGroupChips() {
+    const container = document.getElementById("groupChips");
+    if (!container) return;
+    const groups = getGroups();
+    const names = Object.keys(groups);
+    if (names.length === 0) {
+        container.innerHTML = `<span style="color:var(--text-muted);font-size:0.8rem;font-style:italic;">Noch keine Gruppen gespeichert.</span>`;
+        return;
+    }
+    container.innerHTML = names.map(n => `
+        <div class="group-chip">
+            <span onclick="loadGroup('${escJs(n)}')">${escHtml(n)} (${groups[n].length})</span>
+            <span class="del" onclick="deleteGroup('${escJs(n)}')">✕</span>
+        </div>`).join("");
+}
+
+function loadGroup(name) {
+    const groups = getGroups();
+    const names = groups[name];
+    if (!names) return;
+    const count = val("count");
+    names.forEach((n, i) => {
+        const el = document.getElementById("p" + i);
+        if (el) el.value = n;
+    });
+    // Fill remaining empty fields or notify if group is bigger than player count
+    if (names.length > count) {
+        alert(`Die Gruppe "${name}" hat ${names.length} Mitglieder, aber nur ${count} Spielerslots sind verfügbar. Die ersten ${count} wurden geladen.`);
+    }
+}
+
+function saveCurrentGroup() {
+    const count = val("count");
+    const names = [];
+    for (let i = 0; i < count; i++) {
+        const v = document.getElementById("p" + i)?.value?.trim();
+        if (v) names.push(v);
+    }
+    if (names.length === 0) { alert("Gib zuerst Namen ein!"); return; }
+    const groupName = prompt("Gruppenname:", "Klasse 10a");
+    if (!groupName || !groupName.trim()) return;
+    const groups = getGroups();
+    groups[groupName.trim()] = names;
+    saveGroups(groups);
+    renderGroupChips();
+}
+
+function deleteGroup(name) {
+    if (!confirm(`Gruppe "${name}" löschen?`)) return;
+    const groups = getGroups();
+    delete groups[name];
+    saveGroups(groups);
+    renderGroupChips();
+}
+
+function openGroupManager(editName) {
+    const groups = getGroups();
+    const names = Object.keys(groups);
+
+    const existing = document.getElementById("groupManagerModal");
+    if (existing) existing.remove();
+
+    const modal = document.createElement("div");
+    modal.id = "groupManagerModal";
+    modal.style.cssText = `position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;`;
+
+    const inner = document.createElement("div");
+    inner.style.cssText = `background:#0d0d1e;border:1px solid rgba(212,168,67,0.3);border-radius:20px;padding:24px;width:100%;max-width:440px;margin:auto;`;
+
+    if (editName && groups[editName]) {
+        // ── Einzelne Gruppe bearbeiten ──
+        const members = groups[editName];
+        inner.innerHTML = `
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+                <button onclick="openGroupManager()" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">←</button>
+                <div style="font-family:'Cinzel',serif;font-size:0.88rem;letter-spacing:2px;color:var(--gold);">✏️ ${escHtml(editName)}</div>
+            </div>
+            <div id="memberList" style="margin-bottom:14px;"></div>
+            <div style="display:flex;gap:8px;margin-bottom:18px;">
+                <input id="newMemberInput" type="text" placeholder="Neuer Name..." style="flex:1;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:#f1f5f9;font-family:'Crimson Pro',serif;font-size:0.95rem;" onkeydown="if(event.key==='Enter')addMemberToGroup('${escJs(editName)}')">
+                <button onclick="addMemberToGroup('${escJs(editName)}')" style="padding:10px 16px;border-radius:10px;border:1px solid rgba(212,168,67,0.3);background:rgba(212,168,67,0.12);color:var(--gold);font-size:0.85rem;cursor:pointer;">+ Hinzufügen</button>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button onclick="saveGroupEdits('${escJs(editName)}')" style="flex:1;padding:11px;border-radius:12px;border:1px solid rgba(52,211,153,0.3);background:rgba(52,211,153,0.1);color:#6ee7b7;font-family:'Cinzel',serif;font-size:0.72rem;letter-spacing:1.5px;cursor:pointer;">💾 Speichern</button>
+                <button onclick="deleteGroupFromManager('${escJs(editName)}')" style="padding:11px 16px;border-radius:12px;border:1px solid rgba(220,38,38,0.3);background:rgba(220,38,38,0.08);color:#fca5a5;font-size:0.85rem;cursor:pointer;">🗑️</button>
+            </div>`;
+        modal.appendChild(inner);
+        modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
+        document.body.appendChild(modal);
+        renderMemberList(editName);
+
+    } else {
+        // ── Gruppenübersicht ──
+        inner.innerHTML = `
+            <div style="font-family:'Cinzel',serif;font-size:0.88rem;letter-spacing:2px;color:var(--gold);margin-bottom:16px;">👥 GRUPPEN VERWALTEN</div>
+            ${names.length === 0 ? `<p style="color:var(--text-muted);font-size:0.85rem;font-style:italic;">Noch keine Gruppen gespeichert.</p>` : ''}
+            <div id="groupList">
+            ${names.map(n => `
+            <div style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);margin-bottom:8px;">
+                <div style="flex:1;cursor:pointer;" onclick="openGroupManager('${escJs(n)}')">
+                    <div style="font-family:'Cinzel',serif;font-size:0.82rem;color:#f1f5f9;">${escHtml(n)}</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">${groups[n].length} Spieler: ${escHtml(groups[n].slice(0,4).join(", "))}${groups[n].length > 4 ? '...' : ''}</div>
+                </div>
+                <button onclick="openGroupManager('${escJs(n)}')" style="padding:6px 12px;border-radius:8px;border:1px solid rgba(212,168,67,0.3);background:rgba(212,168,67,0.1);color:var(--gold);font-size:0.75rem;cursor:pointer;">✏️ Bearbeiten</button>
+            </div>`).join("")}
+            </div>
+            <div style="display:flex;gap:8px;margin-top:14px;">
+                <input id="newGroupName" type="text" placeholder="Neuer Gruppenname..." style="flex:1;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:#f1f5f9;font-family:'Crimson Pro',serif;font-size:0.95rem;">
+                <button onclick="createNewGroup()" style="padding:10px 16px;border-radius:10px;border:1px solid rgba(212,168,67,0.3);background:rgba(212,168,67,0.12);color:var(--gold);font-size:0.85rem;cursor:pointer;">+ Neu</button>
+            </div>
+            <button onclick="document.getElementById('groupManagerModal').remove()" style="width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:var(--text-muted);font-family:'Cinzel',serif;font-size:0.72rem;letter-spacing:2px;cursor:pointer;margin-top:10px;">✕ Schließen</button>`;
+        modal.appendChild(inner);
+        modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
+        document.body.appendChild(modal);
+    }
+}
+
+// Temporary edit state
+let _editingMembers = {};
+
+function renderMemberList(groupName) {
+    const groups = getGroups();
+    if (!_editingMembers[groupName]) _editingMembers[groupName] = [...(groups[groupName] || [])];
+    const members = _editingMembers[groupName];
+    const list = document.getElementById("memberList");
+    if (!list) return;
+    if (members.length === 0) {
+        list.innerHTML = `<p style="color:var(--text-muted);font-size:0.82rem;font-style:italic;">Keine Mitglieder. Füge welche hinzu.</p>`;
+        return;
+    }
+    list.innerHTML = members.map((name, i) => `
+        <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);margin-bottom:6px;">
+            <span style="font-size:0.9rem;flex:1;color:#f1f5f9;">${escHtml(name)}</span>
+            <button onclick="renameMember('${escJs(groupName)}',${i})" style="padding:4px 10px;border-radius:7px;border:1px solid rgba(212,168,67,0.25);background:rgba(212,168,67,0.08);color:var(--gold);font-size:0.72rem;cursor:pointer;">✏️</button>
+            <button onclick="removeMember('${escJs(groupName)}',${i})" style="padding:4px 10px;border-radius:7px;border:1px solid rgba(220,38,38,0.25);background:rgba(220,38,38,0.08);color:#fca5a5;font-size:0.75rem;cursor:pointer;">✕</button>
+        </div>`).join("");
+}
+
+function addMemberToGroup(groupName) {
+    const input = document.getElementById("newMemberInput");
+    const name = input?.value?.trim();
+    if (!name) return;
+    if (!_editingMembers[groupName]) _editingMembers[groupName] = [];
+    _editingMembers[groupName].push(name);
+    input.value = "";
+    renderMemberList(groupName);
+}
+
+function removeMember(groupName, index) {
+    if (!_editingMembers[groupName]) return;
+    _editingMembers[groupName].splice(index, 1);
+    renderMemberList(groupName);
+}
+
+function renameMember(groupName, index) {
+    const current = _editingMembers[groupName][index];
+    const newName = prompt("Name ändern:", current);
+    if (!newName || !newName.trim()) return;
+    _editingMembers[groupName][index] = newName.trim();
+    renderMemberList(groupName);
+}
+
+function saveGroupEdits(groupName) {
+    const groups = getGroups();
+    groups[groupName] = _editingMembers[groupName] || [];
+    delete _editingMembers[groupName];
+    saveGroups(groups);
+    document.getElementById("groupManagerModal")?.remove();
+    renderGroupChips();
+}
+
+function deleteGroupFromManager(name) {
+    if (!confirm(`Gruppe "${name}" löschen?`)) return;
+    const groups = getGroups();
+    delete groups[name];
+    delete _editingMembers[name];
+    saveGroups(groups);
+    renderGroupChips();
+    openGroupManager(); // zurück zur Übersicht
+}
+
+function createNewGroup() {
+    const input = document.getElementById("newGroupName");
+    const name = input?.value?.trim();
+    if (!name) { alert("Bitte einen Namen eingeben!"); return; }
+    const groups = getGroups();
+    if (groups[name]) { alert("Gruppe existiert bereits!"); return; }
+    groups[name] = [];
+    saveGroups(groups);
+    document.getElementById("groupManagerModal")?.remove();
+    openGroupManager(name);
+}
+
